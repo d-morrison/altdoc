@@ -5,10 +5,10 @@
 ### New features
 
 * Vignettes in subfolders (e.g., `vignettes/articles/`) are now discovered 
-  recursively when using `quarto_website`.
+  recursively when using `quarto_website`. (#355)
 
 * Custom sidebars with singleton entries in `quarto_website.yml` are now 
-  properly processed.
+  properly processed. (#355)
 
 ### Bug fixes
 
