@@ -477,17 +477,7 @@ test_that("quarto_website: recursive vignette discovery in subfolders", {
     skip_if(!.quarto_is_installed())
 
     ### setup: create a temp package using the structure of testpkg.recursive
-    path_to_example_pkg <- fs::path_abs(
-        test_path("examples/testpkg.recursive")
-    )
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.recursive", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.recursive")
+    setup_example_package("testpkg.recursive")
 
     ### generate docs
     install.packages(".", repos = NULL, type = "source")
@@ -505,17 +495,7 @@ test_that("quarto_website: singleton entries in custom sidebars", {
     skip_if(!.quarto_is_installed())
 
     ### setup: create a temp package using the structure of testpkg.singleton
-    path_to_example_pkg <- fs::path_abs(
-        test_path("examples/testpkg.singleton")
-    )
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.singleton", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.singleton")
+    setup_example_package("testpkg.singleton")
 
     ### generate docs
     install.packages(".", repos = NULL, type = "source")

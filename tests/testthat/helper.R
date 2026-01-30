@@ -94,3 +94,18 @@ create_local_thing <- function(
 }
 
 expect_proj_file <- function(...) expect_true(fs::file_exists(proj_path(...)))
+
+# Helper function to setup test package from examples
+setup_example_package <- function(example_name) {
+    path_to_example_pkg <- fs::path_abs(
+        test_path(paste0("examples/", example_name))
+    )
+    create_local_project()
+    fs::dir_delete("R")
+    fs::dir_copy(path_to_example_pkg, ".")
+    all_files <- list.files(example_name, full.names = TRUE)
+    for (i in all_files) {
+        fs::file_move(i, ".")
+    }
+    fs::dir_delete(example_name)
+}
