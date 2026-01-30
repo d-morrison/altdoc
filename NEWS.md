@@ -2,15 +2,13 @@
 
 ## Development version
 
-### New features
+### Bug fixes
 
 * Vignettes in subfolders (e.g., `vignettes/articles/`) are now discovered 
   recursively when using `quarto_website`. (#355)
 
 * Custom sidebars with singleton entries in `quarto_website.yml` are now 
   properly processed. (#355)
-
-### Bug fixes
 
 * In 0.5.0, we announced that `README.qmd` wouldn't be automatically rendered,
   but this still happened when `output = "quarto_website"`. This is now fixed,
