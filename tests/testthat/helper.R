@@ -104,8 +104,8 @@ setup_example_package <- function(example_name) {
     fs::dir_delete("R")
     fs::dir_copy(path_to_example_pkg, ".")
     all_files <- list.files(example_name, full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
+    for (file_path in all_files) {
+        fs::file_move(file_path, ".")
     }
     fs::dir_delete(example_name)
 }
