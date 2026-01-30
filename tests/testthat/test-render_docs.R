@@ -469,3 +469,58 @@ test_that("render_docs errors if man fail", {
         "some failures when rendering man pages"
     )
 })
+
+# Test for recursive vignette discovery in subfolders
+test_that("quarto_website: recursive vignette discovery in subfolders", {
+    skip_on_cran()
+    skip_if(.is_windows() && .on_ci(), "Windows on CI")
+    skip_if(!.quarto_is_installed())
+
+    ### setup: create a temp package using the structure of testpkg.recursive
+    path_to_example_pkg <- fs::path_abs(
+        test_path("examples/testpkg.recursive")
+    )
+    create_local_project()
+    fs::dir_delete("R")
+    fs::dir_copy(path_to_example_pkg, ".")
+    all_files <- list.files("testpkg.recursive", full.names = TRUE)
+    for (i in all_files) {
+        fs::file_move(i, ".")
+    }
+    fs::dir_delete("testpkg.recursive")
+
+    ### generate docs
+    install.packages(".", repos = NULL, type = "source")
+    setup_docs("quarto_website")
+    render_docs(verbose = .on_ci())
+
+    ### test that vignettes in subfolders are rendered
+    expect_true(fs::file_exists("docs/vignettes/articles/article_test.html"))
+})
+
+# Test for singleton entries in custom sidebars
+test_that("quarto_website: singleton entries in custom sidebars", {
+    skip_on_cran()
+    skip_if(.is_windows() && .on_ci(), "Windows on CI")
+    skip_if(!.quarto_is_installed())
+
+    ### setup: create a temp package using the structure of testpkg.singleton
+    path_to_example_pkg <- fs::path_abs(
+        test_path("examples/testpkg.singleton")
+    )
+    create_local_project()
+    fs::dir_delete("R")
+    fs::dir_copy(path_to_example_pkg, ".")
+    all_files <- list.files("testpkg.singleton", full.names = TRUE)
+    for (i in all_files) {
+        fs::file_move(i, ".")
+    }
+    fs::dir_delete("testpkg.singleton")
+
+    ### generate docs
+    install.packages(".", repos = NULL, type = "source")
+    setup_docs("quarto_website")
+
+    ### test that the custom sidebar with singleton entries renders without error
+    expect_no_error(render_docs(verbose = .on_ci()))
+})

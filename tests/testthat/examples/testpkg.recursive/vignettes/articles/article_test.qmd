@@ -1,0 +1,16 @@
+---
+title: "Article in subfolder"
+output: html_vignette
+vignette: >
+  %\VignetteIndexEntry{Article in subfolder}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Article in subfolder
+
+This is a test article in the vignettes/articles subfolder to test recursive file discovery.
+
+```{r}
+1 + 1
+```
