@@ -58,7 +58,11 @@
     # docs/altdoc/pkgdown.yml), but downlit looks for it at the website root.
     pkgdown_src <- fs::path_join(c(path, "altdoc", "pkgdown.yml"))
     if (fs::file_exists(pkgdown_src)) {
-        fs::file_copy(pkgdown_src, fs::path_join(c(tar, "pkgdown.yml")), overwrite = TRUE)
+        fs::file_copy(
+            pkgdown_src,
+            fs::path_join(c(tar, "pkgdown.yml")),
+            overwrite = TRUE
+        )
     }
 }
 
