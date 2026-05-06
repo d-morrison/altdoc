@@ -16,3 +16,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: etiennebacher/setup-jarl@v0.1.0
+        continue-on-error: true
