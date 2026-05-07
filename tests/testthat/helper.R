@@ -5,10 +5,12 @@ library(withr)
 ### Don't run mkdocs in other places than my laptop
 ### It requires installing pip3 and mkdocs, which is not possible on CRAN
 ### (to my knowledge)
+# nolint start: unused_function
 skip_mkdocs <- function() {
     skip_on_cran()
     skip_if_not(.venv_exists())
 }
+# nolint end
 
 ### Taken from {usethis} (file "R/project.R")
 
@@ -16,11 +18,13 @@ proj <- new.env(parent = emptyenv())
 
 proj_get_ <- function() proj$cur
 
+# nolint start: unused_function
 proj_set_ <- function(path) {
     old <- proj$cur
     proj$cur <- path
     invisible(old)
 }
+# nolint end
 
 ### Taken from {usethis} (file "tests/testthat/helper.R")
 
@@ -93,7 +97,9 @@ create_local_thing <- function(
     invisible(usethis::proj_get())
 }
 
+# nolint start: unused_function
 expect_proj_file <- function(...) expect_true(fs::file_exists(proj_path(...)))
+# nolint end
 
 # Helper function to setup test package from examples
 setup_example_package <- function(example_name) {
