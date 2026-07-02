@@ -33,7 +33,7 @@
         # that downlit can find it at <url>/pkgdown.yml. For the quarto_website
         # tool this is handled in .finalize_quarto_website().
         if (!grepl("^quarto", tool)) {
-            pkgdown_src <- fs::path_join(c(path, "altdoc", "pkgdown.yml"))
+            pkgdown_src <- fs::path_join(c(src, "pkgdown.yml"))
             if (fs::file_exists(pkgdown_src)) {
                 fs::file_copy(
                     pkgdown_src,
