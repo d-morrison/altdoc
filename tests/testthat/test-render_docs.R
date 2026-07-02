@@ -501,8 +501,10 @@ test_that("quarto_website: singleton entries in custom sidebars", {
     setup_example_package("testpkg.singleton")
 
     ### generate docs
+    ### no setup_docs() call: the example package already ships a custom
+    ### altdoc/quarto_website.yml with the singleton entry to test, and
+    ### setup_docs() would abort on (or overwrite) that existing file
     install.packages(".", repos = NULL, type = "source")
-    setup_docs("quarto_website")
 
     ### test that the custom sidebar with singleton entries renders without error
     expect_no_error(render_docs(verbose = .on_ci()))
