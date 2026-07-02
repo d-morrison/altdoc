@@ -38,7 +38,6 @@ test_that("rendering internal functions", {
     fs::dir_create("man")
     fs::file_copy(dest, "man")
     src <- fs::path_ext_remove(list.files("man"))
-    # Internal functions should now be converted successfully
     expect_identical(
         .render_one_man(
             src,
