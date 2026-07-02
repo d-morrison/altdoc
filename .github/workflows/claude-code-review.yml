@@ -65,9 +65,14 @@ jobs:
       id-token: write
       actions: read   # lets the reviewer read CI status (github_ci MCP server)
     uses: d-morrison/gha/.github/workflows/claude-code-review.yml@v1
+    # NOTE: the @v1 tag of this reusable workflow does not declare an
+    # ANTHROPIC_API_KEY secret (only CLAUDE_CODE_OAUTH_TOKEN and
+    # SUBMODULES_TOKEN) — main added it but @v1 hasn't been slid forward yet
+    # (see d-morrison/gha#179). Passing it here 400s the workflow-call gate
+    # ("Invalid secret, ANTHROPIC_API_KEY is not defined in the referenced
+    # workflow"), so it's omitted until @v1 catches up.
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}
     with:
       # Wires the workflow_dispatch input through so claude.yml can

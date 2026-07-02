@@ -36,9 +36,14 @@ jobs:
       # claude-code-review.yml via workflow_dispatch after pushing commits.
       actions: write
     uses: d-morrison/gha/.github/workflows/claude.yml@v1
+    # NOTE: the @v1 tag of this reusable workflow does not declare an
+    # ANTHROPIC_API_KEY secret (only CLAUDE_CODE_OAUTH_TOKEN, SUBMODULES_TOKEN,
+    # and WORKFLOW_TOKEN) — main added it but @v1 hasn't been slid forward yet
+    # (see d-morrison/gha#179). Passing it here 400s the workflow-call gate
+    # ("Invalid secret, ANTHROPIC_API_KEY is not defined in the referenced
+    # workflow"), so it's omitted until @v1 catches up.
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}
       WORKFLOW_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
     with:
