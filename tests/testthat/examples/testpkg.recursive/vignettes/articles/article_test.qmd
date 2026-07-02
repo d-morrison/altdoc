@@ -1,10 +1,5 @@
 ---
 title: "Article in subfolder"
-output: html_vignette
-vignette: >
-  %\VignetteIndexEntry{Article in subfolder}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 # Article in subfolder

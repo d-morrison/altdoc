@@ -520,7 +520,7 @@ test_that("quarto_website: recursive vignette discovery in subfolders", {
     ### generate docs
     install.packages(".", repos = NULL, type = "source")
     setup_docs("quarto_website")
-    render_docs(verbose = .on_ci())
+    expect_no_error(render_docs(verbose = .on_ci()))
 
     ### test that vignettes in subfolders are rendered
     expect_true(fs::file_exists("docs/vignettes/articles/article_test.html"))
