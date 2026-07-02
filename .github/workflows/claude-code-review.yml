@@ -1,44 +1,76 @@
+# Migrated to the reusable workflow in d-morrison/gha (claude-code-review.yml).
+# The reusable workflow carries the reviewer stash/restore, the inline-comment
+# tool allowlist, review-only enforcement, the collapse/cancel handling, the
+# `/review` on-demand dispatch, and the workflow_dispatch path claude.yml uses
+# to re-dispatch a review after pushing commits.
+
 name: Claude Code Review
 
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull request number to review'
+        required: true
+        type: string
 
 jobs:
-  claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
+  # `/review` at the start of a PR comment (from an OWNER/MEMBER/COLLABORATOR)
+  # dispatches an on-demand review of that PR, independent of claude.yml.
+  dispatch-on-comment:
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/review') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
-      issues: read
-      id-token: write
-
+      actions: write        # dispatch this workflow via `gh workflow run`
+      issues: write         # acknowledge the /review comment
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+      - name: Dispatch a review for the commented PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$COMMENT_BODY" =~ ^/review([[:space:]]|$) ]]; then
+            echo "Comment does not start with a standalone '/review' command; skipping dispatch."
+            exit 0
+          fi
+          WF_FILE=$(printf '%s' "$WORKFLOW_REF" | sed -E 's#.*/([^/@]+)@.*#\1#')
+          echo "Dispatching $WF_FILE to review PR #$PR_NUMBER (/review comment)."
+          gh workflow run "$WF_FILE" --repo "$REPO" -f pr_number="$PR_NUMBER"
+          gh issue comment "$PR_NUMBER" --repo "$REPO" \
+            --body ":mag: \`/review\` received — dispatched a Claude review of this PR (see the [dispatch run]($RUN_URL)). The review posts as its own comment when it finishes." \
+            || echo "::warning::Could not acknowledge the /review comment."
 
-      - name: Run Claude Code Review
-        id: claude-review
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-
+  review:
+    # pull_request and workflow_dispatch only; the issue_comment path is
+    # handled by dispatch-on-comment above (which re-enters via
+    # workflow_dispatch).
+    if: github.event_name != 'issue_comment'
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read   # lets the reviewer read CI status (github_ci MCP server)
+    uses: d-morrison/gha/.github/workflows/claude-code-review.yml@v1
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}
+    with:
+      # Wires the workflow_dispatch input through so claude.yml can
+      # re-dispatch a review on Claude's commits; empty (and ignored) for
+      # pull_request runs.
+      pr-number: ${{ inputs.pr_number }}
