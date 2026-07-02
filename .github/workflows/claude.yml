@@ -1,3 +1,13 @@
+# Migrated to the reusable workflow in d-morrison/gha (claude.yml).
+#
+# The reusable workflow carries the agent-mode machinery that used to live here:
+# the @claude acknowledgment, per-PR concurrency, the late-comment polling loop,
+# branch setup + push + draft-PR for issue triggers, the prose-response post
+# (with in-thread replies on review comments), and the review re-dispatch. This
+# stub supplies only altdoc-specific configuration: install-quarto (altdoc's
+# own test suite renders Quarto docs and needs the CLI) and a prompt-addendum
+# with this repo's lint/format/test/document conventions.
+
 name: Claude Code
 
 on:
@@ -17,34 +27,33 @@ jobs:
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
-    runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
-      issues: read
+      contents: write
+      pull-requests: write
+      issues: write
       id-token: write
-      actions: read # Required for Claude to read CI results on PRs
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Run Claude Code
-        id: claude
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-
-          # This is an optional setting that allows Claude to read CI results on PRs
-          additional_permissions: |
-            actions: read
-
-          # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
-          # prompt: 'Update the pull request description to include a summary of changes.'
-
-          # Optional: Add claude_args to customize behavior and configuration
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-          # claude_args: '--allowed-tools Bash(gh pr *)'
-
+      # actions: write is required so the reusable workflow can re-dispatch
+      # claude-code-review.yml via workflow_dispatch after pushing commits.
+      actions: write
+    uses: d-morrison/gha/.github/workflows/claude.yml@v1
+    # NOTE: the @v1 tag of this reusable workflow does not declare an
+    # ANTHROPIC_API_KEY secret (only CLAUDE_CODE_OAUTH_TOKEN, SUBMODULES_TOKEN,
+    # and WORKFLOW_TOKEN) — main added it but @v1 hasn't been slid forward yet
+    # (see d-morrison/gha#179). Passing it here 400s the workflow-call gate
+    # ("Invalid secret, ANTHROPIC_API_KEY is not defined in the referenced
+    # workflow"), so it's omitted until @v1 catches up.
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}
+      WORKFLOW_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+    with:
+      install-quarto: true
+      prompt-addendum: |
+        This is the altdoc R package. Before committing, run
+        devtools::load_all() (required before linting so
+        object_usage_linter does not report false positives), then
+        `jarl check` (lint), `air format . --check` (formatting),
+        spelling::spell_check_package() (add new terms to
+        inst/WORDLIST), and devtools::test(); run devtools::document()
+        after roxygen2 changes; and add a NEWS.md bullet for
+        user-facing changes.
