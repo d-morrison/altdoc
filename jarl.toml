@@ -1,0 +1,4 @@
+[lint.per-file-ignores]
+# Fixture packages copied and rendered as test data; their functions are
+# never meant to be called by altdoc's own code.
+"tests/testthat/examples/" = ["unused_function"]
