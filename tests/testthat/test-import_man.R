@@ -27,7 +27,7 @@ test_that("rendering fails", {
     )
 })
 
-test_that("rendering skipped because internal", {
+test_that("rendering internal functions", {
     skip_if(!.quarto_is_installed())
     source <- test_path("examples/examples-man/is-internal.Rd")
     dest <- tempfile(fileext = ".Rd")
@@ -47,7 +47,7 @@ test_that("rendering skipped because internal", {
             freeze = FALSE,
             hashes = NULL
         ),
-        "skipped_internal"
+        "success"
     )
 })
 
