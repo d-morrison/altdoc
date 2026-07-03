@@ -78,3 +78,18 @@ create_local_thing <- function(
 
     invisible(usethis::proj_get())
 }
+
+# Helper function to setup test package from examples
+setup_example_package <- function(example_name, env = parent.frame()) {
+    path_to_example_pkg <- fs::path_abs(
+        test_path(paste0("examples/", example_name))
+    )
+    create_local_project(env = env)
+    fs::dir_delete("R")
+    fs::dir_copy(path_to_example_pkg, ".")
+    all_files <- list.files(example_name, full.names = TRUE)
+    for (file_path in all_files) {
+        fs::file_move(file_path, ".")
+    }
+    fs::dir_delete(example_name)
+}

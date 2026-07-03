@@ -507,3 +507,40 @@ test_that("render_docs errors if man fail", {
         "some failures when rendering man pages"
     )
 })
+
+# Test for recursive vignette discovery in subfolders
+test_that("quarto_website: recursive vignette discovery in subfolders", {
+    skip_on_cran()
+    skip_if(.is_windows() && .on_ci(), "Windows on CI")
+    skip_if(!.quarto_is_installed())
+
+    ### setup: create a temp package using the structure of testpkg.recursive
+    setup_example_package("testpkg.recursive")
+
+    ### generate docs
+    install.packages(".", repos = NULL, type = "source")
+    setup_docs("quarto_website")
+    expect_no_error(render_docs(verbose = .on_ci()))
+
+    ### test that vignettes in subfolders are rendered
+    expect_true(fs::file_exists("docs/vignettes/articles/article_test.html"))
+})
+
+# Test for singleton entries in custom sidebars
+test_that("quarto_website: singleton entries in custom sidebars", {
+    skip_on_cran()
+    skip_if(.is_windows() && .on_ci(), "Windows on CI")
+    skip_if(!.quarto_is_installed())
+
+    ### setup: create a temp package using the structure of testpkg.singleton
+    setup_example_package("testpkg.singleton")
+
+    ### generate docs
+    ### no setup_docs() call: the example package already ships a custom
+    ### altdoc/quarto_website.yml with the singleton entry to test, and
+    ### setup_docs() would abort on (or overwrite) that existing file
+    install.packages(".", repos = NULL, type = "source")
+
+    ### test that the custom sidebar with singleton entries renders without error
+    expect_no_error(render_docs(verbose = .on_ci()))
+})
