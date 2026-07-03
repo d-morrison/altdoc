@@ -1,5 +1,6 @@
 [lint]
-# Test fixtures under tests/testthat/examples/ are throwaway packages used
-# to exercise altdoc's conversion logic; they intentionally contain code
-# (e.g. unused functions) that would be flagged in real package source.
+# Fixture packages copied and rendered as test data; their functions are
+# never meant to be called by altdoc's own code. `per-file-ignores` (which
+# would scope this to just `unused_function`) isn't supported by the jarl
+# version this repo's CI installs, so exclude the whole directory instead.
 exclude = ["tests/testthat/examples/"]
