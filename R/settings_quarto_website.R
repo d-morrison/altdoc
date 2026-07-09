@@ -172,11 +172,14 @@
         return(invisible())
     }
 
-    # `.add_pkgdown()` always registers these as `<site-url>/man` and
-    # `<site-url>/vignettes`, matching this same render's `man/`/`vignettes/`
-    # directories under `docs_dir` -- so the correct relative replacement for
-    # each is always `<rel-root>/man` / `<rel-root>/vignettes`, regardless of
-    # what the registered site URL happens to be.
+    # altdoc always renders reference pages to `docs_dir/man` and articles to
+    # `docs_dir/vignettes` (see `.import_man()` / `.import_vignettes()`),
+    # regardless of what `urls$reference`/`urls$article` in pkgdown.yml say --
+    # by convention those also point at `<site-url>/man`/`<site-url>/vignettes`,
+    # but even a hand-edited pkgdown.yml with a different URL still resolves to
+    # these same on-disk directories, so the relative replacement for whatever
+    # URL downlit resolved against is always `<rel-root>/man` /
+    # `<rel-root>/vignettes`.
     subdirs <- c(reference = "man", article = "vignettes")
     prefixes <- list()
     for (key in names(subdirs)) {
@@ -208,10 +211,13 @@
 
     changed <- FALSE
     for (p in prefixes) {
-        pattern <- paste0('href="', p$url)
+        # the trailing "/" makes the directory boundary explicit, so a
+        # registered URL ending in "man" can't spuriously match a
+        # hypothetical "man-extra/..." href
+        pattern <- paste0('href="', p$url, "/")
         hit <- grepl(pattern, lines, fixed = TRUE)
         if (any(hit)) {
-            replacement <- paste0('href="', rel_root, "/", p$subdir)
+            replacement <- paste0('href="', rel_root, "/", p$subdir, "/")
             lines[hit] <- gsub(pattern, replacement, lines[hit], fixed = TRUE)
             changed <- TRUE
         }
