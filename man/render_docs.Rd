@@ -99,9 +99,11 @@ For the Quarto format, we rely on the \href{https://quarto.org/docs/projects/cod
 
 When the \code{code-link} format setting is \code{true} in \code{altdoc/quarto_website.yml} and the \code{downlit} package is installed, \code{altdoc} will use the \code{downlit} package to replace the function names on the package website by links to web-based package documentation. This works for base R libraries and any package published on CRAN.
 
-To allow internal links to functions documented by \code{altdoc}, we need to include links to correct URLs in the \code{altdoc/pkgdown.yml} file. By default, this file is populated with links to the first URL in the \code{DESCRIPTION}.
+To allow internal links to functions documented by \code{altdoc}, we need to include links to correct URLs in the \code{altdoc/pkgdown.yml} file. By default, this file is populated with links to the first URL in the \code{DESCRIPTION}. The \code{pkgdown.yml} file is automatically copied to the root of the \code{docs/} directory so that \code{downlit} can find it at \verb{<url>/pkgdown.yml}.
 
-Importantly, \code{downlit} requires the \code{pkgdown.yml} file to be live on the website to create links. This means that links will generally not be updated when making purely local changes. Also, links may not be updated the first time an \code{altdoc} website is published to the web.
+Importantly, \code{downlit} requires the \code{pkgdown.yml} file to be live on the website to create links. This means that links will generally not be updated when making purely local changes. Also, links may not be updated the first time an \code{altdoc} website is published to the web, since the file needs to be deployed before \code{downlit} can fetch it. Subsequent renders after the first deployment will have correct links.
+
+\code{downlit} treats the documented package the same as any external package, so once it resolves a link to one of that package's own functions, the target is an absolute URL pointing at the production site recorded in \code{pkgdown.yml} (e.g. \verb{https://your.pkg.site/man/some_fn.html}), not a path relative to the page doing the linking. \code{render_docs()} rewrites these absolute self-links into relative paths after rendering, so they keep resolving when the site is served from somewhere other than that production URL -- most commonly a pull-request preview deploy served under its own subpath. Links to other packages' documentation (base R, CRAN) are untouched, since those are meant to point off-site.
 }
 
 \examples{
