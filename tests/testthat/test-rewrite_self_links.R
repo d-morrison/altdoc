@@ -46,6 +46,7 @@ test_that(".rewrite_self_links() rewrites absolute self-links as relative", {
         man_out,
         fixed = TRUE
     ))
+    expect_false(grepl("https://example.com", man_out, fixed = TRUE))
 
     ### links to other packages are untouched
     external_out <- paste(.readlines(external_html), collapse = "\n")
