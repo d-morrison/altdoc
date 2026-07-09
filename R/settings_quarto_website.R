@@ -155,12 +155,12 @@
 }
 
 # `code-link` resolves the documented package's own functions to an absolute
-# URL (`<url>/man/<topic>.html` or `<url>/vignettes/<path>`, read from
-# `altdoc/pkgdown.yml`) rather than a path relative to the linking page. That
-# absolute URL only resolves on the exact deploy it was recorded for, so it
-# 404s under any other deploy path (most commonly a PR preview served under its
-# own subpath). Rewrite each such href into a path relative to the HTML file
-# that contains it, which resolves correctly regardless of deploy path.
+# URL (`<site-url>/man/<topic>.html` or `<site-url>/vignettes/<path>`, read
+# from `altdoc/pkgdown.yml`) rather than a path relative to the linking page.
+# That absolute URL only resolves on the exact deploy it was recorded for, so
+# it 404s under any other deploy path (most commonly a PR preview served under
+# its own subpath). Rewrite each such href into a path relative to the HTML
+# file that contains it, which resolves correctly regardless of deploy path.
 .rewrite_self_links <- function(docs_dir, path) {
     pkgdown_src <- fs::path_join(c(path, "altdoc", "pkgdown.yml"))
     if (!fs::file_exists(pkgdown_src)) {
@@ -168,8 +168,23 @@
     }
 
     urls <- yaml::read_yaml(pkgdown_src)$urls
-    prefixes <- unlist(urls[c("reference", "article")], use.names = FALSE)
-    prefixes <- unique(prefixes[nzchar(prefixes)])
+    if (is.null(urls)) {
+        return(invisible())
+    }
+
+    # `.add_pkgdown()` always registers these as `<site-url>/man` and
+    # `<site-url>/vignettes`, matching this same render's `man/`/`vignettes/`
+    # directories under `docs_dir` -- so the correct relative replacement for
+    # each is always `<rel-root>/man` / `<rel-root>/vignettes`, regardless of
+    # what the registered site URL happens to be.
+    subdirs <- c(reference = "man", article = "vignettes")
+    prefixes <- Filter(Negate(is.null), lapply(names(subdirs), function(key) {
+        url <- urls[[key]]
+        if (is.null(url) || !nzchar(url)) {
+            return(NULL)
+        }
+        list(url = url, subdir = subdirs[[key]])
+    }))
     if (length(prefixes) == 0) {
         return(invisible())
     }
@@ -189,11 +204,11 @@
     )
 
     changed <- FALSE
-    for (prefix in prefixes) {
-        pattern <- paste0('href="', prefix)
+    for (p in prefixes) {
+        pattern <- paste0('href="', p$url)
         hit <- grepl(pattern, lines, fixed = TRUE)
         if (any(hit)) {
-            replacement <- paste0('href="', rel_root)
+            replacement <- paste0('href="', rel_root, "/", p$subdir)
             lines[hit] <- gsub(pattern, replacement, lines[hit], fixed = TRUE)
             changed <- TRUE
         }
