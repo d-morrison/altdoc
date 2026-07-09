@@ -178,13 +178,16 @@
     # each is always `<rel-root>/man` / `<rel-root>/vignettes`, regardless of
     # what the registered site URL happens to be.
     subdirs <- c(reference = "man", article = "vignettes")
-    prefixes <- Filter(Negate(is.null), lapply(names(subdirs), function(key) {
+    prefixes <- list()
+    for (key in names(subdirs)) {
         url <- urls[[key]]
-        if (is.null(url) || !nzchar(url)) {
-            return(NULL)
+        if (!is.null(url) && nzchar(url)) {
+            prefixes[[length(prefixes) + 1]] <- list(
+                url = url,
+                subdir = subdirs[[key]]
+            )
         }
-        list(url = url, subdir = subdirs[[key]])
-    }))
+    }
     if (length(prefixes) == 0) {
         return(invisible())
     }
