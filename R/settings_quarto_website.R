@@ -1,71 +1,3 @@
-.finalize_quarto_website <- function(
-    settings,
-    path,
-    verbose = FALSE,
-    freeze = FALSE,
-    ...
-) {
-    # WARNING: Note the different _quarto folder. This is an imortant design
-    # choice because we want to use the built-in freeze functionality of quarto
-    # and need to move _quarto/_site to docs/ after rendering.
-
-    # drop empty lines
-    settings <- settings[!grepl("^\\w*$", settings)]
-    settings <- yaml::as.yaml(
-        settings,
-        indent.mapping.sequence = TRUE,
-        handler = list(logical = yaml::verbatim_logical)
-    )
-    settings <- strsplit(settings, "\\n")[[1]]
-    writeLines(settings, fs::path_join(c(path, "_quarto", "_quarto.yml")))
-
-    # NEWS.qmd breaks rendering, so we delete it if NEWS.md is available.
-    # This happens when converting from NEWS.Rd
-    a <- fs::path_join(c(path, "_quarto", "NEWS.md"))
-    b <- fs::path_join(c(path, "_quarto", "NEWS.qmd"))
-    if (fs::file_exists(a) && fs::file_exists(b)) {
-        fs::file_delete(b)
-    }
-
-    tar <- .doc_path(path)
-    fs::dir_create(tar)
-
-    # CNAME is used by Github and other providers to redirect to a custom domain
-    files <- Filter(function(f) basename(f) != "CNAME", fs::dir_ls(tar))
-    # Clear out `tar`
-    fs::file_delete(files)
-
-    # render to `output-dir: ../docs/`
-    quarto::quarto_render(
-        input = fs::path_join(c(path, "_quarto")),
-        quiet = !verbose,
-        as_job = FALSE,
-        use_freezer = freeze
-    )
-
-    # copy the content of altdoc/ to docs/. This is important because the
-    # process above rendered the site in a completely different directory, so
-    # did not have the static files, and we want the static files in altdoc/ to
-    # be served on the website. This a core feature of altdoc: users can store
-    # files in altdoc/ and those will be copied to the root of the website
-
-    # this can be done automatically with `project:` > `resources: ../altdoc/`
-    fs::dir_copy(fs::path_join(c(path, "altdoc")), tar, overwrite = TRUE)
-
-    # Also copy pkgdown.yml to the root of docs/ so that downlit can find it at
-    # <url>/pkgdown.yml when auto-linking function calls in vignettes and articles.
-    # fs::dir_copy() copies altdoc/ as a subdirectory of docs/ (creating
-    # docs/altdoc/pkgdown.yml), but downlit looks for it at the website root.
-    pkgdown_src <- fs::path_join(c(path, "altdoc", "pkgdown.yml"))
-    if (fs::file_exists(pkgdown_src)) {
-        fs::file_copy(
-            pkgdown_src,
-            fs::path_join(c(tar, "pkgdown.yml")),
-            overwrite = TRUE
-        )
-    }
-}
-
 .sidebar_vignettes_quarto_website <- function(sidebar, path) {
     fn_vignettes <- list.files(
         fs::path_join(c(path, "_quarto/vignettes")),
@@ -144,6 +76,82 @@
     }
 
     return(yml)
+}
+
+.finalize_quarto_website <- function(
+    settings,
+    path,
+    verbose = FALSE,
+    freeze = FALSE,
+    ...
+) {
+    # WARNING: Note the different _quarto folder. This is an imortant design
+    # choice because we want to use the built-in freeze functionality of quarto
+    # and need to move _quarto/_site to docs/ after rendering.
+
+    # drop empty lines
+    settings <- settings[!grepl("^\\w*$", settings)]
+    settings <- yaml::as.yaml(
+        settings,
+        indent.mapping.sequence = TRUE,
+        handler = list(logical = yaml::verbatim_logical)
+    )
+    settings <- strsplit(settings, "\\n")[[1]]
+    writeLines(settings, fs::path_join(c(path, "_quarto", "_quarto.yml")))
+
+    # NEWS.qmd breaks rendering, so we delete it if NEWS.md is available.
+    # This happens when converting from NEWS.Rd
+    a <- fs::path_join(c(path, "_quarto", "NEWS.md"))
+    b <- fs::path_join(c(path, "_quarto", "NEWS.qmd"))
+    if (fs::file_exists(a) && fs::file_exists(b)) {
+        fs::file_delete(b)
+    }
+
+    tar <- .doc_path(path)
+    fs::dir_create(tar)
+
+    # CNAME is used by Github and other providers to redirect to a custom domain
+    files <- Filter(function(f) basename(f) != "CNAME", fs::dir_ls(tar))
+    # Clear out `tar`
+    fs::file_delete(files)
+
+    # render to `output-dir: ../docs/`
+    quarto::quarto_render(
+        input = fs::path_join(c(path, "_quarto")),
+        quiet = !verbose,
+        as_job = FALSE,
+        use_freezer = freeze
+    )
+
+    # copy the content of altdoc/ to docs/. This is important because the
+    # process above rendered the site in a completely different directory, so
+    # did not have the static files, and we want the static files in altdoc/ to
+    # be served on the website. This a core feature of altdoc: users can store
+    # files in altdoc/ and those will be copied to the root of the website
+
+    # this can be done automatically with `project:` > `resources: ../altdoc/`
+    fs::dir_copy(fs::path_join(c(path, "altdoc")), tar, overwrite = TRUE)
+
+    # Also copy pkgdown.yml to the root of docs/ so that downlit can find it at
+    # <url>/pkgdown.yml when auto-linking function calls in vignettes and articles.
+    # fs::dir_copy() copies altdoc/ as a subdirectory of docs/ (creating
+    # docs/altdoc/pkgdown.yml), but downlit looks for it at the website root.
+    pkgdown_src <- fs::path_join(c(path, "altdoc", "pkgdown.yml"))
+    if (fs::file_exists(pkgdown_src)) {
+        fs::file_copy(
+            pkgdown_src,
+            fs::path_join(c(tar, "pkgdown.yml")),
+            overwrite = TRUE
+        )
+    }
+
+    # `code-link: true` makes downlit treat the package being documented the
+    # same as any external package, so its own functions get linked with an
+    # absolute URL pointing at the production site recorded in pkgdown.yml.
+    # That breaks whenever the site isn't served from exactly that URL -- most
+    # notably a PR preview deploy under its own subpath (altdoc#10). Rewrite
+    # those self-links to be relative to each rendered page instead.
+    .rewrite_self_links(tar, path)
 }
 
 .sidebar_man_quarto_website <- function(sidebar, path, ...) {

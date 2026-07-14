@@ -1,5 +1,14 @@
 # News
 
+## Unreleased
+
+* Fixed: for `quarto_website` sites with `code-link: true`, links to the
+  documented package's own functions in vignettes/articles and man pages
+  are now rewritten to be relative to the linking page. Previously
+  `downlit` emitted an absolute link to the production site recorded in
+  `altdoc/pkgdown.yml`, which broke on any other deploy path -- most
+  commonly a pull-request preview served under its own subpath (#10).
+
 ## 0.7.2
 
 * Disabled more tests on CRAN following a removal from CRAN due to a `NOTE` (#359).
