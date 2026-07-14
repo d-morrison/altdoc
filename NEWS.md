@@ -9,6 +9,10 @@
   `altdoc/pkgdown.yml`, which broke on any other deploy path -- most
   commonly a pull-request preview served under its own subpath (#10).
 
+## 0.7.3
+
+* Fix NOTE in CRAN results.
+
 ## 0.7.2
 
 * Disabled more tests on CRAN following a removal from CRAN due to a `NOTE` (#359).
