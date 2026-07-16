@@ -1,0 +1,22 @@
+# Periodically merge the upstream project (etiennebacher/altdoc) into this fork
+# and open a PR when the merge brings changes. This fork's own changes are
+# preserved; upstream's updates land via a reviewable PR.
+#
+# Uses the reusable workflow from d-morrison/gha. Requires Settings -> Actions
+# -> General -> "Allow GitHub Actions to create and approve pull requests" so
+# the integrated GITHUB_TOKEN can open the PR.
+name: Sync upstream fork
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1' # Weekly on Monday at 06:00 UTC
+
+jobs:
+  sync:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: d-morrison/gha/.github/workflows/sync-upstream.yml@v2
+    with:
+      upstream-repo: etiennebacher/altdoc
