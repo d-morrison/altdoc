@@ -5,6 +5,10 @@
 # Uses the reusable workflow from d-morrison/gha. Requires Settings -> Actions
 # -> General -> "Allow GitHub Actions to create and approve pull requests" so
 # the integrated GITHUB_TOKEN can open the PR.
+#
+# The @v2 pin resolves once d-morrison/gha#255 (the sync-upstream capability)
+# merges and the major tag is advanced to include it. A manual run before then
+# fails with "workflow not found"; the weekly schedule gives that time to land.
 name: Sync upstream fork
 
 on:
