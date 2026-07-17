@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+* Fixed: for `quarto_website` sites with `code-link: true`, `downlit`'s
+  rdrr.io fallback links to the documented package's own functions are now
+  also rewritten to page-relative links to the locally rendered `man/`
+  pages. `downlit` emits these when it cannot discover the package's site
+  at render time (most commonly a private GitHub Pages deploy, whose
+  `pkgdown.yml` is not fetchable without auth), and rdrr.io only indexes
+  CRAN packages, so for a non-CRAN package every such link was dead (#25).
+
 * Fixed: for `quarto_website` sites with `code-link: true`, links to the
   documented package's own functions in vignettes/articles and man pages
   are now rewritten to be relative to the linking page. Previously
