@@ -48,7 +48,9 @@ test_that(".rewrite_self_links() rewrites absolute self-links as relative", {
     ))
     expect_false(grepl("https://example.com", man_out, fixed = TRUE))
 
-    ### links to other packages are untouched
+    ### links not matching a registered prefix are untouched (no DESCRIPTION
+    ### here, so only the pkgdown.yml prefixes are active; the per-package
+    ### rdrr.io filtering is exercised in the rdrr-fallback test below)
     external_out <- paste(.readlines(external_html), collapse = "\n")
     expect_true(grepl(
         'href="https://rdrr.io/r/base/library.html"',
@@ -125,7 +127,8 @@ test_that(".rewrite_self_links() rewrites both URL forms in one pass", {
             '<a href="https://example.com/pkg/man/prep_analysis_data.html">',
             "prep_analysis_data()</a>\n",
             '<a href="https://rdrr.io/pkg/mypkg/man/screening_sens.html">',
-            "screening_sens()</a>"
+            "screening_sens()</a>\n",
+            '<a href="https://rdrr.io/pkg/otherpkg/man/foo.html">foo()</a>'
         ),
         file = man_html
     )
@@ -145,6 +148,14 @@ test_that(".rewrite_self_links() rewrites both URL forms in one pass", {
     ))
     expect_false(grepl("https://example.com", man_out, fixed = TRUE))
     expect_false(grepl("rdrr.io/pkg/mypkg", man_out, fixed = TRUE))
+
+    ### rdrr.io links to other packages stay untouched even with both
+    ### prefix types active
+    expect_true(grepl(
+        'href="https://rdrr.io/pkg/otherpkg/man/foo.html"',
+        man_out,
+        fixed = TRUE
+    ))
 })
 
 test_that(".rewrite_self_links() is a no-op without pkgdown.yml or DESCRIPTION", {
