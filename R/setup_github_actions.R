@@ -96,6 +96,21 @@ setup_github_actions <- function(
         workflow
     }
 
+    replace_workflow_placeholder <- function(workflow, placeholder, value) {
+        vapply(
+            workflow,
+            function(line) {
+                parts <- strsplit(line, placeholder, fixed = TRUE)[[1]]
+                if (length(parts) == 1) {
+                    return(line)
+                }
+                paste(parts, collapse = value)
+            },
+            character(1),
+            USE.NAMES = FALSE
+        )
+    }
+
     path <- .convert_path(path)
     fs::dir_create(fs::path_join(c(path, ".github/workflows")))
     if (
@@ -124,23 +139,20 @@ setup_github_actions <- function(
         keep = multiversion
     )
     if (multiversion) {
-        workflow <- gsub(
-            "$ALTDOC_DEFAULT_LANDING_PAGE",
-            default_landing_page,
-            workflow,
-            fixed = TRUE
+        workflow <- replace_workflow_placeholder(
+            workflow = workflow,
+            placeholder = "$ALTDOC_DEFAULT_LANDING_PAGE",
+            value = default_landing_page
         )
-        workflow <- gsub(
-            "$ALTDOC_REFS_ORDER",
-            refs_order,
-            workflow,
-            fixed = TRUE
+        workflow <- replace_workflow_placeholder(
+            workflow = workflow,
+            placeholder = "$ALTDOC_REFS_ORDER",
+            value = refs_order
         )
-        workflow <- gsub(
-            "$ALTDOC_BRANCHES_OR_TAGS_TO_LIST",
-            branches_or_tags_to_list,
-            workflow,
-            fixed = TRUE
+        workflow <- replace_workflow_placeholder(
+            workflow = workflow,
+            placeholder = "$ALTDOC_BRANCHES_OR_TAGS_TO_LIST",
+            value = branches_or_tags_to_list
         )
     }
     writeLines(workflow, tar)

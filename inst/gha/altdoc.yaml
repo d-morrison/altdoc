@@ -102,5 +102,5 @@ jobs:
           path: .
           default-landing-page: "$ALTDOC_DEFAULT_LANDING_PAGE"
           refs-order: "$ALTDOC_REFS_ORDER"
-          branches-or-tags-to-list: "$ALTDOC_BRANCHES_OR_TAGS_TO_LIST"
+          branches-or-tags-to-list: '$ALTDOC_BRANCHES_OR_TAGS_TO_LIST'
   $ALTDOC_MULTIVERSION_END

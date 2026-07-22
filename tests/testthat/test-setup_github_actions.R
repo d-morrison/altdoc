@@ -72,7 +72,7 @@ test_that(".setup_github_actions supports multiversion workflow", {
         fixed = TRUE
     )))
     expect_true(any(grepl(
-        'branches-or-tags-to-list: "^main$|^latest-tag$|^v[0-9]+\\.[0-9]+\\.[0-9]+$"',
+        "branches-or-tags-to-list: '^main$|^latest-tag$|^v[0-9]+\\.[0-9]+\\.[0-9]+$'",
         content,
         fixed = TRUE
     )))
