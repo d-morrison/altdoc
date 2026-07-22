@@ -190,11 +190,36 @@
 .stage_external_includes <- function(src_dir, quarto_dir) {
     src_dir <- fs::path_abs(src_dir)
     quarto_dir <- fs::path_abs(quarto_dir)
-    include_re <- "\\{\\{<\\s*include\\s+([^>]+?)\\s*>\\}\\}"
+    include_re <- rex::rex(
+        "{{<",
+        any_spaces,
+        "include",
+        spaces,
+        capture(one_or_more(except(">"))),
+        any_spaces,
+        ">}}"
+    )
+    staged_doc_re <- rex::rex(
+        dot,
+        or("qmd", "Rmd", "md"),
+        end
+    )
+    edge_quote_re <- rex::rex(
+        or(
+            rex::rex(start, any_of("\"'")),
+            rex::rex(any_of("\"'"), end)
+        )
+    )
+    parent_ref_re <- rex::rex(dot, dot)
+    starts_with_parent_re <- rex::rex(
+        start,
+        dot,
+        dot
+    )
 
     queue <- list.files(
         quarto_dir,
-        pattern = "\\.qmd$|\\.Rmd$|\\.md$",
+        pattern = staged_doc_re,
         full.names = TRUE,
         recursive = TRUE
     )
@@ -212,11 +237,11 @@
         matches <- unlist(regmatches(lines, gregexpr(include_re, lines)))
         paths <- sub(include_re, "\\1", matches)
         for (inc in unique(trimws(paths))) {
-            inc <- gsub('^["\']|["\']$', "", inc)
+            inc <- gsub(edge_quote_re, "", inc)
 
             # only includes that escape the copied tree need staging; the rest
             # were already copied with their containing directory
-            if (!grepl("\\.\\.", inc)) {
+            if (!grepl(parent_ref_re, inc)) {
                 next
             }
 
@@ -225,7 +250,7 @@
                 start = quarto_dir
             )
             # guard against resolved paths that escape quarto_dir
-            if (grepl("^\\.\\.", rel)) {
+            if (grepl(starts_with_parent_re, rel)) {
                 next
             }
             tar_file <- fs::path_join(c(quarto_dir, rel))
