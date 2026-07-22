@@ -208,10 +208,8 @@
         }
         seen <- c(seen, fn)
 
-        matches <- regmatches(
-            .readlines(fn),
-            regexpr(include_re, .readlines(fn))
-        )
+        lines <- .readlines(fn)
+        matches <- unlist(regmatches(lines, gregexpr(include_re, lines)))
         paths <- sub(include_re, "\\1", matches)
         for (inc in unique(trimws(paths))) {
             inc <- gsub('^["\']|["\']$', "", inc)
@@ -226,6 +224,10 @@
                 fs::path_norm(fs::path_join(c(fs::path_dir(fn), inc))),
                 start = quarto_dir
             )
+            # guard against resolved paths that escape quarto_dir
+            if (grepl("^\\.\\.", rel)) {
+                next
+            }
             tar_file <- fs::path_join(c(quarto_dir, rel))
             src_file <- fs::path_join(c(src_dir, rel))
 
