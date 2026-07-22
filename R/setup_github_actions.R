@@ -25,14 +25,22 @@
 #' if (interactive()) {
 #'   setup_github_actions()
 #' }
+.default_multiversion_branches_or_tags_to_list <- function() {
+    "^main$|^latest-tag$|^v([0-9]+\\.)?([0-9]+\\.)?([0-9]+)(-rc[0-9]+)?$"
+}
+
 setup_github_actions <- function(
     path = ".",
     multiversion = FALSE,
     default_landing_page = "main",
     refs_order = "main latest-tag",
-    branches_or_tags_to_list = "^main$|^latest-tag$|^v([0-9]+\\.)?([0-9]+\\.)?([0-9]+)(-rc[0-9]+)?$"
+    branches_or_tags_to_list = .default_multiversion_branches_or_tags_to_list()
 ) {
-    if (!isTRUE(length(multiversion) == 1) || !is.logical(multiversion) || is.na(multiversion)) {
+    if (
+        !isTRUE(length(multiversion) == 1) ||
+            !is.logical(multiversion) ||
+            is.na(multiversion)
+    ) {
         cli::cli_abort("{.arg multiversion} must be a single TRUE/FALSE value.")
     }
     if (multiversion) {
@@ -43,8 +51,15 @@ setup_github_actions <- function(
         )
         for (nm in names(args)) {
             val <- args[[nm]]
-            if (!isTRUE(length(val) == 1) || !is.character(val) || is.na(val) || identical(val, "")) {
-                cli::cli_abort("{.arg {nm}} must be a non-empty string when {.arg multiversion = TRUE}.")
+            if (
+                !isTRUE(length(val) == 1) ||
+                    !is.character(val) ||
+                    is.na(val) ||
+                    identical(val, "")
+            ) {
+                cli::cli_abort(
+                    "{.arg {nm}} must be a non-empty string when {.arg multiversion = TRUE}."
+                )
             }
         }
     }

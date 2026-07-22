@@ -17,7 +17,11 @@ test_that(".setup_github_actions works if not mkdocs", {
     content <- .readlines(".github/workflows/altdoc.yaml")
     expect_false(any(grepl("$ALTDOC_MKDOCS_START", content, fixed = TRUE)))
     expect_false(any(grepl("install mkdocs", content, fixed = TRUE)))
-    expect_false(any(grepl("$ALTDOC_MULTIVERSION_START", content, fixed = TRUE)))
+    expect_false(any(grepl(
+        "$ALTDOC_MULTIVERSION_START",
+        content,
+        fixed = TRUE
+    )))
     expect_false(any(grepl("r-pkgdown-multiversion", content, fixed = TRUE)))
 })
 
@@ -43,10 +47,33 @@ test_that(".setup_github_actions supports multiversion workflow", {
     )
     content <- .readlines(".github/workflows/altdoc.yaml")
 
-    expect_false(any(grepl("$ALTDOC_MULTIVERSION_START", content, fixed = TRUE)))
-    expect_true(any(grepl("target-folder: \\$\\{\\{ env.ALTDOC_DOCS_REF \\}\\}", content)))
-    expect_true(any(grepl("uses: insightsengineering/r-pkgdown-multiversion@v3", content, fixed = TRUE)))
-    expect_true(any(grepl('default-landing-page: "latest-tag"', content, fixed = TRUE)))
-    expect_true(any(grepl('refs-order: "main latest-tag"', content, fixed = TRUE)))
-    expect_true(any(grepl('branches-or-tags-to-list: "^main$|^latest-tag$|^v[0-9]+\\.[0-9]+\\.[0-9]+$"', content, fixed = TRUE)))
+    expect_false(any(grepl(
+        "$ALTDOC_MULTIVERSION_START",
+        content,
+        fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        "target-folder: \\$\\{\\{ env.ALTDOC_DOCS_REF \\}\\}",
+        content
+    )))
+    expect_true(any(grepl(
+        "uses: insightsengineering/r-pkgdown-multiversion@v3",
+        content,
+        fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        'default-landing-page: "latest-tag"',
+        content,
+        fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        'refs-order: "main latest-tag"',
+        content,
+        fixed = TRUE
+    )))
+    expect_true(any(grepl(
+        'branches-or-tags-to-list: "^main$|^latest-tag$|^v[0-9]+\\.[0-9]+\\.[0-9]+$"',
+        content,
+        fixed = TRUE
+    )))
 })
