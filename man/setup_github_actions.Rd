@@ -4,10 +4,31 @@
 \alias{setup_github_actions}
 \title{Create a Github Actions workflow}
 \usage{
-setup_github_actions(path = ".")
+setup_github_actions(
+  path = ".",
+  multiversion = FALSE,
+  default_landing_page = "main",
+  refs_order = "main latest-tag",
+  branches_or_tags_to_list = "^main$|^latest-tag$|^v([0-9]+\\.)?([0-9]+\\.)?([0-9]+)(-rc[0-9]+)?$"
+)
 }
 \arguments{
 \item{path}{Path to the package root directory.}
+
+\item{multiversion}{Logical. If \code{TRUE}, configure the workflow to publish
+versioned documentation under \code{gh-pages/<branch-or-tag>/} and add a second
+job using \code{insightsengineering/r-pkgdown-multiversion} to maintain a
+version landing page and version switcher links.}
+
+\item{default_landing_page}{Character scalar. The default landing page passed
+to \code{r-pkgdown-multiversion} when \code{multiversion = TRUE}.}
+
+\item{refs_order}{Character scalar. Space-separated ref order passed to
+\code{r-pkgdown-multiversion} when \code{multiversion = TRUE}.}
+
+\item{branches_or_tags_to_list}{Character scalar. Regular expression used by
+\code{r-pkgdown-multiversion} to decide which refs appear in the versions list
+when \code{multiversion = TRUE}.}
 }
 \value{
 No value returned. Creates the file ".github/workflows/altdoc.yaml"

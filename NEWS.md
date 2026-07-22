@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* Added: `setup_github_actions()` now supports multiversion docs deployment via
+  `multiversion = TRUE`. In this mode, docs are published to
+  `gh-pages/<branch-or-tag>/` and a second job runs
+  `insightsengineering/r-pkgdown-multiversion` to maintain the landing page and
+  version links.
+
 * Fixed: for `quarto_website` sites with `code-link: true`, `downlit`'s
   rdrr.io fallback links to the documented package's own functions are now
   also rewritten to page-relative links to the locally rendered `man/`

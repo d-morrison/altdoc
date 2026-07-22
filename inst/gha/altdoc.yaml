@@ -63,6 +63,16 @@ jobs:
           pkgload::load_all()
           altdoc::render_docs(parallel = FALSE, freeze = FALSE)
         shell: Rscript {0}
+      $ALTDOC_MULTIVERSION_START
+      - name: Resolve docs ref
+        if: github.event_name != 'pull_request'
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "ALTDOC_DOCS_REF=${{ github.event.release.tag_name }}" >> "$GITHUB_ENV"
+          else
+            echo "ALTDOC_DOCS_REF=${{ github.ref_name }}" >> "$GITHUB_ENV"
+          fi
+      $ALTDOC_MULTIVERSION_END
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
@@ -71,3 +81,26 @@ jobs:
           clean: false
           branch: gh-pages
           folder: docs
+          $ALTDOC_MULTIVERSION_START
+          target-folder: ${{ env.ALTDOC_DOCS_REF }}
+          $ALTDOC_MULTIVERSION_END
+
+  $ALTDOC_MULTIVERSION_START
+  multi-version-docs:
+    needs: altdoc
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+      - name: Build multi-version landing page
+        uses: insightsengineering/r-pkgdown-multiversion@v3
+        with:
+          path: .
+          default-landing-page: "$ALTDOC_DEFAULT_LANDING_PAGE"
+          refs-order: "$ALTDOC_REFS_ORDER"
+          branches-or-tags-to-list: "$ALTDOC_BRANCHES_OR_TAGS_TO_LIST"
+  $ALTDOC_MULTIVERSION_END
