@@ -200,7 +200,7 @@
         ">}}"
     )
     staged_doc_re <- rex::rex(
-        dot,
+        rex::escape("."),
         or("qmd", "Rmd", "md"),
         end
     )
@@ -210,11 +210,11 @@
             rex::rex(any_of("\"'"), end)
         )
     )
-    parent_ref_re <- rex::rex(dot, dot)
+    parent_ref_re <- rex::rex(rex::escape("."), rex::escape("."))
     starts_with_parent_re <- rex::rex(
         start,
-        dot,
-        dot
+        rex::escape("."),
+        rex::escape(".")
     )
 
     queue <- list.files(
