@@ -77,3 +77,24 @@ test_that(".setup_github_actions supports multiversion workflow", {
         fixed = TRUE
     )))
 })
+
+test_that(".setup_github_actions validates multiversion YAML-safe values", {
+    create_local_package()
+    setup_docs("docute")
+
+    expect_error(
+        setup_github_actions(
+            multiversion = TRUE,
+            default_landing_page = "latest\"tag"
+        ),
+        "cannot contain"
+    )
+
+    expect_error(
+        setup_github_actions(
+            multiversion = TRUE,
+            branches_or_tags_to_list = "^main$\n^latest-tag$"
+        ),
+        "cannot contain newlines"
+    )
+})

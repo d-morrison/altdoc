@@ -25,16 +25,12 @@
 #' if (interactive()) {
 #'   setup_github_actions()
 #' }
-.default_multiversion_branches_or_tags_to_list <- function() {
-    "^main$|^latest-tag$|^v([0-9]+\\.)?([0-9]+\\.)?([0-9]+)(-rc[0-9]+)?$"
-}
-
 setup_github_actions <- function(
     path = ".",
     multiversion = FALSE,
     default_landing_page = "main",
     refs_order = "main latest-tag",
-    branches_or_tags_to_list = .default_multiversion_branches_or_tags_to_list()
+    branches_or_tags_to_list = "^main$|^latest-tag$|^v([0-9]+\\.)?([0-9]+\\.)?([0-9]+)(-rc[0-9]+)?$"
 ) {
     if (
         !isTRUE(length(multiversion) == 1) ||
@@ -62,6 +58,27 @@ setup_github_actions <- function(
                 )
             }
         }
+
+        validate_yaml_scalar <- function(name, value, quote_char) {
+            if (grepl("[\r\n]", value)) {
+                cli::cli_abort(
+                    "{.arg {name}} cannot contain newlines when {.arg multiversion = TRUE}."
+                )
+            }
+            if (grepl(quote_char, value, fixed = TRUE)) {
+                cli::cli_abort(
+                    "{.arg {name}} cannot contain {quote_char} when {.arg multiversion = TRUE}."
+                )
+            }
+        }
+
+        validate_yaml_scalar("default_landing_page", default_landing_page, "\"")
+        validate_yaml_scalar("refs_order", refs_order, "\"")
+        validate_yaml_scalar(
+            "branches_or_tags_to_list",
+            branches_or_tags_to_list,
+            "'"
+        )
     }
 
     strip_workflow_block <- function(
