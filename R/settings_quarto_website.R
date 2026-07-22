@@ -238,28 +238,31 @@
         paths <- sub(include_re, "\\1", matches)
         for (inc in unique(trimws(paths))) {
             inc <- gsub(edge_quote_re, "", inc)
+            rel <- fs::path_rel(
+                fs::path_norm(fs::path_join(c(fs::path_dir(fn), inc))),
+                start = quarto_dir
+            )
+
+            # guard against resolved paths that escape quarto_dir
+            if (grepl(starts_with_parent_re, rel)) {
+                next
+            }
+            tar_file <- fs::path_join(c(quarto_dir, rel))
+
+            # queue any include already present under `_quarto/` so we also
+            # discover nested escaping includes from in-tree includes
+            if (fs::file_exists(tar_file)) {
+                queue <- c(queue, tar_file)
+                next
+            }
 
             # only includes that escape the copied tree need staging; the rest
             # were already copied with their containing directory
             if (!grepl(parent_ref_re, inc)) {
                 next
             }
-
-            rel <- fs::path_rel(
-                fs::path_norm(fs::path_join(c(fs::path_dir(fn), inc))),
-                start = quarto_dir
-            )
-            # guard against resolved paths that escape quarto_dir
-            if (grepl(starts_with_parent_re, rel)) {
-                next
-            }
-            tar_file <- fs::path_join(c(quarto_dir, rel))
             src_file <- fs::path_join(c(src_dir, rel))
 
-            if (fs::file_exists(tar_file)) {
-                queue <- c(queue, tar_file)
-                next
-            }
             if (fs::file_exists(src_file)) {
                 fs::dir_create(fs::path_dir(tar_file))
                 fs::file_copy(src_file, tar_file, overwrite = TRUE)

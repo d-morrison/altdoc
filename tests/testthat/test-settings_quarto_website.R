@@ -75,3 +75,37 @@ test_that(".stage_external_includes() follows nested includes recursively", {
         fs::file_exists(fs::path_join(c(root, "_quarto", "shared", "defs.qmd")))
     )
 })
+
+test_that(
+    ".stage_external_includes() follows escaping includes nested in-tree",
+    {
+        root <- withr::local_tempdir()
+        fs::dir_create(fs::path_join(c(root, "macros")))
+        writeLines("MACROS", fs::path_join(c(root, "macros", "macros.qmd")))
+
+        vig <- fs::path_join(c(root, "_quarto", "vignettes"))
+        fs::dir_create(fs::path_join(c(vig, "articles")))
+        writeLines(
+            "{{< include ../../macros/macros.qmd >}}",
+            fs::path_join(c(vig, "articles", "_local.qmd"))
+        )
+        writeLines(
+            "{{< include articles/_local.qmd >}}",
+            fs::path_join(c(vig, "methodology.qmd"))
+        )
+
+        .stage_external_includes(
+            src_dir = root,
+            quarto_dir = fs::path_join(c(root, "_quarto"))
+        )
+
+        expect_true(
+            fs::file_exists(fs::path_join(c(
+                root,
+                "_quarto",
+                "macros",
+                "macros.qmd"
+            )))
+        )
+    }
+)
