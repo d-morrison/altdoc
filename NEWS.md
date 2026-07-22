@@ -23,6 +23,10 @@
 
 ## 0.7.2
 
+* `quarto_website` now stages files pulled in by `{{< include >}}` directives
+  that resolve outside the copied source trees (e.g. a shared `macros/macros.qmd`
+  submodule at the package root), so those includes resolve at render time.
+
 * Disabled more tests on CRAN following a removal from CRAN due to a `NOTE` (#359).
 
 ## 0.7.1
