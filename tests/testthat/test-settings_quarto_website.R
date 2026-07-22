@@ -30,7 +30,12 @@ test_that(".stage_external_includes() stages includes that escape the tree", {
 
     # the in-tree include is left where it already was, not re-staged elsewhere
     expect_false(
-        fs::file_exists(fs::path_join(c(root, "_quarto", "articles", "_local.qmd")))
+        fs::file_exists(fs::path_join(c(
+            root,
+            "_quarto",
+            "articles",
+            "_local.qmd"
+        )))
     )
 })
 
@@ -59,7 +64,12 @@ test_that(".stage_external_includes() follows nested includes recursively", {
     )
 
     expect_true(
-        fs::file_exists(fs::path_join(c(root, "_quarto", "macros", "macros.qmd")))
+        fs::file_exists(fs::path_join(c(
+            root,
+            "_quarto",
+            "macros",
+            "macros.qmd"
+        )))
     )
     expect_true(
         fs::file_exists(fs::path_join(c(root, "_quarto", "shared", "defs.qmd")))

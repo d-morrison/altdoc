@@ -1,4 +1,3 @@
-
 .sidebar_vignettes_quarto_website <- function(sidebar, path) {
     fn_vignettes <- list.files(
         fs::path_join(c(path, "_quarto/vignettes")),
