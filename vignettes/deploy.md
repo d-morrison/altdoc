@@ -52,6 +52,23 @@ branch. The rendered documentation is then stored in the `gh-pages`
 branch, that you can use with the service of your choice to deploy your
 website, as explained below.
 
+If you want versioned documentation (for example one site per release
+tag and a landing page with a versions switcher), generate the workflow
+with:
+
+``` r
+setup_github_actions(
+  multiversion = TRUE,
+  default_landing_page = "latest-tag",
+  refs_order = "main latest-tag"
+)
+```
+
+In multiversion mode, docs are deployed under
+`gh-pages/<branch-or-tag>/`, and an additional job runs
+[`insightsengineering/r-pkgdown-multiversion`](https://github.com/insightsengineering/r-pkgdown-multiversion)
+to update the root landing page and version links.
+
 Note that you don’t have to use this Github action workflow. If you
 prefer, you can simply run `render_docs()` by yourself and push the
 changes to the branch of your choice. The workflow simply is here to
