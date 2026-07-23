@@ -27,6 +27,7 @@ Imports:
     fs,
     quarto,
     rmarkdown,
+    rex,
     tools,
     utils
 Suggests:

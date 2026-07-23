@@ -115,6 +115,15 @@
     # Clear out `tar`
     fs::file_delete(files)
 
+    # Stage files pulled in by `{{< include >}}` directives that live outside
+    # the copied source trees (e.g. a shared `macros/macros.qmd` submodule at
+    # the package root). Quarto resolves include paths relative to the
+    # including file, so these must exist under `_quarto/` before rendering.
+    .stage_external_includes(
+        src_dir = path,
+        quarto_dir = fs::path_join(c(path, "_quarto"))
+    )
+
     # render to `output-dir: ../docs/`
     quarto::quarto_render(
         input = fs::path_join(c(path, "_quarto")),
