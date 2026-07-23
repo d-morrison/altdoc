@@ -42,10 +42,10 @@
 
     queue <- list.files(
         quarto_dir,
-        pattern = staged_doc_re,
         full.names = TRUE,
         recursive = TRUE
     )
+    queue <- queue[grepl(staged_doc_re, queue, perl = TRUE)]
     seen <- character(0)
 
     while (length(queue) > 0) {
@@ -57,17 +57,19 @@
         seen <- c(seen, fn)
 
         lines <- .readlines(fn)
-        matches <- unlist(regmatches(lines, gregexpr(include_re, lines)))
+        matches <- unlist(
+            regmatches(lines, gregexpr(include_re, lines, perl = TRUE))
+        )
         paths <- sub(include_re, "\\1", matches)
         for (inc in unique(trimws(paths))) {
-            inc <- gsub(edge_quote_re, "", inc)
+            inc <- gsub(edge_quote_re, "", inc, perl = TRUE)
             rel <- fs::path_rel(
                 fs::path_norm(fs::path_join(c(fs::path_dir(fn), inc))),
                 start = quarto_dir
             )
 
             # guard against resolved paths that escape quarto_dir
-            if (grepl(starts_with_parent_re, rel)) {
+            if (grepl(starts_with_parent_re, rel, perl = TRUE)) {
                 next
             }
             tar_file <- fs::path_join(c(quarto_dir, rel))
@@ -81,7 +83,7 @@
 
             # only includes that escape the copied tree need staging; the rest
             # were already copied with their containing directory
-            if (!grepl(parent_ref_re, inc)) {
+            if (!grepl(parent_ref_re, inc, perl = TRUE)) {
                 next
             }
             src_file <- fs::path_join(c(src_dir, rel))

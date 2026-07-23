@@ -1,2 +1,3 @@
-# Register rex shortcuts as known globals to suppress R CMD check NOTEs.
-rex::register_shortcuts("altdoc")
+.onLoad <- function(libname, pkgname) {
+    rex::register_shortcuts(pkgname)
+}
