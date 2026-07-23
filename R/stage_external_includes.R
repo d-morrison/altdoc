@@ -15,27 +15,18 @@
     quarto_dir <- fs::path_abs(quarto_dir)
     include_re <- rex::rex(
         "{{<",
-        any_spaces,
+        rex::regex("[[:space:]]*"),
         "include",
-        spaces,
-        capture(one_or_more(except(">"))),
-        any_spaces,
+        rex::regex("[[:space:]]+"),
+        rex::regex("([^>]+)"),
+        rex::regex("[[:space:]]*"),
         ">}}"
     )
-    staged_doc_re <- rex::rex(
-        rex::escape("."),
-        or("qmd", "Rmd", "md"),
-        end
-    )
-    edge_quote_re <- rex::rex(
-        or(
-            rex::rex(start, any_of("\"'")),
-            rex::rex(any_of("\"'"), end)
-        )
-    )
+    staged_doc_re <- rex::rex(rex::escape("."), rex::regex("(qmd|Rmd|md)$"))
+    edge_quote_re <- rex::rex(rex::regex("(^[\"'])|([\"']$)"))
     parent_ref_re <- rex::rex(rex::escape("."), rex::escape("."))
     starts_with_parent_re <- rex::rex(
-        start,
+        rex::regex("^"),
         rex::escape("."),
         rex::escape(".")
     )
