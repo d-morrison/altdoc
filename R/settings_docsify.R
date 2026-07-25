@@ -84,7 +84,10 @@
         fn <- sapply(fn, fs::path_ext_remove)
 
         if (length(fn) > 0) {
-            titles <- fs::path_ext_remove(basename(fn))
+            titles <- .escape_md_link_text(.sidebar_labels(
+                basename(fn),
+                src_dir = path
+            ))
             idx <- grep("\\$ALTDOC_MAN_BLOCK", sidebar)
             if (length(idx) == 1) {
                 sidebar <- gsub("\\$ALTDOC_MAN_BLOCK", "", sidebar)

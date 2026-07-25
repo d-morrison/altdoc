@@ -52,7 +52,7 @@
     fn_vignettes <- gsub(.doc_path(path), "", fn_vignettes, fixed = TRUE)
 
     # escape because we enclose in single quotes in the json file
-    titles <- gsub("'", "\\\\'", titles, fixed = TRUE)
+    titles <- .escape_js_single_quoted(titles)
 
     # # static assets strict relative path
     # fn_vignettes <- ifelse(tools::file_ext(fn_vignettes) == "pdf",
@@ -84,7 +84,10 @@
             fn_man,
             function(x) fs::path_join(c("/man", basename(x)))
         )
-        titles <- fs::path_ext_remove(basename(fn_man))
+        titles <- .escape_js_single_quoted(.sidebar_labels(
+            fs::path_ext_remove(basename(fn_man)),
+            src_dir = path
+        ))
         tmp <- sprintf("{title: '%s', link: '%s'}", titles, fn_man)
         tmp <- toString(tmp)
         sidebar <- paste(sidebar, collapse = "\n")
