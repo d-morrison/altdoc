@@ -201,7 +201,10 @@ test_that(".front_matter_lines() reads only a leading, terminated block", {
         "title: x"
     )
     # Not front matter: the fence has to be the very first line.
-    expect_equal(.front_matter_lines(c("body", "---", "title: x", "---")), character(0))
+    expect_equal(
+        .front_matter_lines(c("body", "---", "title: x", "---")),
+        character(0)
+    )
     # Unterminated, and empty, blocks yield nothing rather than erroring.
     expect_equal(.front_matter_lines(c("---", "title: x")), character(0))
     expect_equal(.front_matter_lines(c("---", "---")), character(0))

@@ -13,7 +13,7 @@
     }
 
     rest <- lines[-1]
-    closing <- which(grepl(fence_re, rest, perl = TRUE))
+    closing <- grep(fence_re, rest, perl = TRUE)
     if (length(closing) == 0 || closing[[1]] < 2) {
         # Unterminated, or an empty block: nothing to read either way.
         return(character(0))
