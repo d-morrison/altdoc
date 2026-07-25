@@ -182,17 +182,26 @@ test_that("a title with no reference: key still groups topics by default", {
     )
 })
 
-test_that("an unusable title in altdoc/reference.yml is an error", {
-    # `info` names the offending input in the failure message; without it a
-    # failure reports only that no error was thrown, not which value did it.
-    for (bad in c("title: []", "title: ''", "title:\n  - a\n  - b")) {
-        dir <- local_reference_package(strsplit(bad, "\n")[[1]])
-        expect_error(
-            .reference_title(.reference_settings(dir)),
-            "title|must",
-            info = paste("bad title input:", encodeString(bad))
-        )
-    }
+# One `test_that()` per rejected shape, so a failure names the shape in its own
+# heading. A single loop over the three would report only that no error was
+# thrown, leaving the reader to guess which input did it; `expect_error()`'s
+# `info` is soft-deprecated and `label` replaces the expression under test
+# rather than adding to it, so neither is the way to label the cases.
+expect_unusable_title <- function(...) {
+    dir <- local_reference_package(..., env = parent.frame())
+    expect_error(.reference_title(.reference_settings(dir)), "title|must")
+}
+
+test_that("an empty-sequence title in altdoc/reference.yml is an error", {
+    expect_unusable_title("title: []")
+})
+
+test_that("an empty-string title in altdoc/reference.yml is an error", {
+    expect_unusable_title("title: ''")
+})
+
+test_that("a multi-value title in altdoc/reference.yml is an error", {
+    expect_unusable_title("title:", "  - a", "  - b")
 })
 
 test_that("an unknown top-level key in altdoc/reference.yml is an error", {
