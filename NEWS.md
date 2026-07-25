@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+* Fixed: `\dontrun{}` and `\donttest{}` are now honored per block. A single
+  such block used to switch evaluation off for every example on the page, so a
+  help page whose examples were mostly runnable but ended with one error-case
+  block rendered with no output at all. Each block is now emitted as its own
+  chunk, and only the non-runnable ones are left unevaluated. The decision also
+  comes from the parsed `.Rd` tree rather than a search of the rendered page
+  for the strings `dontrun`/`donttest`, so an example that merely mentions
+  either word in a comment or a string no longer disables the page. The
+  `@examplesIf` condition is read from the same tree instead of by matching the
+  sentinel roxygen2 generates against the whole deparsed help page ([#38](https://github.com/etiennebacher/altdoc/issues/38)).
+
 * Added: man pages can now be labeled in the sidebar with their `.Rd`
   `\title{}` as well as their topic name, so a reader scanning the sidebar
   sees what each topic does rather than only what it is called. Set
