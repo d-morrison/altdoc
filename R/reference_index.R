@@ -6,10 +6,18 @@
 #
 # `ext` is the file extension of the rendered man pages, which differs by
 # documentation generator: quarto_website links to .qmd, the others to .md.
-.reference_index <- function(sections, topics, ext = "md") {
+# `title` is the page's top-level heading. The default is derived from
+# `.reference_title()` rather than repeating its string, so the default heading
+# has exactly one definition; `list()` stands for "no settings file".
+.reference_index <- function(
+    sections,
+    topics,
+    ext = "md",
+    title = .reference_title(list())
+) {
     env <- .topics_env(topics)
     listed <- integer(0)
-    out <- c("# Reference", "")
+    out <- c(paste("#", title), "")
 
     for (section in sections) {
         selected <- .select_topics(section$contents, topics, env = env)

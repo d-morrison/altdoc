@@ -21,7 +21,7 @@ website:
       - text: Home
         file: index.md
       - section: $ALTDOC_VIGNETTE_BLOCK
-      - text: Reference index
+      - text: Package index
         file: $ALTDOC_REFERENCE
       - section: $ALTDOC_MAN_BLOCK
       - text: News

@@ -2,7 +2,7 @@
 * Articles: 
   - [here.pdf](vignettes/here.pdf ':ignore')
   - [test](vignettes/test.md)
-* [Reference index](reference.md)
+* [Package index](reference.md)
 * Reference: 
   - [examplesIf_false](man/examplesIf_false)
   - [examplesIf_true](man/examplesIf_true)
