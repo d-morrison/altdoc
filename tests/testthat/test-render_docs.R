@@ -23,6 +23,7 @@ test_that("docute: main files are correct", {
     expect_snapshot_file("docs/README.md", variant = "docute")
     expect_snapshot_file("docs/docute.html", variant = "docute")
     expect_snapshot_file("docs/NEWS.md", variant = "docute")
+    expect_snapshot_file("docs/reference.md", variant = "docute")
     expect_snapshot_file("docs/man/hello_base.md", variant = "docute")
     expect_snapshot_file("docs/man/hello_r6.md", variant = "docute")
     expect_snapshot_file("docs/man/examplesIf_true.md", variant = "docute")
@@ -55,6 +56,7 @@ test_that("docsify: main files are correct", {
     expect_snapshot_file("docs/README.md", variant = "docsify")
     expect_snapshot_file("docs/_sidebar.md", variant = "docsify")
     expect_snapshot_file("docs/NEWS.md", variant = "docsify")
+    expect_snapshot_file("docs/reference.md", variant = "docsify")
     expect_snapshot_file("docs/man/hello_base.md", variant = "docsify")
     expect_snapshot_file("docs/man/hello_r6.md", variant = "docsify")
     expect_snapshot_file("docs/man/examplesIf_true.md", variant = "docsify")
@@ -107,6 +109,7 @@ test_that("mkdocs: main files are correct", {
     # no good way to test the site structure ("docs/mkdocs.yml" only shows
     # the old yaml, not the one with replaced variables)
     expect_snapshot_file("docs/NEWS.md", variant = "mkdocs")
+    expect_snapshot_file("docs/reference.md", variant = "mkdocs")
     expect_snapshot_file("docs/man/hello_base.md", variant = "mkdocs")
     expect_snapshot_file("docs/man/hello_r6.md", variant = "mkdocs")
     expect_snapshot_file("docs/vignettes/test.md", variant = "mkdocs")

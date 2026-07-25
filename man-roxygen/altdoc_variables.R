@@ -7,6 +7,7 @@
 #' * `$ALTDOC_PACKAGE_URL`: First URL listed in the DESCRIPTION file of the package.
 #' * `$ALTDOC_PACKAGE_URL_GITHUB`: First URL that contains "github.com" from the URLs listed in the DESCRIPTION file of the package. If no such URL is found, lines containing this variable are removed from the settings file.
 #' * `$ALTDOC_MAN_BLOCK`: Nested list of links to the individual help pages for each exported function of the package. The format of this block depends on the documentation generator.
+#' * `$ALTDOC_REFERENCE`: Link to the generated reference index, a page listing every documented topic with a one-line summary. See the "Reference index" section below.
 #' * `$ALTDOC_VIGNETTE_BLOCK`: Nested list of links to the vignettes. The format of this block depends on the documentation generator.
 #' * `$ALTDOC_VERSION`: Version number of the altdoc package.
 #'

@@ -29,6 +29,7 @@
 #'
 #' @return NULL
 #' @template altdoc_variables
+#' @template altdoc_reference
 #' @template altdoc_preambles
 #' @template altdoc_freeze
 #' @template altdoc_autolink
@@ -129,6 +130,8 @@ render_docs <- function(
         parallel = parallel,
         freeze = freeze
     )
+
+    .import_reference(src_dir = path, tar_dir = docs_dir, tool = tool)
 
     # Update vignettes
     cli::cli_h1("Vignettes")
