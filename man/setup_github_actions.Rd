@@ -9,14 +9,15 @@ setup_github_actions(
   multiversion = FALSE,
   default_landing_page = "main",
   refs_order = "main latest-tag",
-  branches_or_tags_to_list = "^main$|^latest-tag$|^v([0-9]+[.])?([0-9]+[.])?([0-9]+)(-rc[0-9]+)?$"
+  branches_or_tags_to_list =
+    "^main$|^latest-tag$|^v([0-9]+[.])?([0-9]+[.])?([0-9]+)(-rc[0-9]+)?$"
 )
 }
 \arguments{
 \item{path}{Path to the package root directory.}
 
 \item{multiversion}{Logical. If \code{TRUE}, configure the workflow to publish
-versioned documentation under \code{gh-pages/<branch-or-tag>/} and add a second
+versioned documentation under \verb{gh-pages/<branch-or-tag>/} and add a second
 job using \code{insightsengineering/r-pkgdown-multiversion} to maintain a
 version landing page and version switcher links.}
 
