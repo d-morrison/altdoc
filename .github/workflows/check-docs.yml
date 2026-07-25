@@ -46,10 +46,12 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "Checking documentation against roxygen2 $version"
 
+      # No `needs:` here: it selects `Config/Needs/<name>` DESCRIPTION
+      # fields, and this package declares none, so naming one would read as
+      # scoping the install while doing nothing.
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: roxygen2@${{ steps.roxygen-version.outputs.version }}
-          needs: roxygen2
 
       - name: Document
         run: roxygen2::roxygenise()
