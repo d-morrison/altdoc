@@ -1,6 +1,8 @@
-# Copy files referenced by Quarto `{{< include >}}` directives that resolve to
-# a location outside the `_quarto/` build tree into the matching spot under
-# `_quarto/`, so Quarto can find them at render time.
+# Copy files referenced by Quarto `{{< include >}}` directives, or by a
+# path-valued front-matter key (`shortcodes:`, `filters:`,
+# `metadata-files:`), that resolve to a location outside the `_quarto/` build
+# tree into the matching spot under `_quarto/`, so Quarto can find them at
+# render time.
 #
 # altdoc stages `vignettes/`, `man/`, and the miscellaneous root files into
 # `_quarto/`, but an include such as `{{< include ../macros/macros.qmd >}}`
@@ -52,6 +54,12 @@
             regmatches(lines, gregexpr(include_re, lines, perl = TRUE))
         )
         paths <- sub(include_re, "\\1", matches)
+
+        # Front matter can reference an external file by relative path too
+        # (`shortcodes:`, `filters:`, `metadata-files:`), resolved the same way
+        # as an include, so both feed the same staging logic below.
+        paths <- c(paths, .front_matter_paths(lines))
+
         for (inc in unique(trimws(paths))) {
             inc <- gsub(edge_quote_re, "", inc, perl = TRUE)
             rel <- fs::path_rel(
