@@ -43,7 +43,17 @@ test_that(".rd_example_blocks merges adjacent code into one block", {
     # Each line is its own RCODE node, so without merging every line of an
     # ordinary example would become a separate chunk.
     rd <- local_examples_rd("1 + 1", "2 + 2", "3 + 3")
-    expect_length(.rd_example_blocks(rd), 1)
+    blocks <- .rd_example_blocks(rd)
+    expect_length(blocks, 1)
+
+    # Merging concatenates the nodes' text directly, which is only safe while
+    # each node keeps its own trailing newline. Pin the lines rather than the
+    # block count, so a change that stripped newlines fails here instead of
+    # silently emitting `1 + 12 + 2`.
+    expect_identical(
+        .split_example_lines(blocks[[1]]$code),
+        c("", "1 + 1", "2 + 2", "3 + 3")
+    )
 })
 
 test_that(".rd_example_blocks does not trip on an example that mentions dontrun", {
@@ -63,6 +73,16 @@ test_that(".rd_example_blocks drops \\dontshow{} and whitespace-only blocks", {
     blocks <- .rd_example_blocks(rd)
     expect_length(blocks, 1)
     expect_false(grepl("setup()", blocks[[1]]$code, fixed = TRUE))
+})
+
+test_that(".rd_example_blocks drops \\testonly{} the same way", {
+    # Same branch as \dontshow{}, named separately so the symmetric treatment
+    # is visible rather than inferred from the shared code path.
+    rd <- local_examples_rd("\\testonly{stopifnot(TRUE)}", "1 + 1")
+    blocks <- .rd_example_blocks(rd)
+    expect_length(blocks, 1)
+    expect_false(grepl("stopifnot", blocks[[1]]$code, fixed = TRUE))
+    expect_true(blocks[[1]]$eval)
 })
 
 test_that(".rd_example_blocks returns nothing for a topic with no examples", {
