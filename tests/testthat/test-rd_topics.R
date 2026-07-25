@@ -3,7 +3,13 @@ test_that(".rd_topics reads name, title, and internal status from man/", {
 
     expect_identical(
         topics$name,
-        c("examplesIf_false", "examplesIf_true", "hello_base", "hello_r6")
+        c(
+            "examplesIf_false",
+            "examplesIf_true",
+            "hello_base",
+            "hello_dontrun",
+            "hello_r6"
+        )
     )
     expect_identical(
         topics$title[topics$name == "hello_base"],
