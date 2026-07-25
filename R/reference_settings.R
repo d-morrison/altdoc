@@ -36,7 +36,9 @@
         return(empty)
     }
 
-    # An unnamed list is the bare pkgdown-style section list.
+    # `yaml.load_file()` represents a YAML sequence as an unnamed list and a
+    # YAML mapping as a named one, so `names()` is what tells the two apart:
+    # an unnamed top-level list is the bare pkgdown-style section list.
     if (is.null(names(settings))) {
         return(list(title = NULL, sections = settings))
     }

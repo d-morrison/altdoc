@@ -183,11 +183,14 @@ test_that("a title with no reference: key still groups topics by default", {
 })
 
 test_that("an unusable title in altdoc/reference.yml is an error", {
+    # `info` names the offending input in the failure message; without it a
+    # failure reports only that no error was thrown, not which value did it.
     for (bad in c("title: []", "title: ''", "title:\n  - a\n  - b")) {
         dir <- local_reference_package(strsplit(bad, "\n")[[1]])
         expect_error(
             .reference_title(.reference_settings(dir)),
-            "title|must"
+            "title|must",
+            info = paste("bad title input:", encodeString(bad))
         )
     }
 })
