@@ -3,5 +3,6 @@
 export(examplesIf_false)
 export(examplesIf_true)
 export(hello_base)
+export(hello_dontrun)
 export(hello_r6)
 importFrom(R6,R6Class)

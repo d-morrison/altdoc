@@ -51,52 +51,25 @@
     idx <- which(tmp == "<h3>Examples</h3>")
 
     if (length(idx) == 1) {
-        # until next section or the end
-        idx_post_examples <- grep("<h3>", tmp, fixed = TRUE)
-        idx_post_examples <- idx_post_examples[idx_post_examples > idx]
-        if (length(idx_post_examples) > 0) {
-            ex <- tmp[(idx + 1):(idx_post_examples[1] - 1)]
-        } else {
-            ex <- tmp[(idx + 1):length(tmp)]
-        }
-        ex <- gsub("<.*>", "", ex)
-        ex <- gsub("&lt;", "<", ex, fixed = TRUE)
-        ex <- gsub("&gt;", ">", ex, fixed = TRUE)
-        ex <- gsub("&amp;", "&", ex, fixed = TRUE)
-        ex <- gsub("\\$", "$", ex, fixed = TRUE)
-        ex <- ex[!grepl("## Not run:", ex, fixed = TRUE)]
-        ex <- ex[!grepl("## End", ex, fixed = TRUE)]
+        # Read the examples from the parsed Rd tree rather than the rendered
+        # HTML, so that `\dontrun{}` and `\donttest{}` are honored per block
+        # instead of switching evaluation off for the whole page (#38).
+        blocks <- .rd_example_blocks(rd)
 
-        # respect \dontrun{} and \donttest{}. This is too aggressive because it
-        # ignores all tests whenever one of the two tags appear anywhere, but it
-        # would be very hard to parse different examples wrapped or not wrapped in a
-        # \donttest{}.
-        block_eval <- !any(grepl("dontrun|donttest|## Not run:", tmp))
-
-        # hack to support `examplesIf`. This is very ugly and probably fragile
-        # added in roxygen2::rd-examples.R
-        # https://github.com/r-lib/roxygen2/blob/db4dd9a4de2ce6817c17441d481cf5d03ef220e2/R/rd-examples.R#L17
-        regex <- ') (if (getRversion() >= "3.4") withAutoprint else force)({ # examplesIf'
-        exampleIf <- grep(regex, rd, fixed = TRUE)[1]
-        if (!is.na(exampleIf[1])) {
-            exampleIf <- sub(
-                regex,
-                "",
-                as.character(rd)[exampleIf],
-                fixed = TRUE
-            )
-            exampleIf <- sub("^if \\(", "", exampleIf)
-            if (!isTRUE(try(eval(parse(text = exampleIf)), silent = TRUE))) {
-                block_eval <- FALSE
+        # An `@examplesIf` condition that does not hold disables every block,
+        # since the examples were written on the assumption it did.
+        condition <- .rd_examples_if_condition(rd)
+        if (!is.null(condition)) {
+            holds <- try(eval(parse(text = condition)), silent = TRUE)
+            if (!isTRUE(holds)) {
+                blocks <- lapply(blocks, function(b) {
+                    b$eval <- FALSE
+                    b
+                })
             }
         }
 
-        block <- sprintf(
-            "```{r, warning=FALSE, message=FALSE, eval=%s}",
-            block_eval
-        )
-
-        tmp <- c(tmp[2:idx], block, pkg_load, ex, "```")
+        tmp <- c(tmp[2:idx], .example_chunks(blocks, pkg_load = pkg_load))
     }
 
     # cleanup equations

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+* Fixed: `\dontrun{}` and `\donttest{}` are now honored per block. A single
+  such block used to switch evaluation off for every example on the page, so a
+  help page whose examples were mostly runnable but ended with one error-case
+  block rendered with no output at all. Each block is now emitted as its own
+  chunk, and only the non-runnable ones are left unevaluated. The decision also
+  comes from the parsed `.Rd` tree rather than a search of the rendered page
+  for the strings `dontrun`/`donttest`, so an example that merely mentions
+  either word in a comment or a string no longer disables the page. The
+  `@examplesIf` condition is read from the same tree instead of by matching the
+  sentinel roxygen2 generates against the whole deparsed help page (#38).
+
 * Fixed: `render_docs()` now imports `CONTRIBUTING.md` to `docs/`, so the
   `$ALTDOC_CONTRIBUTING` variable resolves. `.substitute_altdoc_variables()`
   already substituted that variable, but the file it points at was never
