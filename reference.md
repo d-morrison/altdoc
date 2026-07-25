@@ -1,4 +1,4 @@
-# Reference
+# Package index
 
 ## All functions
 

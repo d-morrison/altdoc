@@ -247,6 +247,25 @@ Topics missing from <code>altdoc/reference.yml</code> are reported at
 render time and collected in a trailing "Other" section, so they are
 never silently dropped from the index.
 
+The page’s heading is "Package index", the name <code>pkgdown</code>
+gives the same page, so a reader arriving from a "Reference" navigation
+entry sees a heading that says what the page is rather than repeating
+how they got there. Set a top-level <code>title</code> key to change it:
+
+<pre>title: Function reference
+reference:
+  - title: Data
+    contents:
+      - as_pop_data
+</pre>
+
+<code>title</code> and <code>reference</code> are the only top-level
+keys <code>altdoc/reference.yml</code> accepts; anything else is an
+error. A file holding a bare list of sections with no
+<code style="white-space: pre;">reference:</code> key is still accepted,
+for a block moved over from <code>pkgdown</code> unchanged, but has
+nowhere to put <code>title</code> and so always uses the default.
+
 ## Altdoc preambles
 
 When you call <code>render_docs()</code>, <code>altdoc</code> will
