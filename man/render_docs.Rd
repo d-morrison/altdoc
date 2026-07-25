@@ -100,6 +100,17 @@ An entry of \code{contents} is either a topic name (or alias), or one of these s
 Prefix an entry with \code{-} to remove its matches instead of adding them; when the first entry of a section is a removal, the section starts from every non-internal topic. Selectors skip topics marked \verb{@keywords internal} unless called with \code{internal = TRUE}.
 
 Topics missing from \code{altdoc/reference.yml} are reported at render time and collected in a trailing "Other" section, so they are never silently dropped from the index.
+
+The page's heading is "Package index", the name \code{pkgdown} gives the same page, so a reader arriving from a "Reference" navigation entry sees a heading that says what the page is rather than repeating how they got there. Set a top-level \code{title} key to change it:
+
+\if{html}{\out{<div class="sourceCode yaml">}}\preformatted{title: Function reference
+reference:
+  - title: Data
+    contents:
+      - as_pop_data
+}\if{html}{\out{</div>}}
+
+\code{title} and \code{reference} are the only top-level keys \code{altdoc/reference.yml} accepts; anything else is an error. A file holding a bare list of sections with no \verb{reference:} key is still accepted, for a block moved over from \code{pkgdown} unchanged, but has nowhere to put \code{title} and so always uses the default.
 }
 
 \section{Altdoc preambles}{

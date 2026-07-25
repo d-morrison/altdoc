@@ -1,6 +1,6 @@
 * [Home](/)
 * Articles: $ALTDOC_VIGNETTE_BLOCK
-* [Reference index]($ALTDOC_REFERENCE)
+* [Package index]($ALTDOC_REFERENCE)
 * Reference: $ALTDOC_MAN_BLOCK
 * [News]($ALTDOC_NEWS)
 * [Changelog]($ALTDOC_CHANGELOG)

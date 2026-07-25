@@ -32,3 +32,15 @@
 #'
 #' Topics missing from `altdoc/reference.yml` are reported at render time and collected in a trailing "Other" section, so they are never silently dropped from the index.
 #'
+#' The page's heading is "Package index", the name `pkgdown` gives the same page, so a reader arriving from a "Reference" navigation entry sees a heading that says what the page is rather than repeating how they got there. Set a top-level `title` key to change it:
+#'
+#' ```yaml
+#' title: Function reference
+#' reference:
+#'   - title: Data
+#'     contents:
+#'       - as_pop_data
+#' ```
+#'
+#' `title` and `reference` are the only top-level keys `altdoc/reference.yml` accepts; anything else is an error. A file holding a bare list of sections with no `reference:` key is still accepted, for a block moved over from `pkgdown` unchanged, but has nowhere to put `title` and so always uses the default.
+#'

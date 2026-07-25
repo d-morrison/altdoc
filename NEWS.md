@@ -11,9 +11,13 @@
   non-internal topic under a single heading; to group the topics, create
   `altdoc/reference.yml` with a `reference:` key using the same schema as
   `pkgdown`'s `_pkgdown.yml`, including the `starts_with()`, `matches()`, and
-  `has_concept()` selectors. Settings files created before this release do not
-  reference the new page, so add a `$ALTDOC_REFERENCE` entry to pick it up
-  (#33).
+  `has_concept()` selectors. The page is headed "Package index", the name
+  `pkgdown` gives the same page, so a reader arriving from a "Reference"
+  navigation entry sees a heading that says what the page is rather than
+  repeating how they got there; a top-level `title` key in
+  `altdoc/reference.yml` overrides it. Settings files created before this
+  release do not reference the new page, so add a `$ALTDOC_REFERENCE` entry to
+  pick it up (#33, #46).
 
 * Added: `setup_github_actions()` now supports multiversion docs deployment via
   `multiversion = TRUE`. In this mode, docs are published to
