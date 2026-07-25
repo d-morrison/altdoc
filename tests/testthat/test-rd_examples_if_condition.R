@@ -22,6 +22,32 @@ test_that(".rd_examples_if_condition reads the condition back", {
     expect_identical(.rd_examples_if_condition(rd), "2 + 2 == 4")
 })
 
+test_that(".rd_examples_if_condition keeps a condition's own parentheses", {
+    # `requireNamespace()` is the common `@examplesIf` condition in the wild,
+    # and it puts a `)` of its own right before the wrapper's. The trailing
+    # match is anchored to the wrapper's literal text, so it lands on the outer
+    # paren and the condition survives whole.
+    for (condition in c(
+        "requireNamespace(\"pkg\", quietly = TRUE)",
+        "interactive() && requireNamespace(\"pkg\")",
+        "(1 + 1) == 2"
+    )) {
+        rd <- rd_from_text(
+            "\\name{f}",
+            "\\alias{f}",
+            "\\title{T}",
+            "\\usage{f(x)}",
+            "\\description{d}",
+            "\\examples{",
+            examples_if_open(condition),
+            "f()",
+            "\\dontshow{\\}) # examplesIf}",
+            "}"
+        )
+        expect_identical(.rd_examples_if_condition(rd), condition)
+    }
+})
+
 test_that(".rd_examples_if_condition returns NULL for an ordinary topic", {
     rd <- rd_from_text(
         "\\name{f}",
