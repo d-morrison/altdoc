@@ -18,7 +18,8 @@ push the output to the branch "gh-pages".
   multiversion = FALSE,
   default_landing_page = "main",
   refs_order = "main latest-tag",
-  branches_or_tags_to_list = "^main\$|^latest-tag\$|^v([0-9]+[.])?([0-9]+[.])?([0-9]+)(-rc[0-9]+)?\$"
+  branches_or_tags_to_list =
+    "^main\$|^latest-tag\$|^v([0-9]+[.])?([0-9]+[.])?([0-9]+)(-rc[0-9]+)?\$"
 )
 </code></pre>
 
@@ -39,8 +40,9 @@ Path to the package root directory.
 </td>
 <td>
 Logical. If <code>TRUE</code>, configure the workflow to publish
-versioned documentation under <code>gh-pages/\<branch-or-tag\>/</code>
-and add a second job using
+versioned documentation under
+<code style="white-space: pre;">gh-pages/\<branch-or-tag\>/</code> and
+add a second job using
 <code>insightsengineering/r-pkgdown-multiversion</code> to maintain a
 version landing page and version switcher links.
 </td>
