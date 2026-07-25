@@ -20,6 +20,13 @@
         return(character(0))
     }
 
+    # Assert rather than fold a missing yaml into the tryCatch below: every
+    # other step of the quarto_website flow calls `yaml::` unguarded, so an
+    # absent yaml is a broken install, not a document to skip quietly. Doing
+    # otherwise would stage nothing and leave Quarto to fail later with an
+    # error naming a missing Lua filter instead of the real cause.
+    .assert_dependency("yaml")
+
     # A document whose front matter does not parse is Quarto's error to
     # report, with far better diagnostics than this staging pass could give;
     # stage nothing and let the render surface it.
@@ -35,6 +42,13 @@
         parsed[intersect(names(parsed), .front_matter_path_keys)],
         use.names = FALSE
     )
-    values <- values[vapply(values, is.character, logical(1))]
-    unique(trimws(as.character(values)))
+    # `unlist()` coerces to a single type, so this is all-or-nothing by
+    # design: a key holding only numbers yields a numeric vector and is
+    # dropped whole. A number mixed among strings survives as its coerced
+    # text, which the caller's own guards then reject -- it neither escapes
+    # the staged tree via `..` nor names a file that exists.
+    if (!is.character(values)) {
+        return(character(0))
+    }
+    unique(trimws(values))
 }
