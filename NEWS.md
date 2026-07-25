@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+* Added: `render_docs()` now generates a reference index at `reference.md`,
+  listing every documented topic with a one-line summary taken from its `.Rd`
+  `\title{}`. The summary is therefore written once, in the roxygen2 `@title`,
+  instead of being retyped in a hand-authored index that can drift out of sync
+  with the help pages. Link to the page from the settings file with the new
+  `$ALTDOC_REFERENCE` variable. With no configuration the index lists every
+  non-internal topic under a single heading; to group the topics, create
+  `altdoc/reference.yml` with a `reference:` key using the same schema as
+  `pkgdown`'s `_pkgdown.yml`, including the `starts_with()`, `matches()`, and
+  `has_concept()` selectors. Settings files created before this release do not
+  reference the new page, so add a `$ALTDOC_REFERENCE` entry to pick it up
+  ([#33](https://github.com/etiennebacher/altdoc/issues/33)).
+
 * Added: `setup_github_actions()` now supports multiversion docs deployment via
   `multiversion = TRUE`. In this mode, docs are published to
   `gh-pages/<branch-or-tag>/` and a second job runs

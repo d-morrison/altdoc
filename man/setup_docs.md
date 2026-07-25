@@ -2,7 +2,7 @@
 
 # Initialize documentation website settings
 
-[**Source code**](https://github.com/etiennebacher/altdoc/tree/main/R/setup_docs.R#L37)
+[**Source code**](https://github.com/etiennebacher/altdoc/tree/main/R/setup_docs.R#L38)
 
 ## Description
 
@@ -140,6 +140,13 @@ generator.
 </li>
 <li>
 
+<code style="white-space: pre;">$ALTDOC_REFERENCE</code>: Link to the
+generated reference index, a page listing every documented topic with a
+one-line summary. See the "Reference index" section below.
+
+</li>
+<li>
+
 <code style="white-space: pre;">$ALTDOC_VIGNETTE_BLOCK</code>: Nested
 list of links to the vignettes. The format of this block depends on the
 documentation generator.
@@ -158,6 +165,87 @@ Also note that you can store images and static files in the
 in this folder are copied to
 <code style="white-space: pre;">docs/</code> and made available in the
 root of the website, so you can link to them easily.
+
+## Reference index
+
+<code>render_docs()</code> writes a reference index to
+<code>reference.md</code>: a page listing every documented topic with a
+one-line summary. Link to it from the settings file with the
+<code style="white-space: pre;">$ALTDOC_REFERENCE</code> variable.
+
+Each summary is read from the <code style="white-space: pre;">
+</code> of the topic’s <code>.Rd</code> file, so it is written once in
+the roxygen2 <code style="white-space: pre;">@title</code> and never
+retyped. The page is rebuilt on every <code>render_docs()</code> call,
+so a summary can never drift out of sync with the help page it
+describes.
+
+By default the index holds a single "All functions" section listing
+every topic that is not marked <code style="white-space: pre;">@keywords
+internal</code>. To group the topics instead, create
+<code>altdoc/reference.yml</code>:
+
+<pre>reference:
+  - title: Data
+    desc: Load and reshape survey data.
+    contents:
+      - as_pop_data
+      - starts_with("read_")
+  - title: Modeling
+    subtitle: Estimation
+    contents:
+      - has_concept("estimation")
+</pre>
+
+Each section may set <code>title</code>, <code>subtitle</code>,
+<code>desc</code>, and <code>contents</code>. This is the same schema
+<code>pkgdown</code> uses for the
+<code style="white-space: pre;">reference:</code> key of
+<code style="white-space: pre;">\_pkgdown.yml</code>, so an existing
+block can be moved over unchanged.
+
+An entry of <code>contents</code> is either a topic name (or alias), or
+one of these selectors:
+
+<ul>
+<li>
+
+<code>starts_with(“x”)</code>, <code>ends_with(“x”)</code>,
+<code>contains(“x”)</code>: match the start, end, or any part of a topic
+name or alias.
+
+</li>
+<li>
+
+<code>matches(“x”)</code>: match a regular expression.
+
+</li>
+<li>
+
+<code>has_keyword(“x”)</code>, <code>has_concept(“x”)</code>,
+<code>lacks_concepts(“x”)</code>: match the
+<code style="white-space: pre;"></code> and
+<code style="white-space: pre;"></code> tags. roxygen2 writes
+<code style="white-space: pre;">@family</code> to
+<code style="white-space: pre;"></code>.
+
+</li>
+<li>
+
+<code>everything()</code>: every topic.
+
+</li>
+</ul>
+
+Prefix an entry with <code>-</code> to remove its matches instead of
+adding them; when the first entry of a section is a removal, the section
+starts from every non-internal topic. Selectors skip topics marked
+<code style="white-space: pre;">@keywords internal</code> unless called
+with <code>internal = TRUE</code>.
+
+Topics missing from <code>altdoc/reference.yml</code> are reported at
+render time and collected in a trailing "Other" section, so they are
+never silently dropped from the index.
 
 ## Altdoc preambles
 
