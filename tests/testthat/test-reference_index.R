@@ -127,13 +127,19 @@ test_that("the index heading defaults to Package index", {
         "      - starts_with(\"hello\")"
     )
 
-    expect_identical(.reference_title(.reference_settings(dir)), "Package index")
+    expect_identical(
+        .reference_title(.reference_settings(dir)),
+        "Package index"
+    )
 })
 
 test_that("a package with no altdoc/reference.yml still gets the default heading", {
     pkg <- testthat::test_path("examples/testpkg.altdoc")
 
-    expect_identical(.reference_title(.reference_settings(pkg)), "Package index")
+    expect_identical(
+        .reference_title(.reference_settings(pkg)),
+        "Package index"
+    )
 })
 
 test_that("altdoc/reference.yml can override the index heading", {
@@ -166,11 +172,14 @@ test_that("a title with no reference: key still groups topics by default", {
     settings <- .reference_settings(dir)
 
     expect_identical(.reference_title(settings), "Function reference")
-    expect_true("All functions" %in% vapply(
-        .reference_sections(settings, topics),
-        function(section) section$title,
-        character(1)
-    ))
+    expect_true(
+        "All functions" %in%
+            vapply(
+                .reference_sections(settings, topics),
+                function(section) section$title,
+                character(1)
+            )
+    )
 })
 
 test_that("an unusable title in altdoc/reference.yml is an error", {
