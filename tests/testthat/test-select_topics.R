@@ -67,3 +67,85 @@ test_that(".select_topics rejects a mix of additions and removals", {
         "Cannot mix selected and de-selected"
     )
 })
+
+test_that(".select_topics supports the keyword and concept selectors", {
+    dir <- local_man_package(
+        fit = c(
+            "\\name{fit}",
+            "\\alias{fit}",
+            "\\title{Fit a model}",
+            "\\usage{fit(x)}",
+            "\\concept{estimation}",
+            "\\keyword{models}",
+            "\\description{d}"
+        ),
+        predict_it = c(
+            "\\name{predict_it}",
+            "\\alias{predict_it}",
+            "\\title{Predict from a model}",
+            "\\usage{predict_it(x)}",
+            "\\concept{estimation}",
+            "\\description{d}"
+        ),
+        plot_it = c(
+            "\\name{plot_it}",
+            "\\alias{plot_it}",
+            "\\title{Plot a model}",
+            "\\usage{plot_it(x)}",
+            "\\concept{graphics}",
+            "\\description{d}"
+        )
+    )
+    topics <- .rd_topics(dir)
+
+    expect_identical(
+        selected_names(list("has_concept(\"estimation\")"), topics),
+        c("fit", "predict_it")
+    )
+    expect_identical(
+        selected_names(list("has_keyword(\"models\")"), topics),
+        "fit"
+    )
+    expect_identical(
+        selected_names(list("lacks_concepts(\"estimation\")"), topics),
+        "plot_it"
+    )
+    # `lacks_concept` is accepted as a synonym, as in pkgdown.
+    expect_identical(
+        selected_names(list("lacks_concept(\"estimation\")"), topics),
+        "plot_it"
+    )
+})
+
+test_that("the keyword and concept selectors skip internal topics", {
+    dir <- local_man_package(
+        shown = c(
+            "\\name{shown}",
+            "\\alias{shown}",
+            "\\title{Shown}",
+            "\\concept{estimation}",
+            "\\description{d}"
+        ),
+        hidden = c(
+            "\\name{hidden}",
+            "\\alias{hidden}",
+            "\\title{Hidden}",
+            "\\concept{estimation}",
+            "\\keyword{internal}",
+            "\\description{d}"
+        )
+    )
+    topics <- .rd_topics(dir)
+
+    expect_identical(
+        selected_names(list("has_concept(\"estimation\")"), topics),
+        "shown"
+    )
+    expect_identical(
+        selected_names(
+            list("has_concept(\"estimation\", internal = TRUE)"),
+            topics
+        ),
+        c("hidden", "shown")
+    )
+})

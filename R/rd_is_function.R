@@ -15,7 +15,8 @@
     }
     usage <- .rd_flatten_text(usage)
 
-    aliases <- c(name, .rd_tag_values(rd, "\\alias"))
+    # \name{} is usually an alias too, so drop the duplicate it would create.
+    aliases <- unique(c(name, .rd_tag_values(rd, "\\alias")))
     # A usage entry is a call when the alias is followed by an opening paren.
     # Aliases such as `[.myclass` contain regex metacharacters, so match on the
     # fixed string rather than building a pattern from them.

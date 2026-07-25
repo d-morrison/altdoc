@@ -61,3 +61,23 @@ test_that(".rd_code_span widens the fence around embedded backticks", {
     expect_identical(.rd_code_span("foo"), "`foo`")
     expect_identical(.rd_code_span("a `b` c"), "``a `b` c``")
 })
+
+test_that(".rd_title keeps only the LaTeX branch of a two-argument \\eqn", {
+    rd <- rd_from_text(
+        "\\name{foo}",
+        "\\alias{foo}",
+        "\\title{Compute \\eqn{x^2}{x squared} exactly}",
+        "\\description{d}"
+    )
+    expect_identical(.rd_title(rd), "Compute $x^2$ exactly")
+})
+
+test_that(".rd_title renders a one-argument \\eqn as a math span", {
+    rd <- rd_from_text(
+        "\\name{foo}",
+        "\\alias{foo}",
+        "\\title{Estimate \\eqn{\\alpha}}",
+        "\\description{d}"
+    )
+    expect_identical(.rd_title(rd), "Estimate $\\alpha$")
+})

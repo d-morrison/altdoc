@@ -32,6 +32,16 @@
         return("...")
     }
 
+    # \eqn{latex}{ascii} and \deqn{latex}{ascii} carry two alternative
+    # renderings of the same equation. Only the first belongs in the math
+    # span; flattening both would concatenate them.
+    if (tag %in% c("\\eqn", "\\deqn")) {
+        if (length(x) == 0) {
+            return("")
+        }
+        return(paste0("$", .rd_flatten_text(x[[1]]), "$"))
+    }
+
     inner <- paste(
         vapply(x, .rd_flatten_text, character(1)),
         collapse = ""
@@ -57,8 +67,6 @@
         "\\strong" = paste0("**", inner, "**"),
         "\\dQuote" = paste0("\"", inner, "\""),
         "\\sQuote" = paste0("'", inner, "'"),
-        "\\deqn" = ,
-        "\\eqn" = paste0("$", inner, "$"),
         "\\R" = "R",
         "\\cr" = " ",
         inner

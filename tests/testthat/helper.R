@@ -117,3 +117,18 @@ local_reference_package <- function(..., env = parent.frame()) {
 selected_names <- function(contents, topics) {
     topics$name[.select_topics(contents, topics)]
 }
+
+# Helper function to build a throwaway package whose man/ holds the given .Rd
+# files, passed as name = c("<line>", "<line>", ...)
+local_man_package <- function(..., env = parent.frame()) {
+    files <- list(...)
+    dir <- withr::local_tempdir(.local_envir = env)
+    fs::dir_create(fs::path_join(c(dir, "man")))
+    for (nm in names(files)) {
+        writeLines(
+            files[[nm]],
+            fs::path_join(c(dir, "man", paste0(nm, ".Rd")))
+        )
+    }
+    dir
+}
