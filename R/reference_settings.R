@@ -1,4 +1,4 @@
-# Read `altdoc/reference.yml` and return its two top-level pieces.
+# Read `altdoc/reference.yml` and return its top-level pieces.
 #
 # The file is read once here, rather than by each consumer, so
 # `.reference_title()` and `.reference_sections()` cannot disagree about what
@@ -8,11 +8,17 @@
 #   - `title`: the optional page heading, or NULL to use the default
 #   - `sections`: the raw (not yet validated) section list, or NULL to use the
 #     default grouping
+#   - `sidebar_labels`: how generators label a man page in the sidebar, or NULL
+#     to use the default (`"name"`)
+#   - `sidebar_label_width`: the width titles are truncated to in the sidebar,
+#     or NULL to use the default
 #
-# Both are NULL when the file does not exist, so a package with no settings
-# file still gets a complete index.
+# Every field is NULL when the file does not exist, so a package with no
+# settings file still gets a complete index. Each return path names all four,
+# so a caller never has to ask which shape it got back.
 #
 #   title: Function reference
+#   sidebar_labels: name-and-title
 #   reference:
 #     - title: Data
 #       contents:
@@ -20,9 +26,15 @@
 #
 # A bare list of sections at the top level (no `reference:` key) is accepted
 # too, for a settings file moved over unchanged from pkgdown; such a file has
-# nowhere to put `title`, so it always uses the default.
+# nowhere to put the mapping keys, so `title` and both sidebar keys always take
+# their defaults.
 .reference_settings <- function(src_dir = ".") {
-    empty <- list(title = NULL, sections = NULL)
+    empty <- list(
+        title = NULL,
+        sections = NULL,
+        sidebar_labels = NULL,
+        sidebar_label_width = NULL
+    )
     fn <- fs::path_join(c(src_dir, "altdoc", "reference.yml"))
 
     if (!fs::file_exists(fn)) {
@@ -40,10 +52,11 @@
     # YAML mapping as a named one, so `names()` is what tells the two apart:
     # an unnamed top-level list is the bare pkgdown-style section list.
     if (is.null(names(settings))) {
-        return(list(title = NULL, sections = settings))
+        empty$sections <- settings
+        return(empty)
     }
 
-    known <- c("title", "reference")
+    known <- c("title", "reference", "sidebar_labels", "sidebar_label_width")
     unknown <- setdiff(names(settings), known)
     if (length(unknown) > 0) {
         cli::cli_abort(c(
@@ -52,5 +65,12 @@
         ))
     }
 
-    list(title = settings[["title"]], sections = settings[["reference"]])
+    .check_sidebar_settings(settings)
+
+    list(
+        title = settings[["title"]],
+        sections = settings[["reference"]],
+        sidebar_labels = settings[["sidebar_labels"]],
+        sidebar_label_width = settings[["sidebar_label_width"]]
+    )
 }

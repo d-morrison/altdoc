@@ -42,5 +42,28 @@
 #'       - as_pop_data
 #' ```
 #'
-#' `title` and `reference` are the only top-level keys `altdoc/reference.yml` accepts; anything else is an error. A file holding a bare list of sections with no `reference:` key is still accepted, for a block moved over from `pkgdown` unchanged, but has nowhere to put `title` and so always uses the default.
+#' A file holding a bare list of sections with no `reference:` key is still accepted, for a block moved over from `pkgdown` unchanged, but has nowhere to put `title` and so always uses the default.
+#'
+#' @section Sidebar labels:
+#'
+#' Every generator labels a man page in the sidebar with its topic name, which says what a topic is called but not what it does. Set `sidebar_labels` to `name-and-title` to append the topic's `\title{}`, so the summary written once in the roxygen2 `@title` reaches the sidebar as well as the reference index:
+#'
+#' ```yaml
+#' sidebar_labels: name-and-title
+#' ```
+#'
+#' A topic then reads `as_pop_data(): Load a cross-sectional antibody survey data set` rather than `as_pop_data`. The name keeps the `()` suffix only when the topic documents something callable, matching how the reference index writes it.
+#'
+#' This is opt-in: the default, `name`, is what every generator did before, so an existing site's sidebar does not change until its author asks for it.
+#'
+#' Titles are truncated to 40 characters so a long one cannot overflow a narrow sidebar. Only the title is shortened, never the topic name, so entries stay scannable by the name a reader is looking for. Set `sidebar_label_width` to change the limit:
+#'
+#' ```yaml
+#' sidebar_labels: name-and-title
+#' sidebar_label_width: 60
+#' ```
+#'
+#' `title`, `reference`, `sidebar_labels`, and `sidebar_label_width` are the only top-level keys `altdoc/reference.yml` accepts; anything else is an error. So is an unrecognized `sidebar_labels` value, and a `sidebar_label_width` that is not a whole number of at least 4 --- below 4 leaves no room for the ellipsis, and a fractional width would be silently truncated, so `4.5` would quietly behave as `4`.
+#'
+#' Setting `sidebar_label_width` without `sidebar_labels: name-and-title` warns, since the width has nothing to apply to on its own.
 #'
