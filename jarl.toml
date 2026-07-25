@@ -1,6 +1,7 @@
-[lint]
-# Fixture packages copied and rendered as test data; their functions are
-# never meant to be called by altdoc's own code. `per-file-ignores` (which
-# would scope this to just `unused_function`) isn't supported by the jarl
-# version this repo's CI installs, so exclude the whole directory instead.
-exclude = ["tests/testthat/examples/"]
+# Fixture packages under tests/testthat/examples/ are copied and rendered as
+# test data, so their functions are never called by altdoc's own code and
+# `unused_function` fires on every one of them. Scope the suppression to that
+# one rule rather than excluding the directory outright, so any other rule
+# jarl gains still reports there (#19).
+[lint.per-file-ignores]
+"tests/testthat/examples/**" = ["unused_function"]
