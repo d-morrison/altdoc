@@ -1,6 +1,5 @@
 .substitute_altdoc_variables <- function(
     x,
-    filename,
     path = ".",
     tool = "docsify"
 ) {

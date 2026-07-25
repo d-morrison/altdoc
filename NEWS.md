@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Internal: removed unused `filename` parameter from `.substitute_altdoc_variables()` (#44).
+
 * Added: `render_docs()` now generates a reference index at `reference.md`,
   listing every documented topic with a one-line summary taken from its `.Rd`
   `\title{}`. The summary is therefore written once, in the roxygen2 `@title`,
