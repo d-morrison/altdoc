@@ -63,5 +63,7 @@
 #' sidebar_label_width: 60
 #' ```
 #'
-#' `title`, `reference`, `sidebar_labels`, and `sidebar_label_width` are the only top-level keys `altdoc/reference.yml` accepts; anything else is an error, as is an unrecognized `sidebar_labels` value or a `sidebar_label_width` below 4 (which would leave no room for the ellipsis).
+#' `title`, `reference`, `sidebar_labels`, and `sidebar_label_width` are the only top-level keys `altdoc/reference.yml` accepts; anything else is an error. So is an unrecognized `sidebar_labels` value, and a `sidebar_label_width` that is not a whole number of at least 4 --- below 4 leaves no room for the ellipsis, and a fractional width would be silently truncated, so `4.5` would quietly behave as `4`.
+#'
+#' Setting `sidebar_label_width` without `sidebar_labels: name-and-title` warns, since the width has nothing to apply to on its own.
 #'

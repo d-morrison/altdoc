@@ -131,10 +131,43 @@ test_that("reference.yml rejects an unknown sidebar_labels value", {
     expect_error(.reference_settings(dir), "sidebar_labels")
 })
 
+test_that("reference.yml rejects a sidebar_labels that is not a single string", {
+    # Either shape would otherwise slip past the value check and then silently
+    # fail to match the opt-in. A one-element sequence is not among them: yaml
+    # collapses it to a plain string, so it behaves exactly like the scalar.
+    dir <- local_labels_package("sidebar_labels: [name, name-and-title]")
+    expect_error(.reference_settings(dir), "sidebar_labels")
+
+    dir <- local_labels_package("sidebar_labels:", "  nested: name")
+    expect_error(.reference_settings(dir), "sidebar_labels")
+})
+
 test_that("reference.yml rejects a sidebar_label_width with no room for the ellipsis", {
     dir <- local_labels_package(
         "sidebar_labels: name-and-title",
         "sidebar_label_width: 2"
     )
     expect_error(.reference_settings(dir), "sidebar_label_width")
+})
+
+test_that("reference.yml rejects a fractional sidebar_label_width", {
+    # `substr()` would truncate it, so 4.5 would quietly behave as 4.
+    dir <- local_labels_package(
+        "sidebar_labels: name-and-title",
+        "sidebar_label_width: 4.5"
+    )
+    expect_error(.reference_settings(dir), "whole number")
+})
+
+test_that("reference.yml warns that sidebar_label_width alone does nothing", {
+    dir <- local_labels_package("sidebar_label_width: 60")
+    expect_warning(.reference_settings(dir), "no effect")
+})
+
+test_that("reference.yml does not warn when the width accompanies the opt-in", {
+    dir <- local_labels_package(
+        "sidebar_labels: name-and-title",
+        "sidebar_label_width: 60"
+    )
+    expect_no_warning(.reference_settings(dir))
 })

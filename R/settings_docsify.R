@@ -85,7 +85,7 @@
 
         if (length(fn) > 0) {
             titles <- .escape_md_link_text(.sidebar_labels(
-                fs::path_ext_remove(basename(fn)),
+                basename(fn),
                 src_dir = path
             ))
             idx <- grep("\\$ALTDOC_MAN_BLOCK", sidebar)
