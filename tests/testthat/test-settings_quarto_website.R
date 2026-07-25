@@ -106,3 +106,132 @@ test_that(".stage_external_includes() follows escaping includes nested in-tree",
         )))
     )
 })
+
+test_that(".stage_external_includes() stages front-matter shortcode paths", {
+    root <- withr::local_tempdir()
+
+    # source tree: a Lua shortcode in a repo-root _extensions/, referenced
+    # from a vignette's front matter rather than from an include
+    ext <- fs::path_join(c(root, "_extensions", "d-morrison", "slidebreak"))
+    fs::dir_create(ext)
+    writeLines("-- filter", fs::path_join(c(ext, "slidebreak.lua")))
+
+    vig <- fs::path_join(c(root, "_quarto", "vignettes"))
+    fs::dir_create(vig)
+    writeLines(
+        c(
+            "---",
+            "title: Methodology",
+            "shortcodes:",
+            "  - ../_extensions/d-morrison/slidebreak/slidebreak.lua",
+            "---",
+            "",
+            "Body text."
+        ),
+        fs::path_join(c(vig, "methodology.qmd"))
+    )
+
+    .stage_external_includes(
+        src_dir = root,
+        quarto_dir = fs::path_join(c(root, "_quarto"))
+    )
+
+    expect_true(
+        fs::file_exists(fs::path_join(c(
+            root,
+            "_quarto",
+            "_extensions",
+            "d-morrison",
+            "slidebreak",
+            "slidebreak.lua"
+        )))
+    )
+})
+
+test_that(".stage_external_includes() stages filters and metadata-files too", {
+    root <- withr::local_tempdir()
+
+    fs::dir_create(fs::path_join(c(root, "shared")))
+    writeLines("-- filter", fs::path_join(c(root, "shared", "anchors.lua")))
+    writeLines("key: value", fs::path_join(c(root, "shared", "meta.yml")))
+
+    vig <- fs::path_join(c(root, "_quarto", "vignettes"))
+    fs::dir_create(vig)
+    writeLines(
+        c(
+            "---",
+            "filters:",
+            "  - ../shared/anchors.lua",
+            "  - quarto", # a built-in name, not a path: must be left alone
+            "metadata-files:",
+            "  - ../shared/meta.yml",
+            "---"
+        ),
+        fs::path_join(c(vig, "article.qmd"))
+    )
+
+    .stage_external_includes(
+        src_dir = root,
+        quarto_dir = fs::path_join(c(root, "_quarto"))
+    )
+
+    expect_true(
+        fs::file_exists(fs::path_join(c(
+            root,
+            "_quarto",
+            "shared",
+            "anchors.lua"
+        )))
+    )
+    expect_true(
+        fs::file_exists(fs::path_join(c(root, "_quarto", "shared", "meta.yml")))
+    )
+    # A bare extension name resolves to no file, so nothing is created for it.
+    expect_false(fs::file_exists(fs::path_join(c(root, "_quarto", "quarto"))))
+})
+
+test_that(".front_matter_lines() reads only a leading, terminated block", {
+    expect_equal(
+        .front_matter_lines(c("---", "title: x", "---", "body")),
+        "title: x"
+    )
+    # `...` is YAML's other document terminator, which Quarto accepts.
+    expect_equal(
+        .front_matter_lines(c("---", "title: x", "...", "body")),
+        "title: x"
+    )
+    # Not front matter: the fence has to be the very first line.
+    expect_equal(
+        .front_matter_lines(c("body", "---", "title: x", "---")),
+        character(0)
+    )
+    # Unterminated, and empty, blocks yield nothing rather than erroring.
+    expect_equal(.front_matter_lines(c("---", "title: x")), character(0))
+    expect_equal(.front_matter_lines(c("---", "---")), character(0))
+    expect_equal(.front_matter_lines(character(0)), character(0))
+})
+
+test_that(".front_matter_paths() ignores keys that are not path-valued", {
+    lines <- c(
+        "---",
+        "title: Not a path",
+        "bibliography: ../refs.bib",
+        "shortcodes:",
+        "  - ../a.lua",
+        "---"
+    )
+    # `title:`/`bibliography:` are deliberately out of scope: Quarto resolves
+    # the latter itself, and staging it here would be a behavior change beyond
+    # the reported bug.
+    expect_equal(.front_matter_paths(lines), "../a.lua")
+})
+
+test_that(".front_matter_paths() tolerates malformed front matter", {
+    # Quarto reports the YAML error with better diagnostics than this pass
+    # could, so staging simply finds nothing.
+    expect_equal(
+        .front_matter_paths(c("---", "shortcodes: [unclosed", "---")),
+        character(0)
+    )
+    expect_equal(.front_matter_paths(c("no front matter here")), character(0))
+})
