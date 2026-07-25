@@ -91,7 +91,8 @@ static files in the root of the website.
 
 These files are imported automatically: <code>NEWS.md</code>,
 <code>CHANGELOG.md</code>, <code>CODE_OF_CONDUCT.md</code>,
-<code>LICENSE.md</code>, <code>LICENCE.md</code>.
+<code>CONTRIBUTING.md</code>, <code>LICENSE.md</code>,
+<code>LICENCE.md</code>.
 
 </li>
 </ul>
