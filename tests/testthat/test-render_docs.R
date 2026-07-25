@@ -28,6 +28,7 @@ test_that("docute: main files are correct", {
     expect_snapshot_file("docs/man/hello_r6.md", variant = "docute")
     expect_snapshot_file("docs/man/examplesIf_true.md", variant = "docute")
     expect_snapshot_file("docs/man/examplesIf_false.md", variant = "docute")
+    expect_snapshot_file("docs/man/hello_dontrun.md", variant = "docute")
     expect_snapshot_file("docs/vignettes/test.md", variant = "docute")
 })
 
@@ -61,6 +62,7 @@ test_that("docsify: main files are correct", {
     expect_snapshot_file("docs/man/hello_r6.md", variant = "docsify")
     expect_snapshot_file("docs/man/examplesIf_true.md", variant = "docsify")
     expect_snapshot_file("docs/man/examplesIf_false.md", variant = "docsify")
+    expect_snapshot_file("docs/man/hello_dontrun.md", variant = "docsify")
     expect_snapshot_file("docs/vignettes/test.md", variant = "docsify")
     # This changes imperceptedly between windows and Linux/macOS, but the old
     # and new snapshots are LF so I don't really know why.
@@ -112,6 +114,7 @@ test_that("mkdocs: main files are correct", {
     expect_snapshot_file("docs/reference.md", variant = "mkdocs")
     expect_snapshot_file("docs/man/hello_base.md", variant = "mkdocs")
     expect_snapshot_file("docs/man/hello_r6.md", variant = "mkdocs")
+    expect_snapshot_file("docs/man/hello_dontrun.md", variant = "mkdocs")
     expect_snapshot_file("docs/vignettes/test.md", variant = "mkdocs")
 })
 

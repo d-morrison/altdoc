@@ -20,7 +20,7 @@ test_that(".select_topics supports the string selectors", {
     )
     expect_identical(
         selected_names(list("matches(\"^hello\")"), topics),
-        c("hello_base", "hello_r6")
+        c("hello_base", "hello_dontrun", "hello_r6")
     )
     expect_identical(
         selected_names(list("contains(\"_ba\")"), topics),
@@ -34,12 +34,12 @@ test_that(".select_topics removes topics with a leading minus", {
     # A leading removal starts from every non-internal topic.
     expect_identical(
         selected_names(list("-starts_with(\"examplesIf\")"), topics),
-        c("hello_base", "hello_r6")
+        c("hello_base", "hello_dontrun", "hello_r6")
     )
     # A removal after an addition narrows what was added.
     expect_identical(
         selected_names(list("everything()", "-hello_r6"), topics),
-        c("examplesIf_false", "examplesIf_true", "hello_base")
+        c("examplesIf_false", "examplesIf_true", "hello_base", "hello_dontrun")
     )
 })
 

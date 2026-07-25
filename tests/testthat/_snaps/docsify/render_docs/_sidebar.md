@@ -7,6 +7,7 @@
   - [examplesIf_false](man/examplesIf_false)
   - [examplesIf_true](man/examplesIf_true)
   - [hello_base](man/hello_base)
+  - [hello_dontrun](man/hello_dontrun)
   - [hello_r6](man/hello_r6)
 * [News](NEWS.md)
 * [Citation](CITATION.md)

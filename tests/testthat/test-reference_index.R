@@ -35,6 +35,7 @@ test_that("altdoc/reference.yml supplies the grouping", {
         "    subtitle: Base and R6",
         "    contents:",
         "      - hello_base",
+        "      - hello_dontrun",
         "      - hello_r6"
     )
     topics <- .rd_topics(dir)
@@ -60,6 +61,7 @@ test_that("altdoc/reference.yml supplies the grouping", {
             "### Base and R6",
             "",
             "- [`hello_base()`](man/hello_base.md) --- Base function",
+            "- [`hello_dontrun()`](man/hello_dontrun.md) --- Mixed runnable and non-runnable examples",
             "- [`hello_r6`](man/hello_r6.md) --- Create a \"conductor\" tour",
             ""
         )
