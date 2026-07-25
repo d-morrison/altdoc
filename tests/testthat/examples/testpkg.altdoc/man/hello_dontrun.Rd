@@ -4,10 +4,7 @@
 \alias{hello_dontrun}
 \title{Mixed runnable and non-runnable examples}
 \usage{
-hello_dontrun(x = 2)
-}
-\arguments{
-\item{x}{A parameter}
+hello_dontrun()
 }
 \value{
 Some value

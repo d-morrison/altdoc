@@ -1,7 +1,5 @@
 #' Mixed runnable and non-runnable examples
 #'
-#' @param x A parameter
-#'
 #' @return Some value
 #' @export
 #'
@@ -17,6 +15,6 @@
 #' \donttest{
 #' Sys.sleep(1000)
 #' }
-hello_dontrun <- function(x = 2) {
+hello_dontrun <- function() {
     print("Hello, world!")
 }

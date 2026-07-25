@@ -8,21 +8,8 @@ Mixed runnable and non-runnable examples
 
 ## Usage
 
-<pre><code class='language-R'>hello_dontrun(x = 2)
+<pre><code class='language-R'>hello_dontrun()
 </code></pre>
-
-## Arguments
-
-<table role="presentation">
-<tr>
-<td style="white-space: collapse; font-family: monospace; vertical-align: top">
-<code id="x">x</code>
-</td>
-<td>
-A parameter
-</td>
-</tr>
-</table>
 
 ## Value
 
