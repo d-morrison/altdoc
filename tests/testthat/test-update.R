@@ -65,6 +65,30 @@ for (tool in c("docute", "docsify")) {
     )
 }
 
+# CONTRIBUTING --------------------------------------------------------
+
+for (tool in c("docute", "docsify")) {
+    test_that(
+        sprintf("render_docs updates correctly the CONTRIBUTING, %s", tool),
+        {
+            skip_if(!.quarto_is_installed())
+            skip_if(tool == "mkdocs" && !.venv_exists())
+            create_local_package()
+            writeLines("Hello", con = "CONTRIBUTING.md")
+            setup_docs(tool = tool, path = getwd())
+            render_docs(path = getwd())
+            expect_true(fs::file_exists("docs/CONTRIBUTING.md"))
+            writeLines("Hello again", con = "CONTRIBUTING.md")
+            contributing1 <- .readlines("CONTRIBUTING.md")
+            contributing2 <- .readlines("docs/CONTRIBUTING.md")
+            expect_false(identical(contributing1, contributing2))
+            render_docs(path = getwd())
+            contributing2 <- .readlines("docs/CONTRIBUTING.md")
+            expect_identical(contributing1, contributing2)
+        }
+    )
+}
+
 # LICENSE --------------------------------------------------------
 
 for (tool in c("docute", "docsify")) {

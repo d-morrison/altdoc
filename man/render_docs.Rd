@@ -19,7 +19,7 @@ render_docs(path = ".", verbose = FALSE, parallel = FALSE, freeze = FALSE, ...)
 }
 \description{
 Render and update the function reference manual, vignettes, README, NEWS, CHANGELOG, LICENSE,
-and CODE_OF_CONDUCT sections, if they exist. This function overwrites the
+CODE_OF_CONDUCT, and CONTRIBUTING sections, if they exist. This function overwrites the
 content of the 'docs/' folder. See details below.
 }
 \details{
@@ -41,6 +41,10 @@ This function searches the root directory and the \verb{inst/} directory for spe
 \item \code{docs/CODE_OF_CONDUCT.md}
 \itemize{
 \item CODE_OF_CONDUCT.md, CODE_OF_CONDUCT.txt, CODE_OF_CONDUCT
+}
+\item \code{docs/CONTRIBUTING.md}
+\itemize{
+\item CONTRIBUTING.md, CONTRIBUTING.txt, CONTRIBUTING
 }
 \item \code{docs/LICENSE.md}
 \itemize{

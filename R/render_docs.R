@@ -1,7 +1,7 @@
 #' Update documentation
 #'
 #' Render and update the function reference manual, vignettes, README, NEWS, CHANGELOG, LICENSE,
-#' and CODE_OF_CONDUCT sections, if they exist. This function overwrites the
+#' CODE_OF_CONDUCT, and CONTRIBUTING sections, if they exist. This function overwrites the
 #' content of the 'docs/' folder. See details below.
 #'
 #' @param verbose Logical. Print Rmarkdown or Quarto rendering output.
@@ -24,6 +24,8 @@
 #'   - CHANGELOG.md, CHANGELOG.txt, CHANGELOG
 #' * `docs/CODE_OF_CONDUCT.md`
 #'   - CODE_OF_CONDUCT.md, CODE_OF_CONDUCT.txt, CODE_OF_CONDUCT
+#' * `docs/CONTRIBUTING.md`
+#'   - CONTRIBUTING.md, CONTRIBUTING.txt, CONTRIBUTING
 #' * `docs/LICENSE.md`
 #'   - LICENSE.md, LICENSE.txt, LICENSE
 #'
@@ -106,6 +108,7 @@ render_docs <- function(
         "CHANGELOG",
         "ChangeLog",
         "CODE_OF_CONDUCT",
+        "CONTRIBUTING",
         "LICENSE",
         "LICENCE"
     )

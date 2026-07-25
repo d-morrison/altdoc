@@ -30,6 +30,33 @@ test_that(".substitute_altdoc_variables drops URL lines with no DESCRIPTION", {
     expect_identical(out, c("* [Home](/)", "* [Website]()"))
 })
 
+test_that(".substitute_altdoc_variables resolves $ALTDOC_CONTRIBUTING", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "docs")))
+    writeLines("Hello", fs::path_join(c(dir, "docs", "CONTRIBUTING.md")))
+
+    out <- .substitute_altdoc_variables(
+        c("* [Contributing]($ALTDOC_CONTRIBUTING)"),
+        path = dir,
+        tool = "docsify"
+    )
+
+    expect_identical(out, "* [Contributing](CONTRIBUTING.md)")
+})
+
+test_that(".substitute_altdoc_variables drops $ALTDOC_CONTRIBUTING when absent", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "docs")))
+
+    out <- .substitute_altdoc_variables(
+        c("* [Home](/)", "* [Contributing]($ALTDOC_CONTRIBUTING)"),
+        path = dir,
+        tool = "docsify"
+    )
+
+    expect_identical(out, "* [Home](/)")
+})
+
 test_that(".substitute_altdoc_variables does not mangle the GitHub URL variable", {
     dir <- withr::local_tempdir()
     fs::dir_create(fs::path_join(c(dir, "docs")))

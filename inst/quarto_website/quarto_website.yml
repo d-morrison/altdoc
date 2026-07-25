@@ -34,6 +34,8 @@ website:
         file: $ALTDOC_LICENCE
       - text: Code of conduct
         file: $ALTDOC_CODE_OF_CONDUCT
+      - text: Contributing
+        file: $ALTDOC_CONTRIBUTING
       - text: Citation
         file: $ALTDOC_CITATION
 
