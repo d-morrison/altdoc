@@ -78,7 +78,12 @@
     } else {
         x <- gsub("\\$ALTDOC_PACKAGE_NAME", "", x)
         x <- gsub("\\$ALTDOC_PACKAGE_VERSION", "", x)
-        x <- x[grepl("\\$ALTDOC_PACKAGE_URL_GITHUB")] # before the other one
+        # There is no URL to substitute, so drop the lines that reference one,
+        # as the no-URL branch above does. This has to run before the
+        # `$ALTDOC_PACKAGE_URL` substitution below, because that variable's
+        # name is a prefix of this one: replacing it first would leave the
+        # trailing "_GITHUB" behind on any line mentioning the GitHub URL.
+        x <- x[!grepl("\\$ALTDOC_PACKAGE_URL_GITHUB", x)]
         x <- gsub("\\$ALTDOC_PACKAGE_URL", "", x)
     }
 
