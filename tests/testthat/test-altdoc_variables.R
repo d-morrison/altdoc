@@ -35,13 +35,15 @@ test_that(".substitute_altdoc_variables does not mangle the GitHub URL variable"
     fs::dir_create(fs::path_join(c(dir, "docs")))
 
     # `$ALTDOC_PACKAGE_URL` is a prefix of `$ALTDOC_PACKAGE_URL_GITHUB`, so
-    # substituting it first would leave a stray "_GITHUB" behind.
+    # substituting it first would rewrite the GitHub line into a stray
+    # "_GITHUB" rather than dropping it. Keep a line that survives, so the
+    # residue check runs against real content instead of an empty vector.
     out <- .substitute_altdoc_variables(
-        "* [GitHub]($ALTDOC_PACKAGE_URL_GITHUB)",
+        c("* [Home](/)", "* [GitHub]($ALTDOC_PACKAGE_URL_GITHUB)"),
         path = dir,
         tool = "docsify"
     )
 
-    expect_identical(out, character(0))
+    expect_identical(out, "* [Home](/)")
     expect_false(any(grepl("_GITHUB", out)))
 })
