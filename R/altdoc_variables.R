@@ -7,6 +7,7 @@
     x <- gsub("\\$ALTDOC_VERSION", utils::packageVersion("altdoc"), x)
 
     files <- c(
+        "reference.md",
         "NEWS.md",
         "CHANGELOG.md",
         "CODE_OF_CONDUCT.md",
@@ -17,7 +18,12 @@
     )
     for (vn in files) {
         fn <- fs::path_join(c(.doc_path(path), vn))
-        regex <- sprintf("\\$ALTDOC_%s", fs::path_ext_remove(basename(vn)))
+        # `$ALTDOC_` variables are upper case, but the file they point to need
+        # not be (e.g. the generated `reference.md`).
+        regex <- sprintf(
+            "\\$ALTDOC_%s",
+            toupper(fs::path_ext_remove(basename(vn)))
+        )
         if (
             fs::file_exists(fn) ||
                 fs::file_exists(fs::path_join(c(path, "_quarto", vn)))

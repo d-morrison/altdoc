@@ -17,6 +17,7 @@
 #' @return NULL
 #' @template package_structure
 #' @template altdoc_variables
+#' @template altdoc_reference
 #' @template altdoc_preambles
 #'
 #' @examples

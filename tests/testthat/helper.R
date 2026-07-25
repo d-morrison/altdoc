@@ -93,3 +93,42 @@ setup_example_package <- function(example_name, env = parent.frame()) {
     }
     fs::dir_delete(example_name)
 }
+
+# Helper function to parse an .Rd file written inline in a test
+rd_from_text <- function(...) {
+    fn <- fs::file_temp(ext = "Rd")
+    writeLines(c(...), fn)
+    tools::parse_Rd(fn)
+}
+
+# Helper function to build a throwaway package with an altdoc/reference.yml
+local_reference_package <- function(..., env = parent.frame()) {
+    dir <- withr::local_tempdir(.local_envir = env)
+    fs::dir_copy(
+        test_path("examples/testpkg.altdoc/man"),
+        fs::path_join(c(dir, "man"))
+    )
+    fs::dir_create(fs::path_join(c(dir, "altdoc")))
+    writeLines(c(...), fs::path_join(c(dir, "altdoc", "reference.yml")))
+    dir
+}
+
+# Helper function to report which topics a `contents:` list selects
+selected_names <- function(contents, topics) {
+    topics$name[.select_topics(contents, topics)]
+}
+
+# Helper function to build a throwaway package whose man/ holds the given .Rd
+# files, passed as name = c("<line>", "<line>", ...)
+local_man_package <- function(..., env = parent.frame()) {
+    files <- list(...)
+    dir <- withr::local_tempdir(.local_envir = env)
+    fs::dir_create(fs::path_join(c(dir, "man")))
+    for (nm in names(files)) {
+        writeLines(
+            files[[nm]],
+            fs::path_join(c(dir, "man", paste0(nm, ".Rd")))
+        )
+    }
+    dir
+}

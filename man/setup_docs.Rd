@@ -44,11 +44,48 @@ The settings files in the \verb{altdoc/} directory can include \verb{$ALTDOC} va
 \item \verb{$ALTDOC_PACKAGE_URL}: First URL listed in the DESCRIPTION file of the package.
 \item \verb{$ALTDOC_PACKAGE_URL_GITHUB}: First URL that contains "github.com" from the URLs listed in the DESCRIPTION file of the package. If no such URL is found, lines containing this variable are removed from the settings file.
 \item \verb{$ALTDOC_MAN_BLOCK}: Nested list of links to the individual help pages for each exported function of the package. The format of this block depends on the documentation generator.
+\item \verb{$ALTDOC_REFERENCE}: Link to the generated reference index, a page listing every documented topic with a one-line summary. See the "Reference index" section below.
 \item \verb{$ALTDOC_VIGNETTE_BLOCK}: Nested list of links to the vignettes. The format of this block depends on the documentation generator.
 \item \verb{$ALTDOC_VERSION}: Version number of the altdoc package.
 }
 
 Also note that you can store images and static files in the \verb{altdoc/} directory. All the files in this folder are copied to \verb{docs/} and made available in the root of the website, so you can link to them easily.
+}
+
+\section{Reference index}{
+
+
+\code{render_docs()} writes a reference index to \code{reference.md}: a page listing every documented topic with a one-line summary. Link to it from the settings file with the \verb{$ALTDOC_REFERENCE} variable.
+
+Each summary is read from the \verb{\\title\{\}} of the topic's \code{.Rd} file, so it is written once in the roxygen2 \verb{@title} and never retyped. The page is rebuilt on every \code{render_docs()} call, so a summary can never drift out of sync with the help page it describes.
+
+By default the index holds a single "All functions" section listing every topic that is not marked \verb{@keywords internal}. To group the topics instead, create \code{altdoc/reference.yml}:
+
+\if{html}{\out{<div class="sourceCode yaml">}}\preformatted{reference:
+  - title: Data
+    desc: Load and reshape survey data.
+    contents:
+      - as_pop_data
+      - starts_with("read_")
+  - title: Modeling
+    subtitle: Estimation
+    contents:
+      - has_concept("estimation")
+}\if{html}{\out{</div>}}
+
+Each section may set \code{title}, \code{subtitle}, \code{desc}, and \code{contents}. This is the same schema \code{pkgdown} uses for the \verb{reference:} key of \verb{_pkgdown.yml}, so an existing block can be moved over unchanged.
+
+An entry of \code{contents} is either a topic name (or alias), or one of these selectors:
+\itemize{
+\item \code{starts_with("x")}, \code{ends_with("x")}, \code{contains("x")}: match the start, end, or any part of a topic name or alias.
+\item \code{matches("x")}: match a regular expression.
+\item \code{has_keyword("x")}, \code{has_concept("x")}, \code{lacks_concepts("x")}: match the \verb{\\keyword\{\}} and \verb{\\concept\{\}} tags. roxygen2 writes \verb{@family} to \verb{\\concept\{\}}.
+\item \code{everything()}: every topic.
+}
+
+Prefix an entry with \code{-} to remove its matches instead of adding them; when the first entry of a section is a removal, the section starts from every non-internal topic. Selectors skip topics marked \verb{@keywords internal} unless called with \code{internal = TRUE}.
+
+Topics missing from \code{altdoc/reference.yml} are reported at render time and collected in a trailing "Other" section, so they are never silently dropped from the index.
 }
 
 \section{Altdoc preambles}{
