@@ -96,7 +96,28 @@ reference:
       - as_pop_data
 }\if{html}{\out{</div>}}
 
-\code{title} and \code{reference} are the only top-level keys \code{altdoc/reference.yml} accepts; anything else is an error. A file holding a bare list of sections with no \verb{reference:} key is still accepted, for a block moved over from \code{pkgdown} unchanged, but has nowhere to put \code{title} and so always uses the default.
+A file holding a bare list of sections with no \verb{reference:} key is still accepted, for a block moved over from \code{pkgdown} unchanged, but has nowhere to put \code{title} and so always uses the default.
+}
+
+\section{Sidebar labels}{
+
+
+Every generator labels a man page in the sidebar with its topic name, which says what a topic is called but not what it does. Set \code{sidebar_labels} to \code{name-and-title} to append the topic's \verb{\\title\{\}}, so the summary written once in the roxygen2 \verb{@title} reaches the sidebar as well as the reference index:
+
+\if{html}{\out{<div class="sourceCode yaml">}}\preformatted{sidebar_labels: name-and-title
+}\if{html}{\out{</div>}}
+
+A topic then reads \verb{as_pop_data(): Load a cross-sectional antibody survey data set} rather than \code{as_pop_data}. The name keeps the \verb{()} suffix only when the topic documents something callable, matching how the reference index writes it.
+
+This is opt-in: the default, \code{name}, is what every generator did before, so an existing site's sidebar does not change until its author asks for it.
+
+Titles are truncated to 40 characters so a long one cannot overflow a narrow sidebar. Only the title is shortened, never the topic name, so entries stay scannable by the name a reader is looking for. Set \code{sidebar_label_width} to change the limit:
+
+\if{html}{\out{<div class="sourceCode yaml">}}\preformatted{sidebar_labels: name-and-title
+sidebar_label_width: 60
+}\if{html}{\out{</div>}}
+
+\code{title}, \code{reference}, \code{sidebar_labels}, and \code{sidebar_label_width} are the only top-level keys \code{altdoc/reference.yml} accepts; anything else is an error, as is an unrecognized \code{sidebar_labels} value or a \code{sidebar_label_width} below 4 (which would leave no room for the ellipsis).
 }
 
 \section{Altdoc preambles}{

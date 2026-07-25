@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+* Added: man pages can now be labeled in the sidebar with their `.Rd`
+  `\title{}` as well as their topic name, so a reader scanning the sidebar
+  sees what each topic does rather than only what it is called. Set
+  `sidebar_labels: name-and-title` in `altdoc/reference.yml` to opt in; an
+  entry then reads `as_pop_data(): Load a cross-sectional antibody survey
+  data set`, with the `()` suffix only on topics that document something
+  callable, matching the reference index. Titles are truncated to 40
+  characters so a long one cannot overflow a narrow sidebar; only the title
+  is shortened, never the name, and `sidebar_label_width` changes the limit.
+  This is opt-in, so an existing site's sidebar is unchanged until its author
+  asks for it (#37).
+
 * Fixed: `render_docs()` now imports `CONTRIBUTING.md` to `docs/`, so the
   `$ALTDOC_CONTRIBUTING` variable resolves. `.substitute_altdoc_variables()`
   already substituted that variable, but the file it points at was never
@@ -10,6 +22,10 @@
   carry a "Contributing" entry alongside "Code of Conduct" for all four
   generators; settings files created before this release are never modified
   automatically, so add a `$ALTDOC_CONTRIBUTING` entry to pick it up (#4).
+
+* Fixed: a `docute` vignette title containing a backslash no longer produces a
+  malformed sidebar entry. The title was escaped for the single quotes that
+  enclose it, but not for the backslash that does the escaping (#37).
 
 * Internal: removed unused `filename` parameter from `.substitute_altdoc_variables()` (#44).
 

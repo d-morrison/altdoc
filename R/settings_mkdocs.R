@@ -169,7 +169,10 @@
             fn_man,
             function(x) fs::path_join(c("man", basename(x)))
         )
-        titles <- fs::path_ext_remove(basename(fn_man))
+        titles <- .sidebar_labels(
+            fs::path_ext_remove(basename(fn_man)),
+            src_dir = path
+        )
 
         yml <- paste(sidebar, collapse = "\n")
         yml <- yaml::yaml.load(yml)
