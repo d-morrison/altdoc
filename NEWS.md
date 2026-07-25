@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+* Fixed: `render_docs()` now imports `CONTRIBUTING.md` to `docs/`, so the
+  `$ALTDOC_CONTRIBUTING` variable resolves. `.substitute_altdoc_variables()`
+  already substituted that variable, but the file it points at was never
+  copied, so the variable never resolved and any settings-file line using it
+  was silently dropped. The settings files shipped by `setup_docs()` now
+  carry a "Contributing" entry alongside "Code of Conduct" for all four
+  generators; settings files created before this release are never modified
+  automatically, so add a `$ALTDOC_CONTRIBUTING` entry to pick it up (#4).
+
 * Internal: removed unused `filename` parameter from `.substitute_altdoc_variables()` (#44).
 
 * Added: `render_docs()` now generates a reference index at `reference.md`,

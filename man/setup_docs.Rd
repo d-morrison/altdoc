@@ -30,7 +30,7 @@ website.
 \item \verb{vignettes/} stores the vignettes in \code{.md}, \code{.Rmd} or \code{.qmd} format.
 \item \verb{docs/} stores the rendered website. This folder is overwritten every time a user calls \code{render_docs()}, so you should not edit it manually.
 \item \verb{altdoc/} stores the settings files created by \code{setup_docs()}. These files are never modified automatically after initialization, so you can edit them manually to customize the settings of your documentation and website. All the files stored in \verb{altdoc/} are copied to \verb{docs/} and made available as static files in the root of the website.
-\item These files are imported automatically: \code{NEWS.md}, \code{CHANGELOG.md}, \code{CODE_OF_CONDUCT.md}, \code{LICENSE.md}, \code{LICENCE.md}.
+\item These files are imported automatically: \code{NEWS.md}, \code{CHANGELOG.md}, \code{CODE_OF_CONDUCT.md}, \code{CONTRIBUTING.md}, \code{LICENSE.md}, \code{LICENCE.md}.
 }
 }
 
