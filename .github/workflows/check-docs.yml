@@ -1,0 +1,71 @@
+# Fails when `man/`, `NAMESPACE`, or `DESCRIPTION` differ from what
+# roxygen2 generates from the current roxygen comments, so the generated
+# documentation cannot drift from its source (#48).
+#
+# Modeled on the equivalent check in UCD-SERG/serocalculator and
+# d-morrison/rpt (`R-check-docs.yml`).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+name: Documentation check
+
+permissions: read-all
+
+jobs:
+  docs-check:
+    name: docs-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GITHUB_PAT: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      # Pin roxygen2 to the version DESCRIPTION records in
+      # `Config/roxygen2/version`, so this job checks the docs against the
+      # generator that produced them rather than whatever is newest. A
+      # deliberate roxygen2 upgrade is then a visible edit to that field,
+      # not a silent CI failure on an unrelated PR.
+      - name: Read the recorded roxygen2 version
+        id: roxygen-version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(grep -Po '^Config/roxygen2/version:\s*\K.*' DESCRIPTION || true)
+          if [ -z "$version" ]; then
+            echo "::error::DESCRIPTION has no Config/roxygen2/version field; cannot pin the generator."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Checking documentation against roxygen2 $version"
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: roxygen2@${{ steps.roxygen-version.outputs.version }}
+          needs: roxygen2
+
+      - name: Document
+        run: roxygen2::roxygenise()
+        shell: Rscript {0}
+
+      - name: Check for changed files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add --all
+          changes=$(git diff-index HEAD --name-only -- man/ NAMESPACE DESCRIPTION)
+          if [ -n "$changes" ]; then
+            echo "::error::Generated documentation is out of sync with its roxygen source."
+            git --no-pager diff HEAD -- man/ NAMESPACE DESCRIPTION
+            echo "Changed: $changes"
+            echo "Run roxygen2::roxygenise() and commit the result."
+            exit 1
+          fi
+          echo "Documentation is in sync."
