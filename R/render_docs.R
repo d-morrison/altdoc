@@ -13,21 +13,28 @@
 #'
 #' @details
 #'
-#' This function searches the root directory and the `inst/` directory for specific filenames, renders/converts/copies them to the `docs/` directory. The order of priority for each file is established as follows:
+#' This function searches for specific filenames, then renders, converts, or copies them to the `docs/` directory.
+#'
+#' `README` is searched for in the root directory only. Every other file below is searched for in the root directory first and then in `inst/`, and in each of those under four extensions, in this order of priority: `.md`, `.txt`, no extension, `.Rd`. So `NEWS` is looked for as `NEWS.md`, `NEWS.txt`, `NEWS`, `NEWS.Rd`, `inst/NEWS.md`, `inst/NEWS.txt`, `inst/NEWS`, and `inst/NEWS.Rd`, and the first of those that exists is the one used. A `.Rd` source is converted to Markdown; every other format is copied unchanged.
+#'
+#' The base names searched for, and the file each produces:
 #'
 #' * `docs/README.md`
-#'   - README.md, README.qmd, README.Rmd
+#'   - README.qmd, README.Rmd, README.md
 #' * `docs/NEWS.md`
-#'   - NEWS.md, NEWS.txt, NEWS, NEWS.Rd
+#'   - NEWS
 #'   - Note: Where possible, Github contributors and issues are linked automatically.
 #' * `docs/CHANGELOG.md`
-#'   - CHANGELOG.md, CHANGELOG.txt, CHANGELOG
+#'   - CHANGELOG, ChangeLog
+#'   - Note: These are two separate searches writing to the same file, so on a case-sensitive file system holding both, `ChangeLog` is the one used.
 #' * `docs/CODE_OF_CONDUCT.md`
-#'   - CODE_OF_CONDUCT.md, CODE_OF_CONDUCT.txt, CODE_OF_CONDUCT
+#'   - CODE_OF_CONDUCT
 #' * `docs/CONTRIBUTING.md`
-#'   - CONTRIBUTING.md, CONTRIBUTING.txt, CONTRIBUTING
+#'   - CONTRIBUTING
 #' * `docs/LICENSE.md`
-#'   - LICENSE.md, LICENSE.txt, LICENSE
+#'   - LICENSE
+#' * `docs/LICENCE.md`
+#'   - LICENCE
 #'
 #' @return NULL
 #' @template altdoc_variables

@@ -23,32 +23,41 @@ CODE_OF_CONDUCT, and CONTRIBUTING sections, if they exist. This function overwri
 content of the 'docs/' folder. See details below.
 }
 \details{
-This function searches the root directory and the \verb{inst/} directory for specific filenames, renders/converts/copies them to the \verb{docs/} directory. The order of priority for each file is established as follows:
+This function searches for specific filenames, then renders, converts, or copies them to the \verb{docs/} directory.
+
+\code{README} is searched for in the root directory only. Every other file below is searched for in the root directory first and then in \verb{inst/}, and in each of those under four extensions, in this order of priority: \code{.md}, \code{.txt}, no extension, \code{.Rd}. So \code{NEWS} is looked for as \code{NEWS.md}, \code{NEWS.txt}, \code{NEWS}, \code{NEWS.Rd}, \code{inst/NEWS.md}, \code{inst/NEWS.txt}, \code{inst/NEWS}, and \code{inst/NEWS.Rd}, and the first of those that exists is the one used. A \code{.Rd} source is converted to Markdown; every other format is copied unchanged.
+
+The base names searched for, and the file each produces:
 \itemize{
 \item \code{docs/README.md}
 \itemize{
-\item README.md, README.qmd, README.Rmd
+\item README.qmd, README.Rmd, README.md
 }
 \item \code{docs/NEWS.md}
 \itemize{
-\item NEWS.md, NEWS.txt, NEWS, NEWS.Rd
+\item NEWS
 \item Note: Where possible, Github contributors and issues are linked automatically.
 }
 \item \code{docs/CHANGELOG.md}
 \itemize{
-\item CHANGELOG.md, CHANGELOG.txt, CHANGELOG
+\item CHANGELOG, ChangeLog
+\item Note: These are two separate searches writing to the same file, so on a case-sensitive file system holding both, \code{ChangeLog} is the one used.
 }
 \item \code{docs/CODE_OF_CONDUCT.md}
 \itemize{
-\item CODE_OF_CONDUCT.md, CODE_OF_CONDUCT.txt, CODE_OF_CONDUCT
+\item CODE_OF_CONDUCT
 }
 \item \code{docs/CONTRIBUTING.md}
 \itemize{
-\item CONTRIBUTING.md, CONTRIBUTING.txt, CONTRIBUTING
+\item CONTRIBUTING
 }
 \item \code{docs/LICENSE.md}
 \itemize{
-\item LICENSE.md, LICENSE.txt, LICENSE
+\item LICENSE
+}
+\item \code{docs/LICENCE.md}
+\itemize{
+\item LICENCE
 }
 }
 }

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+* Fixed: `render_docs()`'s documented list of source files it looks for now
+  matches what it actually looks for. Three gaps: the `.Rd` and `inst/`
+  candidates were listed for `NEWS` but for none of the other files, even
+  though every one of them is searched for under all four extensions in both
+  locations; `ChangeLog` and `LICENCE` were not mentioned at all, though both
+  are searched for; and the `README` candidates were listed in the wrong order
+  of priority, as if `README.md` won over `README.qmd`, when the opposite is
+  true. The `.Rd` omission was the one most likely to mislead, since a `.Rd`
+  source is converted rather than copied, so a package shipping `inst/NEWS.Rd`
+  is handled differently from what the docs implied was possible (#58).
+
 * Fixed: `\dontrun{}` and `\donttest{}` are now honored per block. A single
   such block used to switch evaluation off for every example on the page, so a
   help page whose examples were mostly runnable but ended with one error-case
