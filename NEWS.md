@@ -7,9 +7,11 @@
   candidates were listed for `NEWS` but for none of the other files, even
   though every one of them is searched for under all four extensions in both
   locations; `ChangeLog` and `LICENCE` were not mentioned at all, though both
-  are searched for; and the `README` candidates were listed in the wrong order
-  of priority, as if `README.md` won over `README.qmd`, when the opposite is
-  true. The `.Rd` omission was the one most likely to mislead, since a `.Rd`
+  are searched for; and `README` was listed as a three-way choice between
+  `README.md`, `README.qmd`, and `README.Rmd`, which reads as though writing
+  a `README.qmd` is enough. It is not: `docs/README.md` is always a copy of
+  `README.md`, and a `.qmd` or `.Rmd` has to be rendered to it separately.
+  The `.Rd` omission was the other one likely to mislead, since a `.Rd`
   source is converted rather than copied, so a package shipping `inst/NEWS.Rd`
   is handled differently from what the docs implied was possible (#58).
 

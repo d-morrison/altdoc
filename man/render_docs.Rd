@@ -31,7 +31,8 @@ The base names searched for, and the file each produces:
 \itemize{
 \item \code{docs/README.md}
 \itemize{
-\item README.qmd, README.Rmd, README.md
+\item README.md
+\item Note: \code{README.md} is required, and is always the file copied. \code{README.qmd} and \code{README.Rmd} are not rendered for you, so keep \code{README.md} in step with whichever of them you write in. When more than one is present, the first of \code{README.qmd}, \code{README.Rmd}, \code{README.md} is the one the \code{freeze} check watches for changes.
 }
 \item \code{docs/NEWS.md}
 \itemize{
