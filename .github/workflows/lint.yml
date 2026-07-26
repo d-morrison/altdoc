@@ -14,13 +14,11 @@ jobs:
     name: jarl-check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      # Pin the action to a full commit SHA rather than the `v0.1.1` tag: a
-      # tag can be re-pointed, a SHA cannot. This follows the third-party
-      # pinning convention in d-morrison/gha's README, which in turn follows
-      # GitHub's security-hardening guidance. v0.1.1 also runs on Node 24;
-      # the v0.1.0 tag this replaced runs on Node 20, which the runner warns
-      # is deprecated.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      # SHA-pinned like every other third-party action here; see
+      # `.github/dependabot.yml` for the convention. v0.1.1 also runs on Node
+      # 24, where the v0.1.0 tag it replaced runs on Node 20, which the runner
+      # warns is deprecated.
       #
       # Pin `version` explicitly too. The input defaults to "", documented as
       # "the version in pyproject.toml or 'latest'", and this repo has no
@@ -29,10 +27,9 @@ jobs:
       # is what the floating setup already resolved to, so this pin records
       # current behavior rather than changing it.
       #
-      # Bump both pins deliberately: nothing watches either one. This repo has
-      # no Dependabot config (#56), and `version` is an action input rather
-      # than a `uses:` ref, so it would stay invisible to Dependabot even
-      # once there is one.
+      # Dependabot watches the `uses:` SHA above, but not `version`: that is an
+      # action input rather than a `uses:` ref, so it stays invisible and needs
+      # a deliberate bump.
       - uses: etiennebacher/setup-jarl@eabf7e572f2991d165059007531b9bbe2987e39c # v0.1.1
         with:
           version: "0.5.0"

@@ -1,0 +1,35 @@
+# Keep the SHA-pinned third-party actions current.
+#
+# Every third-party action in `.github/workflows/` is pinned to a full commit
+# SHA, with the version in a trailing comment, for supply-chain hardening.
+# A SHA is immutable, so a re-pointed tag cannot silently change what runs --
+# but it also cannot move forward on its own, so without something watching it
+# a pin freezes in place instead. Dependabot is that half of the pair: it opens
+# a PR as each upstream publishes a release. See the "Pinning third-party
+# actions" section of d-morrison/gha's README, which this follows.
+#
+# altdoc has no composite actions of its own, so `.github/workflows/` -- which
+# the `/` directory covers -- is the only place `uses:` appears.
+#
+# The `d-morrison/gha/.github/workflows/*` references are first-party and
+# deliberately track a moving major tag rather than a SHA, so they pick up
+# fixes on their own within a major version and need no pin. Dependabot still
+# scans them -- reusable-workflow `uses:` refs are in scope for the
+# github-actions ecosystem -- so a new major tag arrives here as a bump PR.
+# That is wanted rather than something to exclude: a major tag is exactly the
+# bump that does not happen on its own.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/" # .github/workflows/
+    schedule:
+      interval: "weekly"
+    # Batch every action bump into one PR per run, so a quiet week costs one
+    # review rather than one per action.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
