@@ -41,12 +41,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-pandoc@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
 
+      # SHA-pinned like every other third-party action here, but this one
+      # cannot be kept current the same way: `eddelbuettel/github-actions`
+      # publishes no tags or releases at all, so Dependabot has no version to
+      # compare against and will never open a bump PR for it. The pin is still
+      # worth taking -- `@master` is a mutable branch ref, so whatever lands
+      # there runs here unreviewed -- but it needs a deliberate manual bump
+      # rather than an automated one. #60 is separately weighing whether this
+      # workflow should keep using `r-ci` at all, which would retire the
+      # question.
       - name: Setup
-        uses: eddelbuettel/github-actions/r-ci-setup@master
+        uses: eddelbuettel/github-actions/r-ci-setup@6f25da938f36a97de19f40e428b9090f168de45d # master (no tags; see comment above)
 
       - name: Bootstrap
         run: ./run.sh bootstrap
