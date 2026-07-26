@@ -35,6 +35,12 @@ test_that(".rd2qmd: basic errors", {
         ),
         "must be a valid directory"
     )
+    # A missing `target_dir` reports the same error as an invalid one, rather
+    # than R's own "argument is missing, with no default" (#62).
+    expect_error(
+        .rd2qmd(testthat::test_path("examples/examples-man/between.Rd")),
+        "must be a valid directory"
+    )
 })
 
 test_that(".rd2qmd: title across several lines", {

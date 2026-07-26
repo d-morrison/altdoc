@@ -2,7 +2,7 @@
     if (missing(source_file) || !file.exists(source_file)) {
         stop("source_file must be a valid file path.", call. = FALSE)
     }
-    if (missing(source_file) || !dir.exists(target_dir)) {
+    if (missing(target_dir) || !dir.exists(target_dir)) {
         stop("target_dir must be a valid directory.", call. = FALSE)
     }
 
