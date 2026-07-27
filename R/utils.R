@@ -136,6 +136,14 @@
     readLines(x, warn = FALSE)
 }
 
+# TRUE for a URL that points at a code-hosting forge rather than a
+# documentation site. A package whose only `URL:` is its repository has no
+# site, and treating the repo as one produces links that 404 -- e.g.
+# `https://github.com/user/pkg/man/foo.md`.
+.is_forge_url <- function(x) {
+    grepl("github\\.com|gitlab\\.com|codeberg\\.org", x)
+}
+
 .add_pkgdown <- function(path = ".") {
     if (!isTRUE(.dir_is_package(path))) {
         stop(
@@ -148,12 +156,7 @@
     already_exists <- fs::file_exists(output_path)
 
     if (length(url) > 0) {
-        url_not_repo <- grep(
-            "github\\.com|gitlab\\.com|codeberg\\.org",
-            url,
-            invert = TRUE,
-            value = TRUE
-        )
+        url_not_repo <- url[!.is_forge_url(url)]
         if (length(url_not_repo) > 0) {
             url <- url_not_repo[1]
         } else {

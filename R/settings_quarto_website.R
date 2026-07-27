@@ -155,6 +155,23 @@
         )
     }
 
+    # Same problem for llms.txt, for a different reason. `.import_llms_txt()`
+    # writes into the render target, which for this generator is `_quarto/`
+    # rather than the published `docs/`. Quarto only carries a file into its
+    # output when a rendered page references it or it is on Quarto's fixed
+    # resource allowlist (`robots.txt`, `.nojekyll`, `CNAME`, ...), and
+    # `llms.txt` is neither -- nothing links to it, by design, since it exists
+    # for machines fetching it directly. Without this copy the file is written,
+    # reported as written, and never published.
+    llms_src <- fs::path_join(c(path, "_quarto", "llms.txt"))
+    if (fs::file_exists(llms_src)) {
+        fs::file_copy(
+            llms_src,
+            fs::path_join(c(tar, "llms.txt")),
+            overwrite = TRUE
+        )
+    }
+
     # `code-link: true` makes downlit treat the package being documented the
     # same as any external package, so its own functions get linked with an
     # absolute URL pointing at the production site recorded in pkgdown.yml.

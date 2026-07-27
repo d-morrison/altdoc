@@ -118,7 +118,14 @@ Titles are truncated to 40 characters so a long one cannot overflow a narrow sid
 sidebar_label_width: 60
 }\if{html}{\out{</div>}}
 
-\code{title}, \code{reference}, \code{sidebar_labels}, and \code{sidebar_label_width} are the only top-level keys \code{altdoc/reference.yml} accepts; anything else is an error. So is an unrecognized \code{sidebar_labels} value, and a \code{sidebar_label_width} that is not a whole number of at least 4 --- below 4 leaves no room for the ellipsis, and a fractional width would be silently truncated, so \code{4.5} would quietly behave as \code{4}.
+\code{render_docs()} also writes an \href{https://llmstxt.org/}{\code{llms.txt}} at the site root: an index of the site's public topics and rendered articles, in Markdown, so a coding agent can read the documentation without scraping HTML. Set \code{llms_txt: false} to skip it:
+
+\if{html}{\out{<div class="sourceCode yaml">}}\preformatted{llms_txt: false
+}\if{html}{\out{</div>}}
+
+Skipping it also removes a copy an earlier render left behind, so the site does not go on serving an index you have opted out of.
+
+\code{title}, \code{reference}, \code{sidebar_labels}, \code{sidebar_label_width}, and \code{llms_txt} are the only top-level keys \code{altdoc/reference.yml} accepts; anything else is an error. So is an unrecognized \code{sidebar_labels} value, an \code{llms_txt} that is not an unquoted \code{true} or \code{false}, and a \code{sidebar_label_width} that is not a whole number of at least 4 --- below 4 leaves no room for the ellipsis, and a fractional width would be silently truncated, so \code{4.5} would quietly behave as \code{4}.
 
 Setting \code{sidebar_label_width} without \code{sidebar_labels: name-and-title} warns, since the width has nothing to apply to on its own.
 }

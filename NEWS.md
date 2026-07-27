@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+* Added: `render_docs()` now writes an [`llms.txt`](https://llmstxt.org/) at
+  the site root, indexing every public topic and rendered article so a
+  coding agent can read the package's documentation without scraping HTML.
+  Topics marked `\keyword{internal}` are left out, as they are in the
+  reference index; a package with nothing else to list gets no file.
+  Each reference entry carries the topic's `.Rd` `\title{}`, the same summary
+  the reference index shows, so the two cannot disagree and neither can drift
+  from the help page. Links are absolute when the package declares a site
+  (`altdoc/pkgdown.yml`'s `urls: reference:` first, then `DESCRIPTION`'s
+  `URL:`), and site-relative otherwise. They point at `.md` pages under
+  `docsify`, `docute`, and `mkdocs`, all of which leave the Markdown in the
+  published tree, and at `.html` under `quarto_website`, the one generator
+  that compiles it away. Opt out with `llms_txt: false` in
+  `altdoc/reference.yml` (#40).
+
 * Fixed: the workflow `setup_github_actions()` writes no longer bootstraps its
   R installation with `eddelbuettel/r-ci`. That script installs `bspm` from a
   single APT host, `r2u.stat.illinois.edu`, and aborts the job when that host
