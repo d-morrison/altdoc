@@ -74,6 +74,7 @@
     }
 
     .check_sidebar_settings(settings)
+    .check_llms_txt_setting(settings)
 
     list(
         title = settings[["title"]],

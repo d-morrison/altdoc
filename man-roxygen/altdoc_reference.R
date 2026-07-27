@@ -69,7 +69,9 @@
 #' llms_txt: false
 #' ```
 #'
-#' `title`, `reference`, `sidebar_labels`, `sidebar_label_width`, and `llms_txt` are the only top-level keys `altdoc/reference.yml` accepts; anything else is an error. So is an unrecognized `sidebar_labels` value, and a `sidebar_label_width` that is not a whole number of at least 4 --- below 4 leaves no room for the ellipsis, and a fractional width would be silently truncated, so `4.5` would quietly behave as `4`.
+#' Skipping it also removes a copy an earlier render left behind, so the site does not go on serving an index you have opted out of.
+#'
+#' `title`, `reference`, `sidebar_labels`, `sidebar_label_width`, and `llms_txt` are the only top-level keys `altdoc/reference.yml` accepts; anything else is an error. So is an unrecognized `sidebar_labels` value, an `llms_txt` that is not an unquoted `true` or `false`, and a `sidebar_label_width` that is not a whole number of at least 4 --- below 4 leaves no room for the ellipsis, and a fractional width would be silently truncated, so `4.5` would quietly behave as `4`.
 #'
 #' Setting `sidebar_label_width` without `sidebar_labels: name-and-title` warns, since the width has nothing to apply to on its own.
 #'

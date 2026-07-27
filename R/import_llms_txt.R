@@ -8,6 +8,7 @@
 .import_llms_txt <- function(src_dir, tar_dir, tool = "docsify") {
     settings <- .reference_settings(src_dir)
     if (isFALSE(settings$llms_txt)) {
+        .remove_llms_txt(tar_dir)
         return(invisible())
     }
 
@@ -21,6 +22,7 @@
     listed <- .llms_txt_listed(topics)
 
     if (nrow(listed) == 0 && nrow(vignettes) == 0) {
+        .remove_llms_txt(tar_dir)
         return(invisible())
     }
 
@@ -51,6 +53,27 @@
          {nrow(vignettes)} article{?s}."
     )
 
+    invisible()
+}
+
+# Drop a previously published `llms.txt`.
+#
+# Both early returns above need this, because a render does not start from an
+# empty target for most generators: `render_docs()` clears its whole render
+# directory only for `quarto_website`, where it is the throwaway `_quarto/`.
+# For docsify, docute, and mkdocs the target is `docs/`, which is never
+# cleared, so a file written by an earlier render simply stays.
+#
+# Without this, `llms_txt: false` does not do what it says: the site keeps
+# serving the index from before the opt-out, and it goes stale as topics and
+# vignettes change. The same holds when a package's topics all become
+# internal. `.import_man()` deletes its own leftover `.Rd` copies after every
+# render for the same reason.
+.remove_llms_txt <- function(tar_dir) {
+    fn <- fs::path_join(c(tar_dir, "llms.txt"))
+    if (fs::file_exists(fn)) {
+        fs::file_delete(fn)
+    }
     invisible()
 }
 

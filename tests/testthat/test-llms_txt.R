@@ -203,6 +203,83 @@ test_that(".import_llms_txt honors the reference.yml opt-out", {
     expect_false(fs::file_exists("docs/llms.txt"))
 })
 
+test_that(".import_llms_txt removes a previously published file on opt-out", {
+    create_local_package()
+    setup_docs("docute")
+    fs::dir_create("docs")
+
+    fs::dir_create("man")
+    writeLines(
+        c(
+            "\\name{hello}",
+            "\\alias{hello}",
+            "\\title{Say hello to someone}",
+            "\\usage{hello(who)}",
+            "\\description{Says hello.}"
+        ),
+        "man/hello.Rd"
+    )
+
+    .import_llms_txt(src_dir = ".", tar_dir = "docs", tool = "docute")
+    expect_true(fs::file_exists("docs/llms.txt"))
+
+    # `render_docs()` clears its render target only for quarto_website, where
+    # it is the throwaway `_quarto/`. For this generator the target is `docs/`,
+    # which persists between renders -- so opting out has to delete the file,
+    # not merely decline to rewrite it. Otherwise the site serves the old index
+    # forever, and it goes stale as topics change.
+    fs::dir_create("altdoc")
+    writeLines("llms_txt: false", "altdoc/reference.yml")
+
+    .import_llms_txt(src_dir = ".", tar_dir = "docs", tool = "docute")
+    expect_false(fs::file_exists("docs/llms.txt"))
+})
+
+test_that(".import_llms_txt removes the file when nothing is left to list", {
+    create_local_package()
+    setup_docs("docute")
+    fs::dir_create("docs")
+    fs::dir_create("man")
+
+    writeLines(
+        c(
+            "\\name{hello}",
+            "\\alias{hello}",
+            "\\title{Say hello to someone}",
+            "\\usage{hello(who)}",
+            "\\description{Says hello.}"
+        ),
+        "man/hello.Rd"
+    )
+    .import_llms_txt(src_dir = ".", tar_dir = "docs", tool = "docute")
+    expect_true(fs::file_exists("docs/llms.txt"))
+
+    # The same staleness applies without any opt-out: a package whose topics
+    # all become internal has nothing to index, and the old file would
+    # otherwise keep being served.
+    fs::file_delete("man/hello.Rd")
+    .import_llms_txt(src_dir = ".", tar_dir = "docs", tool = "docute")
+    expect_false(fs::file_exists("docs/llms.txt"))
+})
+
+test_that(".reference_settings rejects a non-logical llms_txt", {
+    create_local_package()
+    fs::dir_create("altdoc")
+
+    # Quoted, so YAML reads it as the string "false" -- which `isFALSE()` does
+    # not match, so it would silently generate the file the author asked to
+    # skip.
+    writeLines('llms_txt: "false"', "altdoc/reference.yml")
+    expect_error(.reference_settings("."), "Invalid")
+
+    writeLines("llms_txt: 0", "altdoc/reference.yml")
+    expect_error(.reference_settings("."), "Invalid")
+
+    # The real thing still works, and so does leaving the key out.
+    writeLines("llms_txt: false", "altdoc/reference.yml")
+    expect_false(.reference_settings(".")$llms_txt)
+})
+
 test_that(".import_llms_txt writes nothing when every topic is internal", {
     create_local_package()
     setup_docs("docute")
