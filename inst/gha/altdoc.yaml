@@ -51,7 +51,7 @@ jobs:
       #   run: |
       #     python3 -m pip install mkdocs-material   # install material theme
       $ALTDOC_MKDOCS_END
-      - name: Dependencies
+      - name: Install R dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::pkgload

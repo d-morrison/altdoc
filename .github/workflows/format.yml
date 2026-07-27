@@ -26,9 +26,12 @@ jobs:
       #
       # This pin needs a deliberate manual bump: Dependabot's github-actions
       # ecosystem tracks `uses:` refs, and this is a `curl` URL, so no bump PR
-      # will ever arrive for it. See #67. It is now the only such pin in the
-      # repo -- the `r-ci-setup` pin this comment used to cite alongside it
-      # went away with the r-ci bootstrap in #60.
+      # will ever arrive for it. See #67. The other pin in that position is
+      # `lint.yml`'s `setup-jarl` `version:` input, which is an action input
+      # rather than a `uses:` ref and is invisible to Dependabot for its own
+      # reason. (This comment used to cite `R-CMD-check-no-quarto.yml`'s
+      # `r-ci-setup` pin as the third; that one went away with the r-ci
+      # bootstrap in #60.)
       - name: Install `air`
         run: curl -LsSf https://github.com/posit-dev/air/releases/download/0.11.0/air-installer.sh | sh
       - name: Check for changes

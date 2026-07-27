@@ -8,8 +8,9 @@
   is unreachable, so a generated workflow could go red with nothing in the
   package at fault. It now uses `r-lib/actions/setup-r` and
   `setup-r-dependencies`, which resolve packages through the RStudio Package
-  Manager CDN. Existing generated workflows are not modified; regenerate with
-  `setup_github_actions()` to pick this up (#60).
+  Manager CDN. A workflow a project has already generated is a file in that
+  project, untouched by upgrading altdoc; rerun `setup_github_actions()` to
+  regenerate it (#60).
 
 * Added: `render_docs()` now discovers a package logo and copies it into the
   site, so a package following the usual convention gets one without
