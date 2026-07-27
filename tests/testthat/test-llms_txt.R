@@ -377,21 +377,39 @@ test_that(".llms_txt_vignettes includes .Rmd under quarto_website", {
 test_that(".llms_txt_vignettes finds nested quarto_website articles", {
     create_local_package()
     fs::dir_create("_quarto/vignettes/articles", recurse = TRUE)
+    # A real source tree, not just the render target. Without it the same-name
+    # lookup in `.get_vignettes_titles()` comes up empty for every file,
+    # top-level ones included -- which hides the asymmetry this test exists to
+    # pin, since the nested case is the only one that normally fails it.
+    fs::dir_create("vignettes/articles", recurse = TRUE)
 
     # quarto_website gets `vignettes/` copied whole, subdirectories included,
     # and Quarto renders a nested article -- the usual pkgdown `articles/`
     # layout. The sidebar globs recursively and lists it, so an index that
     # does not would omit a page the site itself links.
-    writeLines("# Get started", "_quarto/vignettes/start.qmd")
-    writeLines("# Deep dive", "_quarto/vignettes/articles/deep-dive.qmd")
+    writeLines("# Getting started here", "vignettes/start.qmd")
+    writeLines("# Deep dive into internals", "vignettes/articles/deep-dive.qmd")
+    fs::file_copy("vignettes/start.qmd", "_quarto/vignettes/start.qmd")
+    fs::file_copy(
+        "vignettes/articles/deep-dive.qmd",
+        "_quarto/vignettes/articles/deep-dive.qmd"
+    )
 
     out <- .llms_txt_vignettes(".", "_quarto", "quarto_website")
 
     # The name carries the subdirectory, because it becomes the link's path:
     # the page is served at vignettes/articles/deep-dive.html.
     expect_setequal(out$name, c("start", "articles/deep-dive"))
-    # The label stays readable -- a reader wants the article, not the path.
-    expect_equal(out$title[out$name == "articles/deep-dive"], "deep-dive")
+
+    # A nested article resolves its real title, the same as a top-level one.
+    # These must be asserted together: the gap was that nested degraded to a
+    # file-name slug while top-level did not, so pinning only one of them
+    # cannot see it.
+    expect_equal(
+        out$title[out$name == "articles/deep-dive"],
+        "Deep dive into internals"
+    )
+    expect_equal(out$title[out$name == "start"], "Getting started here")
 })
 
 test_that(".llms_txt_vignettes does not recurse for the other generators", {
@@ -426,9 +444,13 @@ test_that(".llms_txt_vignettes keeps a .pdf vignette at its own extension", {
     # The label must not carry the file extension. `.get_vignettes_titles()`
     # strips only a `.md` suffix when it finds no title, so it hands back
     # `manual.pdf` verbatim -- which would both read wrong and disagree with
-    # the quarto_website sidebar, which strips `.pdf` itself.
+    # the quarto_website sidebar, which strips `.pdf` itself. A `.pdf` is
+    # binary, so there is no heading to read and the file name is the answer.
     expect_equal(out$title[out$name == "manual"], "manual")
-    expect_equal(out$title[out$name == "guide"], "guide")
+    # The `.qmd` does have a heading, so it gets the real title rather than a
+    # lowercase slug -- note this fixture has no `vignettes/` source tree, so
+    # the heading is read from the copy in the render target.
+    expect_equal(out$title[out$name == "guide"], "Guide")
 
     # Names come from the file list, so they must not ride along as row names.
     expect_null(attr(out$title, "names"))

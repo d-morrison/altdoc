@@ -94,14 +94,43 @@
     title <- .get_vignettes_titles(fn, path = src_dir)
 
     if (length(title) == 0 || is.na(title[[1]])) {
-        return(name)
+        return(.llms_txt_h1(fn, name))
     }
     title <- as.character(title[[1]])
 
     if (identical(title, basename(fn))) {
-        return(name)
+        return(.llms_txt_h1(fn, name))
     }
     title
+}
+
+# The file's own first heading, or `name` when there is not one.
+#
+# `.get_vignettes_titles()` reaches its H1 fallback only when its same-name
+# source lookup leaves `out` empty, and that lookup is non-recursive -- so for
+# a nested `vignettes/articles/deep-dive.qmd` it finds nothing, leaves `out`
+# seeded to the bare file name, and never consults the heading that is sitting
+# in the content it already read. A top-level vignette of the same shape gets
+# its real title. Reading the heading here restores that symmetry.
+#
+# Done in this function rather than by making that lookup recursive: it is a
+# shared helper on `main` with other callers, so widening its search would
+# change titles elsewhere in the package to fix a gap that is ours.
+#
+# The heading pattern matches `.get_vignettes_titles()`'s own, so a nested
+# article and a top-level one resolve their titles the same way. A `.pdf` is
+# binary and has no heading to find, so it keeps its file name.
+.llms_txt_h1 <- function(fn, name) {
+    if (identical(tolower(fs::path_ext(fn)), "pdf")) {
+        return(name)
+    }
+
+    lines <- .readlines(fn)
+    idx <- grep("^# \\w+", lines)
+    if (length(idx) == 0) {
+        return(name)
+    }
+    sub("^# ", "", lines[idx[1]])
 }
 
 # The extension of the page a consumer can actually fetch.
@@ -148,12 +177,14 @@
 # places where the two deliberately differ, all checked against the builders
 # rather than assumed:
 #
-#   - docute and mkdocs match only `\\.md`, so their sidebars omit a `.pdf`
-#     vignette -- but `.render_one_vignette()` copies the source in regardless,
-#     so the file is published and fetchable. It is listed here.
-#   - quarto_website's sidebar matches `\\.qmd$|\\.Rmd|\\.pdf$`, omitting a
-#     hand-authored `.md` vignette that Quarto still renders. Listed here.
-#   - docsify's sidebar does include `.pdf`, so it agrees with this function.
+#   - `.sidebar_vignettes_docute()` matches only `\\.md$`, so its sidebar omits
+#     a `.pdf` vignette -- but `.render_one_vignette()` copies the source in
+#     regardless, so the file is published and fetchable. It is listed here.
+#   - `.sidebar_vignettes_quarto_website()` matches `\\.qmd$|\\.Rmd|\\.pdf$`,
+#     omitting a hand-authored `.md` vignette that Quarto still renders.
+#     Listed here.
+#   - `.sidebar_vignettes_docsify()` and `.sidebar_vignettes_mkdocs()` both
+#     match `\\.md$|\\.pdf$`, so they agree with this function.
 #
 # Do not "fix" any of these to match a sidebar: a page a consumer can fetch
 # belongs in the index whether or not the human-facing nav happens to link it.
