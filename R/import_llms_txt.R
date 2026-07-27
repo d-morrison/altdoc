@@ -138,9 +138,25 @@
 #     `customize.md` built from it, and a pattern matching both lists the same
 #     vignette twice.
 #
-# Hence one pattern per generator, mirroring what the sidebar builders already
-# match, plus a dedup by name as a backstop for a package that hand-authors a
-# `.md` vignette alongside a `.qmd` of the same name.
+# Hence one pattern per generator, taking the sidebar builders as the evidence
+# of what each one leaves behind, plus a dedup by name as a backstop for a
+# package that hand-authors a `.md` vignette alongside a `.qmd` of the same
+# name.
+#
+# The sidebars are evidence, not the specification: this file indexes what is
+# *fetchable*, which is a wider set than what is *linked from the nav*. Three
+# places where the two deliberately differ, all checked against the builders
+# rather than assumed:
+#
+#   - docute and mkdocs match only `\\.md`, so their sidebars omit a `.pdf`
+#     vignette -- but `.render_one_vignette()` copies the source in regardless,
+#     so the file is published and fetchable. It is listed here.
+#   - quarto_website's sidebar matches `\\.qmd$|\\.Rmd|\\.pdf$`, omitting a
+#     hand-authored `.md` vignette that Quarto still renders. Listed here.
+#   - docsify's sidebar does include `.pdf`, so it agrees with this function.
+#
+# Do not "fix" any of these to match a sidebar: a page a consumer can fetch
+# belongs in the index whether or not the human-facing nav happens to link it.
 #
 # `ext` is per-vignette rather than one value for the whole section because a
 # `.pdf` vignette is copied, not rendered: under quarto_website its siblings
