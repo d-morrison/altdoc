@@ -4,9 +4,10 @@
 # the @claude acknowledgment, per-PR concurrency, the late-comment polling loop,
 # branch setup + push + draft-PR for issue triggers, the prose-response post
 # (with in-thread replies on review comments), and the review re-dispatch. This
-# stub supplies only altdoc-specific configuration: install-quarto (altdoc's
-# own test suite renders Quarto docs and needs the CLI) and a prompt-addendum
-# with this repo's lint/format/test/document conventions.
+# stub supplies altdoc-specific configuration -- install-quarto (altdoc's own
+# test suite renders Quarto docs and needs the CLI) and a prompt-addendum with
+# this repo's lint/format/test/document conventions -- plus the caller-side
+# trusted-author gate documented on the job's `if:` below.
 
 name: Claude Code
 
@@ -22,11 +23,18 @@ on:
 
 jobs:
   claude:
+    # Cheap caller-side gate: only invoke the reusable workflow when an @claude
+    # mention is present AND the author is trusted (OWNER/MEMBER/COLLABORATOR),
+    # so an untrusted commenter's mention doesn't even spawn the
+    # reusable-workflow run. This mirrors the reusable workflow's own
+    # trusted-author gate as defense-in-depth: without it, the run still gets
+    # skipped downstream, but only after invoking a workflow that was granted
+    # elevated permissions and passed secrets.
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.review.author_association)) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')) && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
     permissions:
       contents: write
       pull-requests: write
@@ -35,15 +43,10 @@ jobs:
       # actions: write is required so the reusable workflow can re-dispatch
       # claude-code-review.yml via workflow_dispatch after pushing commits.
       actions: write
-    uses: d-morrison/gha/.github/workflows/claude.yml@v1
-    # NOTE: the @v1 tag of this reusable workflow does not declare an
-    # ANTHROPIC_API_KEY secret (only CLAUDE_CODE_OAUTH_TOKEN, SUBMODULES_TOKEN,
-    # and WORKFLOW_TOKEN) — main added it but @v1 hasn't been slid forward yet
-    # (see d-morrison/gha#179). Passing it here 400s the workflow-call gate
-    # ("Invalid secret, ANTHROPIC_API_KEY is not defined in the referenced
-    # workflow"), so it's omitted until @v1 catches up.
+    uses: d-morrison/gha/.github/workflows/claude.yml@v2
     secrets:
-      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}   # Max-plan OAuth; empty when using API key
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}               # direct API key; empty when using OAuth
       SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}
       WORKFLOW_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
     with:
