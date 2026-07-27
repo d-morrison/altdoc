@@ -4,9 +4,10 @@
 # the @claude acknowledgment, per-PR concurrency, the late-comment polling loop,
 # branch setup + push + draft-PR for issue triggers, the prose-response post
 # (with in-thread replies on review comments), and the review re-dispatch. This
-# stub supplies only altdoc-specific configuration: install-quarto (altdoc's
-# own test suite renders Quarto docs and needs the CLI) and a prompt-addendum
-# with this repo's lint/format/test/document conventions.
+# stub supplies altdoc-specific configuration -- install-quarto (altdoc's own
+# test suite renders Quarto docs and needs the CLI) and a prompt-addendum with
+# this repo's lint/format/test/document conventions -- plus the caller-side
+# trusted-author gate documented on the job's `if:` below.
 
 name: Claude Code
 
