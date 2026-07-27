@@ -5,6 +5,13 @@
     if (missing(target_dir) || !dir.exists(target_dir)) {
         stop("target_dir must be a valid directory.", call. = FALSE)
     }
+    # R does not apply `.doc_type()`'s own `path = "."` default to an argument
+    # the caller never supplied, so without this guard an omitted `path`
+    # reaches it and fails with 'argument "path" is missing, with no default'.
+    # Only directory-ness is checked here; `.doc_type()` reports the rest.
+    if (missing(path) || !dir.exists(path)) {
+        stop("path must be a valid directory.", call. = FALSE)
+    }
 
     tool <- .doc_type(path)
 

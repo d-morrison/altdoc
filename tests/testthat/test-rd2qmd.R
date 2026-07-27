@@ -27,19 +27,40 @@ test_that(".rd2qmd: basic errors", {
         .rd2qmd("foo"),
         "must be a valid file path"
     )
+    # The guards are anchored on the argument name, not just on "must be a
+    # valid directory", since `target_dir` and `path` now share that wording
+    # and an unanchored match cannot tell which one fired.
     expect_error(
         .rd2qmd(
             testthat::test_path("examples/examples-man/between.Rd"),
             "foo",
             path = "."
         ),
-        "must be a valid directory"
+        "^target_dir must be a valid directory"
     )
     # A missing `target_dir` reports the same error as an invalid one, rather
     # than R's own "argument is missing, with no default" (#62).
     expect_error(
         .rd2qmd(testthat::test_path("examples/examples-man/between.Rd")),
-        "must be a valid directory"
+        "^target_dir must be a valid directory"
+    )
+    expect_error(
+        .rd2qmd(
+            testthat::test_path("examples/examples-man/between.Rd"),
+            testthat::test_path("examples/examples-man"),
+            path = "foo"
+        ),
+        "^path must be a valid directory"
+    )
+    # Same for a missing `path`, which otherwise reached `.doc_type()` and
+    # failed there with R's own 'argument "path" is missing, with no
+    # default' (#64).
+    expect_error(
+        .rd2qmd(
+            testthat::test_path("examples/examples-man/between.Rd"),
+            testthat::test_path("examples/examples-man")
+        ),
+        "^path must be a valid directory"
     )
 })
 
