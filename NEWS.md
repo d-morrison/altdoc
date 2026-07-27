@@ -10,9 +10,20 @@
   from the help page. Links are absolute when the package declares a site
   (`altdoc/pkgdown.yml`'s `urls: reference:` first, then `DESCRIPTION`'s
   `URL:`), and site-relative otherwise. They point at `.md` pages under
-  `docsify` and `docute`, which serve the Markdown, and at `.html` under
-  `mkdocs` and `quarto_website`, which compile it away. Opt out with
-  `llms_txt: false` in `altdoc/reference.yml` (#40).
+  `docsify`, `docute`, and `mkdocs`, all of which leave the Markdown in the
+  published tree, and at `.html` under `quarto_website`, the one generator
+  that compiles it away. Opt out with `llms_txt: false` in
+  `altdoc/reference.yml` (#40).
+
+* Fixed: the workflow `setup_github_actions()` writes no longer bootstraps its
+  R installation with `eddelbuettel/r-ci`. That script installs `bspm` from a
+  single APT host, `r2u.stat.illinois.edu`, and aborts the job when that host
+  is unreachable, so a generated workflow could go red with nothing in the
+  package at fault. It now uses `r-lib/actions/setup-r` and
+  `setup-r-dependencies`, which resolve packages through the RStudio Package
+  Manager CDN. A workflow a project has already generated is a file in that
+  project, untouched by upgrading altdoc; rerun `setup_github_actions()` to
+  regenerate it (#60).
 
 * Added: `render_docs()` now discovers a package logo and copies it into the
   site, so a package following the usual convention gets one without
