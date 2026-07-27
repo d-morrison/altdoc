@@ -5,12 +5,10 @@
     if (missing(target_dir) || !dir.exists(target_dir)) {
         stop("target_dir must be a valid directory.", call. = FALSE)
     }
-    # `.doc_type()` below reads `altdoc/` under `path`, and goes on to abort
-    # with its own message when no settings file is there, so this only has to
-    # cover `path` not being a directory at all. Without it, a missing `path`
-    # surfaces as R's 'argument "path" is missing, with no default' from
-    # inside `.doc_type()`: R does not fall back to that function's own `"."`
-    # default when the caller forwards an argument that was never supplied.
+    # R does not apply `.doc_type()`'s own `path = "."` default to an argument
+    # the caller never supplied, so without this guard an omitted `path`
+    # reaches it and fails with 'argument "path" is missing, with no default'.
+    # Only directory-ness is checked here; `.doc_type()` reports the rest.
     if (missing(path) || !dir.exists(path)) {
         stop("path must be a valid directory.", call. = FALSE)
     }
