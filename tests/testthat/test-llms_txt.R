@@ -310,6 +310,50 @@ test_that(".llms_txt_vignettes keeps a .pdf vignette at its own extension", {
     # rest -- and it is listed rather than silently dropped.
     expect_equal(out$ext[out$name == "manual"], "pdf")
     expect_equal(out$ext[out$name == "guide"], "html")
+
+    # The label must not carry the file extension. `.get_vignettes_titles()`
+    # strips only a `.md` suffix when it finds no title, so it hands back
+    # `manual.pdf` verbatim -- which would both read wrong and disagree with
+    # the quarto_website sidebar, which strips `.pdf` itself.
+    expect_equal(out$title[out$name == "manual"], "manual")
+    expect_equal(out$title[out$name == "guide"], "guide")
+
+    # Names come from the file list, so they must not ride along as row names.
+    expect_null(attr(out$title, "names"))
+})
+
+test_that(".llms_txt escapes brackets in link labels", {
+    # A `[` closes the label early, leaving the rest as literal text beside a
+    # broken link. The docsify sidebar escapes its own labels for this reason;
+    # these rows are built from the same kind of untrusted title.
+    vignettes <- data.frame(
+        name = "r6",
+        title = "Do not use R6 [beta]",
+        ext = "md",
+        stringsAsFactors = FALSE
+    )
+
+    out <- .llms_txt("mypkg", vignettes = vignettes, base = NULL)
+
+    expect_true(any(
+        out == "- [Do not use R6 \\[beta\\]](vignettes/r6.md)"
+    ))
+})
+
+test_that(".llms_txt escapes brackets in a topic name", {
+    # Extraction operators are documented topics too, and `[.foo` breaks the
+    # same way a bracketed vignette title does.
+    topics <- data.frame(
+        name = "[.myclass",
+        title = "Subset a myclass object",
+        internal = FALSE,
+        is_fun = TRUE,
+        stringsAsFactors = FALSE
+    )
+
+    out <- .llms_txt("mypkg", topics = topics, base = NULL, ext = "md")
+
+    expect_true(any(grepl("- [\\[.myclass()](", out, fixed = TRUE)))
 })
 
 test_that(".llms_txt uses each article's own extension", {

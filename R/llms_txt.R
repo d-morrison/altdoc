@@ -97,8 +97,14 @@
 
 # One `- [label](url): description` line per entry. A description equal to the
 # label adds nothing, so it is dropped rather than repeated.
+#
+# Labels are escaped for the same reason the docsify sidebar escapes its own:
+# a `[` or `]` in the text closes the label early, so the rest renders as
+# literal text beside a broken link. A vignette H1 like `Do not use R6 [beta]`
+# is enough to trigger it, and topic names can carry brackets too (`[.foo`).
+# Descriptions sit outside the link, so they need no escaping.
 .llms_txt_rows <- function(labels, urls, descriptions = NULL) {
-    rows <- paste0("- [", labels, "](", urls, ")")
+    rows <- paste0("- [", .escape_md_link_text(labels), "](", urls, ")")
     if (is.null(descriptions)) {
         return(rows)
     }

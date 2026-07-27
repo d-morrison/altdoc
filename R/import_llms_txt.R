@@ -54,6 +54,33 @@
     invisible()
 }
 
+# One vignette's display title, falling back to its bare file name.
+#
+# `.get_vignettes_titles()` strips only a `.md` suffix when it gives up, so it
+# hands back the file name with its extension intact for anything else --
+# `manual.pdf`, or `guide.qmd` when no source vignette of that name is found to
+# read a title from. Publishing that verbatim puts the extension in the link
+# text, and disagrees with the quarto_website sidebar, which strips `.pdf`.
+#
+# The bare file name is the right fallback; the tell that we got one is that
+# the returned title still equals the file's own basename. A real title never
+# does, and a `.md` vignette's own fallback already has its extension removed,
+# so this only fires where it should.
+.llms_txt_title <- function(fn, src_dir) {
+    name <- fs::path_ext_remove(basename(fn))
+    title <- .get_vignettes_titles(fn, path = src_dir)
+
+    if (length(title) == 0 || is.na(title[[1]])) {
+        return(name)
+    }
+    title <- as.character(title[[1]])
+
+    if (identical(title, basename(fn))) {
+        return(name)
+    }
+    title
+}
+
 # The extension of the page a consumer can actually fetch.
 #
 # This deliberately mirrors `.import_reference()`'s split -- quarto_website on
@@ -123,14 +150,9 @@
 
     titles <- vapply(
         files,
-        function(fn) {
-            title <- .get_vignettes_titles(fn, path = src_dir)
-            if (length(title) == 0 || is.na(title[[1]])) {
-                return(fs::path_ext_remove(basename(fn)))
-            }
-            as.character(title[[1]])
-        },
+        .llms_txt_title,
         character(1),
+        src_dir = src_dir,
         USE.NAMES = FALSE
     )
 
