@@ -374,6 +374,41 @@ test_that(".llms_txt_vignettes includes .Rmd under quarto_website", {
     expect_equal(unique(out$ext), "html")
 })
 
+test_that(".llms_txt_vignettes finds nested quarto_website articles", {
+    create_local_package()
+    fs::dir_create("_quarto/vignettes/articles", recurse = TRUE)
+
+    # quarto_website gets `vignettes/` copied whole, subdirectories included,
+    # and Quarto renders a nested article -- the usual pkgdown `articles/`
+    # layout. The sidebar globs recursively and lists it, so an index that
+    # does not would omit a page the site itself links.
+    writeLines("# Get started", "_quarto/vignettes/start.qmd")
+    writeLines("# Deep dive", "_quarto/vignettes/articles/deep-dive.qmd")
+
+    out <- .llms_txt_vignettes(".", "_quarto", "quarto_website")
+
+    # The name carries the subdirectory, because it becomes the link's path:
+    # the page is served at vignettes/articles/deep-dive.html.
+    expect_setequal(out$name, c("start", "articles/deep-dive"))
+    # The label stays readable -- a reader wants the article, not the path.
+    expect_equal(out$title[out$name == "articles/deep-dive"], "deep-dive")
+})
+
+test_that(".llms_txt_vignettes does not recurse for the other generators", {
+    create_local_package()
+    fs::dir_create("docs/vignettes/nested", recurse = TRUE)
+
+    # These generators render vignettes non-recursively and their sidebars
+    # glob non-recursively to match, so nothing of theirs lives in a
+    # subdirectory. Recursing here would index a page the site never built.
+    writeLines("# Top", "docs/vignettes/top.md")
+    writeLines("# Buried", "docs/vignettes/nested/buried.md")
+
+    out <- .llms_txt_vignettes(".", "docs", "docsify")
+
+    expect_equal(out$name, "top")
+})
+
 test_that(".llms_txt_vignettes keeps a .pdf vignette at its own extension", {
     create_local_package()
     fs::dir_create("_quarto/vignettes", recurse = TRUE)

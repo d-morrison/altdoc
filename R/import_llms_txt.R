@@ -163,7 +163,23 @@
         "\\.(md|pdf)$"
     }
 
-    files <- list.files(dir, pattern = pattern, full.names = TRUE)
+    # Recursion follows the same generator split, for the same reason the
+    # pattern does: quarto_website gets `vignettes/` copied whole by
+    # `fs::dir_copy()`, subdirectories included, and Quarto renders a nested
+    # `vignettes/articles/deep-dive.qmd` -- the usual pkgdown layout -- which
+    # `.sidebar_vignettes_quarto_website()` then lists, since it globs
+    # recursively too. Missing it here would publish and link an article the
+    # index never mentions. The other generators render vignettes
+    # non-recursively, and their sidebars glob non-recursively to match, so
+    # nothing of theirs lives in a subdirectory to find.
+    recursive <- identical(tool, "quarto_website")
+
+    files <- list.files(
+        dir,
+        pattern = pattern,
+        full.names = TRUE,
+        recursive = recursive
+    )
     if (length(files) == 0) {
         return(empty)
     }
@@ -188,8 +204,14 @@
         src_ext
     }
 
+    # The name carries any subdirectory, since it becomes the link's path:
+    # a nested article is served at `vignettes/articles/deep-dive.html`, so
+    # `basename()` here would emit `vignettes/deep-dive.html` and 404. It also
+    # keeps the dedup below honest, since two articles of the same name in
+    # different directories are different pages. Titles stay on the basename;
+    # a reader wants "deep-dive", not the path to it.
     out <- data.frame(
-        name = fs::path_ext_remove(basename(files)),
+        name = as.character(fs::path_ext_remove(fs::path_rel(files, dir))),
         title = titles,
         ext = ext,
         stringsAsFactors = FALSE
