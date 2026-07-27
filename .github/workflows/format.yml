@@ -24,10 +24,11 @@ jobs:
       # shifts between versions, that surfaces as `air format . --check`
       # failing on files nobody touched.
       #
-      # Like the `r-ci-setup` pin in R-CMD-check-no-quarto.yml, this one needs
-      # a deliberate manual bump: Dependabot's github-actions ecosystem tracks
-      # `uses:` refs, and this is a `curl` URL, so no bump PR will ever arrive
-      # for it. See #67.
+      # This pin needs a deliberate manual bump: Dependabot's github-actions
+      # ecosystem tracks `uses:` refs, and this is a `curl` URL, so no bump PR
+      # will ever arrive for it. See #67. It is now the only such pin in the
+      # repo -- the `r-ci-setup` pin this comment used to cite alongside it
+      # went away with the r-ci bootstrap in #60.
       - name: Install `air`
         run: curl -LsSf https://github.com/posit-dev/air/releases/download/0.11.0/air-installer.sh | sh
       - name: Check for changes

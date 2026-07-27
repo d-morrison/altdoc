@@ -1,4 +1,9 @@
-# Run CI for R using https://eddelbuettel.github.io/r-ci/
+# R CMD check on a runner with no Quarto installed.
+#
+# The point of this workflow is the *absence* of a Quarto setup step: it checks
+# that the package still builds and passes check when Quarto is unavailable,
+# which `R-CMD-check.yaml` cannot cover because it installs Quarto on every
+# platform. Do not add a `quarto-dev/quarto-actions/setup` step here.
 
 name: R-CMD-check-no-quarto
 
@@ -27,13 +32,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  USE_BSPM: "true"
   _R_CHECK_FORCE_SUGGESTS_: "false"
-   # Otherwise default is to use "--no-build-vignettes --no-manual --as-cran"
-  R_BUILD_ARGS: "--no-manual"
-  R_CHECK_ARGS: "--no-manual --no-vignettes --as-cran"
-  WARNINGS_ARE_ERRORS: "true"
-  R_GH: true
   GITHUB_PAT: ${{ secrets.COVR_GH_PAT }}
 
 jobs:
@@ -45,23 +44,27 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
 
-      # SHA-pinned like every other third-party action here, but this one
-      # cannot be kept current the same way: `eddelbuettel/github-actions`
-      # publishes no tags or releases at all, so Dependabot has no version to
-      # compare against and will never open a bump PR for it. The pin is still
-      # worth taking -- `@master` is a mutable branch ref, so whatever lands
-      # there runs here unreviewed -- but it needs a deliberate manual bump
-      # rather than an automated one. #60 is separately weighing whether this
-      # workflow should keep using `r-ci` at all, which would retire the
-      # question.
-      - name: Setup
-        uses: eddelbuettel/github-actions/r-ci-setup@6f25da938f36a97de19f40e428b9090f168de45d # master (no tags; see comment above)
+      - uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
+        with:
+          use-public-rspm: true
 
-      - name: Bootstrap
-        run: ./run.sh bootstrap
+      - name: Install R dependencies
+        uses: r-lib/actions/setup-r-dependencies@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
 
-      - name: Dependencies
-        run: ./run.sh install_all
-
-      - name: Test
-        run: ./run.sh run_tests
+      # `build_args`/`args` carry over what the retired `r-ci` run set through
+      # `R_BUILD_ARGS`/`R_CHECK_ARGS`, and `error-on: warning` is the
+      # equivalent of its `WARNINGS_ARE_ERRORS: true`. Both are stated
+      # explicitly rather than left to the action's defaults, because the
+      # combination is deliberate: vignettes are built (no
+      # `--no-build-vignettes` in `build_args`) but not re-run at check time
+      # (`--no-vignettes`).
+      # Each value is interpolated into an R call as `args = (...)`, so a
+      # multi-element value has to be a real `c()` expression.
+      - uses: r-lib/actions/check-r-package@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
+        with:
+          build_args: '"--no-manual"'
+          args: 'c("--no-manual", "--no-vignettes", "--as-cran")'
+          error-on: '"warning"'

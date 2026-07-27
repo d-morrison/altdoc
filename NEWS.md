@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+* Fixed: the workflow `setup_github_actions()` writes no longer bootstraps its
+  R installation with `eddelbuettel/r-ci`. That script installs `bspm` from a
+  single APT host, `r2u.stat.illinois.edu`, and aborts the job when that host
+  is unreachable, so a generated workflow could go red with nothing in the
+  package at fault. It now uses `r-lib/actions/setup-r` and
+  `setup-r-dependencies`, which resolve packages through the RStudio Package
+  Manager CDN. Existing generated workflows are not modified; regenerate with
+  `setup_github_actions()` to pick this up (#60).
+
 * Added: `render_docs()` now discovers a package logo and copies it into the
   site, so a package following the usual convention gets one without
   hand-placing files. The search order matches `pkgdown`'s: `logo.svg`,
