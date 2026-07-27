@@ -10,6 +10,7 @@ website:
   title: "$ALTDOC_PACKAGE_NAME"
   code-links: true
   navbar:
+    logo: $ALTDOC_LOGO
     search: true
     right:
       - icon: github

@@ -38,6 +38,33 @@
         }
     }
 
+    # Logo. Unlike the files above, the name is not fixed -- it is whichever
+    # of the four candidates the package actually ships -- so the file to
+    # look for comes from `.find_logo()` rather than from the variable name.
+    # A package with no logo gets the line dropped, as with a missing file
+    # above, so a settings file can carry a logo entry unconditionally.
+    logo <- .find_logo(path)
+    # `&&` short-circuits, so `basename()` is never reached when there is no
+    # logo. The rest checks that the logo was actually imported, so a package
+    # that has one but has not rendered yet does not get a reference to a file
+    # the site lacks. Both locations are checked for the same reason the file
+    # loop above checks both: `quarto_website` stages into `_quarto/` while
+    # every other tool writes straight to `docs/`.
+    logo_imported <- !is.null(logo) &&
+        (fs::file_exists(fs::path_join(c(.doc_path(path), basename(logo)))) ||
+            fs::file_exists(
+                fs::path_join(c(path, "_quarto", basename(logo)))
+            ))
+    if (logo_imported) {
+        new <- basename(logo)
+        if (tool == "docute") {
+            new <- paste0("/", new)
+        }
+        x <- gsub("\\$ALTDOC_LOGO", new, x)
+    } else {
+        x <- x[!grepl("\\$ALTDOC_LOGO", x)]
+    }
+
     # DESCRIPTION file
     fn <- fs::path_join(c(path, "DESCRIPTION"))
     if (fs::file_exists(fn)) {
