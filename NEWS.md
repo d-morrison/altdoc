@@ -15,6 +15,17 @@
   files created before this release are never modified automatically, so add
   a `$ALTDOC_LOGO` entry to pick it up. Favicons are deliberately not
   included (#41).
+  
+* Fixed: `render_docs(freeze = TRUE)` now actually skips an unchanged
+  `README.md`. The freeze check hashed whichever README variant had priority
+  (`README.qmd`, then `README.Rmd`, then `README.md`), but the hash recorded
+  after the copy was always `README.md`'s, so for any package shipping a
+  `README.qmd` or `README.Rmd` the check looked up a key that was never
+  written and the README was re-copied on every render. Both sides now use
+  `README.md`, which is the file altdoc actually copies to `docs/README.md`:
+  keying the skip on a variant altdoc never reads would let an edit made
+  directly to `README.md` go undetected and leave the rendered copy stale
+  (#69).
 
 * Fixed: `render_docs()`'s documented list of source files it looks for now
   matches what it actually looks for. Three gaps: the `.Rd` and `inst/`

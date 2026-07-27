@@ -63,4 +63,10 @@
             hashes <- readRDS(freeze_file)
         }
     }
+    # Explicit `return()`, not a bare trailing `hashes`. Without it the value
+    # is whatever the last expression evaluated to -- correct today only
+    # because the `if` block is last, and returned invisibly. A statement
+    # added after it would silently become the return value and disable
+    # freezing with no error; after a `return()` it is unreachable instead.
+    return(hashes)
 }
