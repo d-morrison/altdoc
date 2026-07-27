@@ -412,6 +412,118 @@ test_that(".llms_txt_vignettes finds nested quarto_website articles", {
     expect_equal(out$title[out$name == "start"], "Getting started here")
 })
 
+test_that(".llms_txt_doc_title prefers front matter over a body heading", {
+    d <- withr::local_tempdir()
+
+    # How a Quarto or R Markdown vignette actually declares its title. This
+    # repo's own vignettes/get-started.Rmd is exactly this shape: a `title:`
+    # and no body heading at all.
+    writeLines(
+        c("---", 'title: "Get started"', "---", "", "some prose"),
+        fs::path_join(c(d, "quoted.qmd"))
+    )
+    expect_equal(
+        .llms_txt_doc_title(fs::path_join(c(d, "quoted.qmd")), "quoted"),
+        "Get started"
+    )
+
+    # YAML quoting is optional.
+    writeLines(
+        c("---", "title: Fitting Models", "---"),
+        fs::path_join(c(d, "bare.qmd"))
+    )
+    expect_equal(
+        .llms_txt_doc_title(fs::path_join(c(d, "bare.qmd")), "bare"),
+        "Fitting Models"
+    )
+
+    # Front matter wins over a body heading, matching what Quarto shows.
+    writeLines(
+        c("---", 'title: "The Real Title"', "---", "", "# A Later Heading"),
+        fs::path_join(c(d, "both.qmd"))
+    )
+    expect_equal(
+        .llms_txt_doc_title(fs::path_join(c(d, "both.qmd")), "both"),
+        "The Real Title"
+    )
+
+    # An indented `title:` belongs to some other key, not the document.
+    writeLines(
+        c("---", "format:", "  html:", "    title: Nested", "---", "", "# Own"),
+        fs::path_join(c(d, "nested.qmd"))
+    )
+    expect_equal(
+        .llms_txt_doc_title(fs::path_join(c(d, "nested.qmd")), "nested"),
+        "Own"
+    )
+})
+
+test_that(".llms_txt_doc_title ignores headings inside fenced code", {
+    d <- withr::local_tempdir()
+
+    # `#` opens a comment in R, so a chunk comment at column 0 is
+    # indistinguishable from a heading to a plain grep. Publishing one as the
+    # article's title is worse than the file name, since it looks deliberate.
+    writeLines(
+        c(
+            "```{r}",
+            "# read the static settings",
+            "x <- 1",
+            "```",
+            "",
+            "# Real Heading"
+        ),
+        fs::path_join(c(d, "trap.qmd"))
+    )
+    expect_equal(
+        .llms_txt_doc_title(fs::path_join(c(d, "trap.qmd")), "trap"),
+        "Real Heading"
+    )
+
+    # A document that is nothing but a fenced chunk has no title to find.
+    writeLines(
+        c("```{r}", "# only a comment", "```"),
+        fs::path_join(c(d, "allcode.qmd"))
+    )
+    expect_equal(
+        .llms_txt_doc_title(fs::path_join(c(d, "allcode.qmd")), "allcode"),
+        "allcode"
+    )
+})
+
+test_that(".site_url_from_pkgdown falls through on a malformed urls key", {
+    create_local_package()
+    desc::desc_set_urls("https://real.example.org")
+    fs::dir_create("altdoc")
+
+    # altdoc/pkgdown.yml is hand-edited, so it can hold shapes the convention
+    # does not anticipate. Each of these used to abort render_docs() outright
+    # rather than fall through to the documented DESCRIPTION fallback.
+    writeLines("urls: https://example.org", "altdoc/pkgdown.yml")
+    expect_equal(.site_url("."), "https://real.example.org")
+
+    writeLines(
+        c(
+            "urls:",
+            "  reference:",
+            "    - https://a.org/man",
+            "    - https://b.org/man"
+        ),
+        "altdoc/pkgdown.yml"
+    )
+    expect_equal(.site_url("."), "https://real.example.org")
+
+    writeLines("just-a-scalar", "altdoc/pkgdown.yml")
+    expect_equal(.site_url("."), "https://real.example.org")
+
+    # A well-formed file still wins over DESCRIPTION.
+    writeLines(
+        c("urls:", "  reference: https://docs.example.org/pkg/man"),
+        "altdoc/pkgdown.yml"
+    )
+    expect_equal(.site_url("."), "https://docs.example.org/pkg")
+})
+
 test_that(".llms_txt_vignettes does not recurse for the other generators", {
     create_local_package()
     fs::dir_create("docs/vignettes/nested", recurse = TRUE)

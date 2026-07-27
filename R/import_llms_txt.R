@@ -94,41 +94,97 @@
     title <- .get_vignettes_titles(fn, path = src_dir)
 
     if (length(title) == 0 || is.na(title[[1]])) {
-        return(.llms_txt_h1(fn, name))
+        return(.llms_txt_doc_title(fn, name))
     }
     title <- as.character(title[[1]])
 
     if (identical(title, basename(fn))) {
-        return(.llms_txt_h1(fn, name))
+        return(.llms_txt_doc_title(fn, name))
     }
     title
 }
 
-# The file's own first heading, or `name` when there is not one.
+# The title a document declares about itself, or `name` when it declares none.
 #
-# `.get_vignettes_titles()` reaches its H1 fallback only when its same-name
+# `.get_vignettes_titles()` reaches its own fallbacks only when its same-name
 # source lookup leaves `out` empty, and that lookup is non-recursive -- so for
 # a nested `vignettes/articles/deep-dive.qmd` it finds nothing, leaves `out`
-# seeded to the bare file name, and never consults the heading that is sitting
-# in the content it already read. A top-level vignette of the same shape gets
-# its real title. Reading the heading here restores that symmetry.
+# seeded to the bare file name, and never consults the content it already read.
+# A top-level vignette of the same shape gets a real title. Reading the
+# document here restores that symmetry.
 #
 # Done in this function rather than by making that lookup recursive: it is a
 # shared helper on `main` with other callers, so widening its search would
 # change titles elsewhere in the package to fix a gap that is ours.
 #
-# The heading pattern matches `.get_vignettes_titles()`'s own, so a nested
-# article and a top-level one resolve their titles the same way. A `.pdf` is
-# binary and has no heading to find, so it keeps its file name.
-.llms_txt_h1 <- function(fn, name) {
+# Front matter comes first because that is where a Quarto or R Markdown
+# vignette actually declares its title -- this repo's own
+# `vignettes/get-started.Rmd` has `title: "Get started"` and no body heading at
+# all, and Quarto builds its sidebar label from the same field. A body `# `
+# heading is the fallback for a document with no front matter.
+#
+# A `.pdf` is binary: there is nothing to read, so it keeps its file name.
+.llms_txt_doc_title <- function(fn, name) {
     if (identical(tolower(fs::path_ext(fn)), "pdf")) {
         return(name)
     }
 
     lines <- .readlines(fn)
-    idx <- grep("^# \\w+", lines)
+
+    title <- .llms_txt_yaml_title(.front_matter_lines(lines))
+    if (!is.null(title)) {
+        return(title)
+    }
+
+    heading <- .llms_txt_body_heading(lines)
+    if (!is.null(heading)) {
+        return(heading)
+    }
+    name
+}
+
+# The `title:` value from a document's front matter, or NULL.
+#
+# Anchored at column 0 so an indented `title:` nested under another key (a
+# `format:` block, say) is not mistaken for the document's own.
+.llms_txt_yaml_title <- function(front_matter) {
+    idx <- grep("^title:", front_matter)
     if (length(idx) == 0) {
-        return(name)
+        return(NULL)
+    }
+
+    value <- trimws(sub("^title:[[:space:]]*", "", front_matter[idx[1]]))
+    # YAML quoting is optional, so accept either form and strip a matched pair.
+    value <- sub('^"(.*)"$', "\\1", value)
+    value <- sub("^'(.*)'$", "\\1", value)
+
+    if (!nzchar(value)) {
+        return(NULL)
+    }
+    value
+}
+
+# The document's first body heading, ignoring fenced code blocks.
+#
+# `#` opens a comment in R, Python, and shell alike, so a chunk containing
+# `# read the static settings` at column 0 looks exactly like a heading to a
+# plain grep. This repo's `vignettes/customize.qmd` has several, and is saved
+# only by its real heading happening to come first. Publishing a code comment
+# as an article's title is worse than falling back to the file name, since it
+# looks deliberate.
+#
+# `.get_vignettes_titles()`'s own H1 grep has the same blind spot; it is not
+# corrected here because it is `main`'s, and its callers are not ours.
+.llms_txt_body_heading <- function(lines) {
+    fence_re <- "^[[:space:]]*(```|~~~)"
+    in_fence <- cumsum(grepl(fence_re, lines)) %% 2 == 1
+    # The closing fence itself is still part of the block.
+    in_fence <- in_fence | grepl(fence_re, lines)
+
+    idx <- grep("^# \\w+", lines)
+    idx <- idx[!in_fence[idx]]
+    if (length(idx) == 0) {
+        return(NULL)
     }
     sub("^# ", "", lines[idx[1]])
 }

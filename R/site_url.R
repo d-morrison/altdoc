@@ -47,8 +47,24 @@
     }
 
     .assert_dependency("yaml")
-    reference <- yaml::read_yaml(fn)$urls$reference
-    if (is.null(reference) || !nzchar(reference)) {
+
+    # This file is the one a maintainer hand-edits, so it can hold shapes the
+    # convention does not anticipate: `urls` written as a bare scalar, or
+    # `reference` as a list of URLs. Indexing straight through would abort the
+    # whole `render_docs()` call on `$ operator is invalid for atomic vectors`
+    # or a length-2 condition, turning a documentation nicety into a hard
+    # failure. Anything that is not a single non-empty string falls through to
+    # the `DESCRIPTION` fallback this function already documents.
+    config <- yaml::read_yaml(fn)
+    urls <- if (is.list(config)) config$urls else NULL
+    reference <- if (is.list(urls)) urls$reference else NULL
+
+    if (
+        !is.character(reference) ||
+            length(reference) != 1 ||
+            is.na(reference) ||
+            !nzchar(reference)
+    ) {
         return(NULL)
     }
 
