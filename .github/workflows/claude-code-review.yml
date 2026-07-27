@@ -32,25 +32,57 @@ jobs:
       actions: write        # dispatch this workflow via `gh workflow run`
       issues: write         # acknowledge the /review comment
     steps:
+      - name: Parse this workflow's ref
+        id: this-wf
+        uses: d-morrison/gha/.github/actions/parse-workflow-ref@v2
+        with:
+          workflow-ref: ${{ github.workflow_ref }}
+
       - name: Dispatch a review for the commented PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.issue.number }}
-          WORKFLOW_REF: ${{ github.workflow_ref }}
+          WF_PATH: ${{ steps.this-wf.outputs.path }}
+          # Passed via env (not inlined) so the comment body is a shell value,
+          # never interpreted as script -- avoids injection.
           COMMENT_BODY: ${{ github.event.comment.body }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
+          # The job-level `if:` only does a cheap startsWith('/review') pre-filter;
+          # GitHub Actions expressions can't reliably tell '/review' from
+          # '/reviewer' or handle a newline/tab after the command. Enforce the real
+          # match here: the body must begin with a standalone '/review' token,
+          # followed by whitespace (space/tab/newline) or end-of-string.
           if [[ ! "$COMMENT_BODY" =~ ^/review([[:space:]]|$) ]]; then
             echo "Comment does not start with a standalone '/review' command; skipping dispatch."
             exit 0
           fi
-          WF_FILE=$(printf '%s' "$WORKFLOW_REF" | sed -E 's#.*/([^/@]+)@.*#\1#')
-          echo "Dispatching $WF_FILE to review PR #$PR_NUMBER (/review comment)."
-          gh workflow run "$WF_FILE" --repo "$REPO" -f pr_number="$PR_NUMBER"
+          # This workflow's filename, so the dispatch resolves whatever you
+          # name the file -- WF_PATH is the .github/workflows/<file> portion.
+          WF_FILE=$(basename "$WF_PATH")
+          # This job never checks out the repo, so the PR's head branch has to
+          # be looked up explicitly. --ref pins the dispatched run's check-runs
+          # to that branch instead of the default branch workflow_dispatch
+          # falls back to when no ref is given -- without it, a required
+          # review check-run can land on the wrong commit (d-morrison/gha#285).
+          PR_JSON=$(gh api "repos/$REPO/pulls/$PR_NUMBER")
+          PR_BRANCH=$(jq -r '.head.ref' <<< "$PR_JSON")
+          PR_HEAD_REPO=$(jq -r '.head.repo.full_name' <<< "$PR_JSON")
+          echo "Dispatching $WF_FILE to review PR #$PR_NUMBER ($PR_BRANCH) (/review comment)."
+          # A fork PR's head branch only exists in the fork, not in $REPO, so
+          # --ref would fail to resolve there. Fall back to no --ref for fork
+          # PRs; the resulting check-run mis-attributes to the default branch
+          # (the no-ref behavior), the lesser problem.
+          REF_ARGS=(--ref "$PR_BRANCH")
+          if [ "$PR_HEAD_REPO" != "$REPO" ]; then
+            echo "::notice::PR #$PR_NUMBER is from a fork ($PR_HEAD_REPO); dispatching $WF_FILE without --ref."
+            REF_ARGS=()
+          fi
+          gh workflow run "$WF_FILE" --repo "$REPO" "${REF_ARGS[@]}" -f pr_number="$PR_NUMBER"
           gh issue comment "$PR_NUMBER" --repo "$REPO" \
-            --body ":mag: \`/review\` received — dispatched a Claude review of this PR (see the [dispatch run]($RUN_URL)). The review posts as its own comment when it finishes." \
+            --body ":mag: \`/review\` received -- dispatched a Claude review of this PR (see the [dispatch run]($RUN_URL)). The review posts as its own comment when it finishes." \
             || echo "::warning::Could not acknowledge the /review comment."
 
   review:
@@ -64,15 +96,10 @@ jobs:
       issues: write
       id-token: write
       actions: read   # lets the reviewer read CI status (github_ci MCP server)
-    uses: d-morrison/gha/.github/workflows/claude-code-review.yml@v1
-    # NOTE: the @v1 tag of this reusable workflow does not declare an
-    # ANTHROPIC_API_KEY secret (only CLAUDE_CODE_OAUTH_TOKEN and
-    # SUBMODULES_TOKEN) — main added it but @v1 hasn't been slid forward yet
-    # (see d-morrison/gha#179). Passing it here 400s the workflow-call gate
-    # ("Invalid secret, ANTHROPIC_API_KEY is not defined in the referenced
-    # workflow"), so it's omitted until @v1 catches up.
+    uses: d-morrison/gha/.github/workflows/claude-code-review.yml@v2
     secrets:
-      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}   # Max-plan OAuth; empty when using API key
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}               # direct API key; empty when using OAuth
       SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}
     with:
       # Wires the workflow_dispatch input through so claude.yml can
