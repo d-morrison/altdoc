@@ -63,4 +63,9 @@
             hashes <- readRDS(freeze_file)
         }
     }
+    # Returned explicitly. Without this, the function returns whatever the
+    # last expression evaluated to, which happens to be `hashes` today only
+    # because the `if` block is last; adding any statement after it would
+    # silently change the return value and disable freezing with no error.
+    hashes
 }
