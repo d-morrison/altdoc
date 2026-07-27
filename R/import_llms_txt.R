@@ -14,7 +14,13 @@
     topics <- .rd_topics(src_dir)
     vignettes <- .llms_txt_vignettes(src_dir, tar_dir, tool)
 
-    if (nrow(topics) == 0 && nrow(vignettes) == 0) {
+    # Count the topics that will actually be listed, not every documented one.
+    # `.llms_txt()` drops internal topics, so a package whose topics are all
+    # internal has nothing indexable: gating on `nrow(topics)` would write a
+    # file holding only the H1 and the title, with no `## Reference` section.
+    listed <- .llms_txt_listed(topics)
+
+    if (nrow(listed) == 0 && nrow(vignettes) == 0) {
         return(invisible())
     }
 
@@ -41,7 +47,7 @@
     writeLines(content, fs::path_join(c(tar_dir, "llms.txt")))
 
     cli::cli_alert_success(
-        "{.file llms.txt} written with {nrow(topics)} topic{?s} and
+        "{.file llms.txt} written with {nrow(listed)} topic{?s} and
          {nrow(vignettes)} article{?s}."
     )
 

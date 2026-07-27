@@ -175,8 +175,54 @@ test_that(".import_llms_txt honors the reference.yml opt-out", {
     setup_docs("docute")
     fs::dir_create("docs")
 
+    # The fixture needs a real .Rd, or the emptiness guard suppresses the file
+    # on its own and the assertion below holds whether or not the opt-out is
+    # honored -- it would pass with the `llms_txt: false` branch deleted.
+    fs::dir_create("man")
+    writeLines(
+        c(
+            "\\name{hello}",
+            "\\alias{hello}",
+            "\\title{Say hello to someone}",
+            "\\usage{hello(who)}",
+            "\\description{Says hello.}"
+        ),
+        "man/hello.Rd"
+    )
+
+    # Confirm the fixture would otherwise produce a file, so the opt-out is
+    # what this test actually measures.
+    .import_llms_txt(src_dir = ".", tar_dir = "docs", tool = "docute")
+    expect_true(fs::file_exists("docs/llms.txt"))
+    fs::file_delete("docs/llms.txt")
+
     fs::dir_create("altdoc")
     writeLines("llms_txt: false", "altdoc/reference.yml")
+
+    .import_llms_txt(src_dir = ".", tar_dir = "docs", tool = "docute")
+    expect_false(fs::file_exists("docs/llms.txt"))
+})
+
+test_that(".import_llms_txt writes nothing when every topic is internal", {
+    create_local_package()
+    setup_docs("docute")
+    fs::dir_create("docs")
+
+    # Gating on the unfiltered topic count would pass this guard and write a
+    # file carrying the H1 and title with no `## Reference` section --- an
+    # index of nothing.
+    fs::dir_create("man")
+    writeLines(
+        c(
+            "\\name{dot_helper}",
+            "\\alias{dot_helper}",
+            "\\title{An internal helper}",
+            "\\usage{dot_helper()}",
+            "\\description{Internal.}",
+            "\\keyword{internal}"
+        ),
+        "man/dot_helper.Rd"
+    )
 
     .import_llms_txt(src_dir = ".", tar_dir = "docs", tool = "docute")
     expect_false(fs::file_exists("docs/llms.txt"))

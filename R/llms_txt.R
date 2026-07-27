@@ -27,10 +27,7 @@
     }
 
     if (!is.null(topics) && nrow(topics) > 0) {
-        # Internal topics are excluded for the same reason the reference index
-        # omits them: they document things a caller is not meant to reach for,
-        # so listing them invites an agent to suggest one.
-        listed <- topics[!topics$internal, , drop = FALSE]
+        listed <- .llms_txt_listed(topics)
         if (nrow(listed) > 0) {
             out <- c(out, "## Reference", "")
             out <- c(
@@ -68,6 +65,20 @@
     }
 
     out
+}
+
+# The topics that actually reach the file.
+#
+# Internal topics are excluded for the same reason the reference index omits
+# them: they document things a caller is not meant to reach for, so listing
+# them invites an agent to suggest one.
+#
+# Shared with `.import_llms_txt()`, which needs the same subset to decide
+# whether there is anything to write and to report how many entries it wrote.
+# Applying the rule in only one of the two places is how a package whose
+# topics are all internal ends up with a file carrying no entries.
+.llms_txt_listed <- function(topics) {
+    topics[!topics$internal, , drop = FALSE]
 }
 
 # `fn()` for a topic that documents something callable, matching how the

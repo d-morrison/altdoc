@@ -3,8 +3,10 @@
 ## Unreleased
 
 * Added: `render_docs()` now writes an [`llms.txt`](https://llmstxt.org/) at
-  the site root, indexing every documented topic and rendered article so a
+  the site root, indexing every public topic and rendered article so a
   coding agent can read the package's documentation without scraping HTML.
+  Topics marked `\keyword{internal}` are left out, as they are in the
+  reference index; a package with nothing else to list gets no file.
   Each reference entry carries the topic's `.Rd` `\title{}`, the same summary
   the reference index shows, so the two cannot disagree and neither can drift
   from the help page. Links are absolute when the package declares a site
