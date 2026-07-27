@@ -1,5 +1,4 @@
 .import_readme <- function(src_dir, tar_dir, tool, freeze) {
-    # priorities: .qmd > .Rmd > .md
     readme_files <- list.files(src_dir, pattern = "README")
 
     # setup_docs() already created README.md if there is none, so if we don't find
@@ -8,34 +7,13 @@
         cli::cli_abort("README.md is mandatory.")
     }
 
-    # Find the preferred README extension
-    readme_type <- if ("README.qmd" %in% readme_files) {
-        "qmd"
-    } else if ("README.Rmd" %in% readme_files) {
-        "rmd"
-    } else if ("README.md" %in% readme_files) {
-        "md"
-    } else if ("README" %in% readme_files) {
-        # no extension -> md
-        readme_files[readme_files == "README"] <- "README.md"
-        fs::file_move(
-            fs::path_join(c(src_dir, "README")),
-            fs::path_join(c(src_dir, "README.md"))
-        )
-        "md"
-    }
-
-    src_file <- fs::path_join(
-        c(
-            src_dir,
-            grep(
-                paste0("\\.", readme_type, "$"),
-                readme_files,
-                ignore.case = TRUE,
-                value = TRUE
-            )
-        )
-    )
+    # `README.md` is the only README this function reads: `docs/README.md` is
+    # always a copy of it, and altdoc does not render a `README.qmd` or
+    # `README.Rmd` down to it (hence the sync reminder at the end of this
+    # function). So the freeze check below has to hash `README.md` too --
+    # hashing whichever variant the author edits would let an edit made
+    # directly to `README.md` go undetected, leaving `docs/README.md` stale.
+    src_file <- fs::path_join(c(src_dir, "README.md"))
 
     # Skip file when frozen
     if (isTRUE(freeze)) {
@@ -54,25 +32,17 @@
     }
 
     tar_file <- fs::path_join(c(tar_dir, "README.md"))
-    src_file <- fs::path_join(c(src_dir, "README.md"))
     fs::file_copy(src_file, tar_file, overwrite = TRUE)
     .check_md_structure(tar_file)
 
-    # Add the index page which includes README.md
+    # Add the index page which includes README.md. This is unconditional: the
+    # mandatory-README.md check above guarantees `README.md` is present, so an
+    # `index.qmd` copied from `README.qmd` instead was never reachable (#69).
     if (tool == "quarto_website") {
-        if (
-            "README.qmd" %in% readme_files && !("README.md" %in% readme_files)
-        ) {
-            fs::file_copy(
-                fs::path_join(c(src_dir, "README.qmd")),
-                fs::path_join(c(tar_dir, "index.qmd"))
-            )
-        } else {
-            writeLines(
-                enc2utf8("{{< include README.md >}}"),
-                fs::path_join(c(tar_dir, "index.md"))
-            )
-        }
+        writeLines(
+            enc2utf8("{{< include README.md >}}"),
+            fs::path_join(c(tar_dir, "index.md"))
+        )
     }
 
     tmp <- fs::path_join(c(src_dir, "README.markdown_strict_files"))
