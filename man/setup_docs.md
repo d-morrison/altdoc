@@ -312,14 +312,27 @@ entries stay scannable by the name a reader is looking for. Set
 sidebar_label_width: 60
 </pre>
 
+<code>render_docs()</code> also writes an
+<a href="https://llmstxt.org/"><code>llms.txt</code></a> at the site
+root: an index of the site’s public topics and rendered articles, in
+Markdown, so a coding agent can read the documentation without scraping
+HTML. Set <code>llms_txt: false</code> to skip it:
+
+<pre>llms_txt: false
+</pre>
+
+Skipping it also removes a copy an earlier render left behind, so the
+site does not go on serving an index you have opted out of.
+
 <code>title</code>, <code>reference</code>, <code>sidebar_labels</code>,
-and <code>sidebar_label_width</code> are the only top-level keys
-<code>altdoc/reference.yml</code> accepts; anything else is an error. So
-is an unrecognized <code>sidebar_labels</code> value, and a
-<code>sidebar_label_width</code> that is not a whole number of at least
-4 — below 4 leaves no room for the ellipsis, and a fractional width
-would be silently truncated, so <code>4.5</code> would quietly behave as
-<code>4</code>.
+<code>sidebar_label_width</code>, and <code>llms_txt</code> are the only
+top-level keys <code>altdoc/reference.yml</code> accepts; anything else
+is an error. So is an unrecognized <code>sidebar_labels</code> value, an
+<code>llms_txt</code> that is not an unquoted <code>true</code> or
+<code>false</code>, and a <code>sidebar_label_width</code> that is not a
+whole number of at least 4 — below 4 leaves no room for the ellipsis,
+and a fractional width would be silently truncated, so <code>4.5</code>
+would quietly behave as <code>4</code>.
 
 Setting <code>sidebar_label_width</code> without <code>sidebar_labels:
 name-and-title</code> warns, since the width has nothing to apply to on

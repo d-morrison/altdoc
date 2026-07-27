@@ -1,0 +1,17 @@
+# altdoc
+
+> Package Documentation Websites with 'Quarto', 'Docsify', 'Docute', or 'MkDocs'
+
+## Reference
+
+- [preview_docs()](https://altdoc.etiennebacher.com/man/preview_docs.md): Preview the documentation in a webpage or in viewer
+- [render_docs()](https://altdoc.etiennebacher.com/man/render_docs.md): Update documentation
+- [setup_docs()](https://altdoc.etiennebacher.com/man/setup_docs.md): Initialize documentation website settings
+- [setup_github_actions()](https://altdoc.etiennebacher.com/man/setup_github_actions.md): Create a Github Actions workflow
+
+## Articles
+
+- [Customize](https://altdoc.etiennebacher.com/vignettes/customize.md)
+- [Deploy](https://altdoc.etiennebacher.com/vignettes/deploy.md)
+- [Get started](https://altdoc.etiennebacher.com/vignettes/get-started.md)
+
