@@ -17,6 +17,10 @@ on:
       - vignettes/*
       - DESCRIPTION
       - NAMESPACE
+      # Re-run when this workflow itself changes, so a change to how the check
+      # is set up is exercised by the PR that makes it. Without this, a PR
+      # touching only this file gets no run at all and lands unverified.
+      - .github/workflows/R-CMD-check-no-quarto.yml
   pull_request:
     branches: [main, master]
     paths:
@@ -26,6 +30,10 @@ on:
       - vignettes/*
       - DESCRIPTION
       - NAMESPACE
+      # Re-run when this workflow itself changes, so a change to how the check
+      # is set up is exercised by the PR that makes it. Without this, a PR
+      # touching only this file gets no run at all and lands unverified.
+      - .github/workflows/R-CMD-check-no-quarto.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
