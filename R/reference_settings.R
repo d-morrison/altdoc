@@ -12,9 +12,10 @@
 #     to use the default (`"name"`)
 #   - `sidebar_label_width`: the width titles are truncated to in the sidebar,
 #     or NULL to use the default
+#   - `llms_txt`: FALSE to skip generating `llms.txt`, or NULL to generate it
 #
 # Every field is NULL when the file does not exist, so a package with no
-# settings file still gets a complete index. Each return path names all four,
+# settings file still gets a complete index. Each return path names all five,
 # so a caller never has to ask which shape it got back.
 #
 #   title: Function reference
@@ -26,14 +27,15 @@
 #
 # A bare list of sections at the top level (no `reference:` key) is accepted
 # too, for a settings file moved over unchanged from pkgdown; such a file has
-# nowhere to put the mapping keys, so `title` and both sidebar keys always take
-# their defaults.
+# nowhere to put the mapping keys, so `title`, both sidebar keys, and
+# `llms_txt` always take their defaults.
 .reference_settings <- function(src_dir = ".") {
     empty <- list(
         title = NULL,
         sections = NULL,
         sidebar_labels = NULL,
-        sidebar_label_width = NULL
+        sidebar_label_width = NULL,
+        llms_txt = NULL
     )
     fn <- fs::path_join(c(src_dir, "altdoc", "reference.yml"))
 
@@ -56,7 +58,13 @@
         return(empty)
     }
 
-    known <- c("title", "reference", "sidebar_labels", "sidebar_label_width")
+    known <- c(
+        "title",
+        "reference",
+        "sidebar_labels",
+        "sidebar_label_width",
+        "llms_txt"
+    )
     unknown <- setdiff(names(settings), known)
     if (length(unknown) > 0) {
         cli::cli_abort(c(
@@ -71,6 +79,7 @@
         title = settings[["title"]],
         sections = settings[["reference"]],
         sidebar_labels = settings[["sidebar_labels"]],
-        sidebar_label_width = settings[["sidebar_label_width"]]
+        sidebar_label_width = settings[["sidebar_label_width"]],
+        llms_txt = settings[["llms_txt"]]
     )
 }

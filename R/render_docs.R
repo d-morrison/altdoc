@@ -156,6 +156,10 @@ render_docs <- function(
         freeze = freeze
     )
 
+    # After the man pages and vignettes, so the index lists what was actually
+    # rendered rather than what the source tree promised.
+    .import_llms_txt(src_dir = path, tar_dir = docs_dir, tool = tool)
+
     # Error so that CI fails
     if (length(fail_vignettes) > 0 && length(fail_man) > 0) {
         cli::cli_abort(

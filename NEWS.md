@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+* Added: `render_docs()` now writes an [`llms.txt`](https://llmstxt.org/) at
+  the site root, indexing every documented topic and rendered article so a
+  coding agent can read the package's documentation without scraping HTML.
+  Each reference entry carries the topic's `.Rd` `\title{}`, the same summary
+  the reference index shows, so the two cannot disagree and neither can drift
+  from the help page. Links are absolute when the package declares a site
+  (`altdoc/pkgdown.yml`'s `urls: reference:` first, then `DESCRIPTION`'s
+  `URL:`), and site-relative otherwise. They point at `.md` pages under
+  `docsify` and `docute`, which serve the Markdown, and at `.html` under
+  `mkdocs` and `quarto_website`, which compile it away. Opt out with
+  `llms_txt: false` in `altdoc/reference.yml` (#40).
+
 * Added: `render_docs()` now discovers a package logo and copies it into the
   site, so a package following the usual convention gets one without
   hand-placing files. The search order matches `pkgdown`'s: `logo.svg`,
