@@ -133,6 +133,20 @@ variable are removed from the settings file.
 </li>
 <li>
 
+<code style="white-space: pre;">$ALTDOC_LOGO</code>: File name of the
+package logo, which <code>render_docs()</code> copies into the website
+root. The first of <code>logo.svg</code>,
+<code>man/figures/logo.svg</code>, <code>logo.png</code>, or
+<code>man/figures/logo.png</code> to exist is used. If the package has
+no logo, lines containing this variable are removed from the settings
+file. Of the settings files created by <code>setup_docs()</code>, only
+<code>quarto_website.yml</code> refers to this variable; add it yourself
+to use a logo with another documentation generator, or to a settings
+file created before this variable existed.
+
+</li>
+<li>
+
 <code style="white-space: pre;">$ALTDOC_MAN_BLOCK</code>: Nested list of
 links to the individual help pages for each exported function of the
 package. The format of this block depends on the documentation

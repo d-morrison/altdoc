@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+* Fixed: the workflow `setup_github_actions()` writes no longer bootstraps its
+  R installation with `eddelbuettel/r-ci`. That script installs `bspm` from a
+  single APT host, `r2u.stat.illinois.edu`, and aborts the job when that host
+  is unreachable, so a generated workflow could go red with nothing in the
+  package at fault. It now uses `r-lib/actions/setup-r` and
+  `setup-r-dependencies`, which resolve packages through the RStudio Package
+  Manager CDN. A workflow a project has already generated is a file in that
+  project, untouched by upgrading altdoc; rerun `setup_github_actions()` to
+  regenerate it ([#60](https://github.com/etiennebacher/altdoc/issues/60)).
+
+* Added: `render_docs()` now discovers a package logo and copies it into the
+  site, so a package following the usual convention gets one without
+  hand-placing files. The search order matches `pkgdown`'s: `logo.svg`,
+  `man/figures/logo.svg`, `logo.png`, then `man/figures/logo.png`. The file
+  is copied under its own name and can be referenced from a settings file
+  with the new `$ALTDOC_LOGO` variable; as with the other `$ALTDOC_`
+  variables, a line using it is dropped when the package has no logo, so a
+  settings file can carry a logo entry unconditionally. Only the
+  `quarto_website` template wires it up so far, via `navbar: logo:`; the
+  other three generators copy the logo but do not yet reference it. Settings
+  files created before this release are never modified automatically, so add
+  a `$ALTDOC_LOGO` entry to pick it up. Favicons are deliberately not
+  included ([#41](https://github.com/etiennebacher/altdoc/issues/41)).
+  
+* Fixed: `render_docs(freeze = TRUE)` now actually skips an unchanged
+  `README.md`. The freeze check hashed whichever README variant had priority
+  (`README.qmd`, then `README.Rmd`, then `README.md`), but the hash recorded
+  after the copy was always `README.md`'s, so for any package shipping a
+  `README.qmd` or `README.Rmd` the check looked up a key that was never
+  written and the README was re-copied on every render. Both sides now use
+  `README.md`, which is the file altdoc actually copies to `docs/README.md`:
+  keying the skip on a variant altdoc never reads would let an edit made
+  directly to `README.md` go undetected and leave the rendered copy stale
+  ([#69](https://github.com/etiennebacher/altdoc/issues/69)).
+
 * Fixed: `render_docs()`'s documented list of source files it looks for now
   matches what it actually looks for. Three gaps: the `.Rd` and `inst/`
   candidates were listed for `NEWS` but for none of the other files, even
