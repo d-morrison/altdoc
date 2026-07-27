@@ -21,7 +21,8 @@ test_that(".llms_txt builds the llmstxt.org shape", {
     expect_true(any(
         out ==
             paste0(
-                "- [as_pop_data()](https://example.org/mypkg/man/as_pop_data.html)",
+                "- [as_pop_data()]",
+                "(https://example.org/mypkg/man/as_pop_data.html)",
                 ": Load a survey data set"
             )
     ))
@@ -102,12 +103,17 @@ test_that(".llms_txt drops a description identical to its label", {
     expect_true(any(out == "- [as_pop_data](man/as_pop_data.md)"))
 })
 
-test_that(".llms_txt_ext serves Markdown only where the generator does", {
-    # docsify/docute fetch the Markdown at runtime, so it is on the site;
-    # mkdocs and quarto_website compile it away.
+test_that(".llms_txt_ext matches what each generator publishes", {
+    # Markdown survives into the published tree for all three of these:
+    # docsify/docute fetch it at runtime, and mkdocs builds HTML alongside the
+    # .md sources rather than replacing them. Same split as
+    # `.import_reference()`.
     expect_equal(.llms_txt_ext("docsify"), "md")
     expect_equal(.llms_txt_ext("docute"), "md")
-    expect_equal(.llms_txt_ext("mkdocs"), "html")
+    # Not "html": mkdocs leaves use_directory_urls at its TRUE default, so it
+    # serves /man/foo/, never /man/foo.html -- an extension-based HTML link is
+    # wrong for it twice over.
+    expect_equal(.llms_txt_ext("mkdocs"), "md")
     expect_equal(.llms_txt_ext("quarto_website"), "html")
 })
 
@@ -129,6 +135,39 @@ test_that(".site_url prefers pkgdown.yml, then DESCRIPTION, then nothing", {
         "altdoc/pkgdown.yml"
     )
     expect_equal(.site_url("."), "https://docs.example.org/pkg")
+
+    # A host-only reference URL has no path segment to strip, so there is no
+    # site root to recover; fall through rather than return the bare scheme.
+    writeLines(
+        c("urls:", "  reference: https://docs.example.org"),
+        "altdoc/pkgdown.yml"
+    )
+    expect_equal(.site_url("."), "https://example.org/mypkg")
+})
+
+test_that(".site_url refuses a forge URL", {
+    create_local_package()
+
+    # A package whose only URL is its repository has no site. Using the repo
+    # as the base would emit links like <repo>/man/foo.md, which do not exist.
+    desc::desc_set_urls("https://github.com/user/pkg")
+    expect_null(.site_url("."))
+
+    # The same applies to a forge URL reached through pkgdown.yml.
+    fs::dir_create("altdoc")
+    writeLines(
+        c("urls:", "  reference: https://gitlab.com/user/pkg/man"),
+        "altdoc/pkgdown.yml"
+    )
+    expect_null(.site_url("."))
+
+    # A real site alongside the repo URL is still used.
+    desc::desc_set_urls(c(
+        "https://github.com/user/pkg",
+        "https://user.github.io/pkg"
+    ))
+    fs::file_delete("altdoc/pkgdown.yml")
+    expect_equal(.site_url("."), "https://user.github.io/pkg")
 })
 
 test_that(".import_llms_txt honors the reference.yml opt-out", {
@@ -141,4 +180,38 @@ test_that(".import_llms_txt honors the reference.yml opt-out", {
 
     .import_llms_txt(src_dir = ".", tar_dir = "docs", tool = "docute")
     expect_false(fs::file_exists("docs/llms.txt"))
+})
+
+test_that(".import_llms_txt writes a file listing the package's topics", {
+    create_local_package()
+    setup_docs("docute")
+    fs::dir_create("docs")
+    desc::desc_set_urls("https://example.org/mypkg")
+
+    # A package with no documented topics and no vignettes has nothing to
+    # index, and `.import_llms_txt()` correctly writes nothing -- so the
+    # fixture needs a real .Rd for this to exercise the write path at all.
+    fs::dir_create("man")
+    writeLines(
+        c(
+            "\\name{hello}",
+            "\\alias{hello}",
+            "\\title{Say hello to someone}",
+            "\\usage{hello(who)}",
+            "\\description{Says hello.}"
+        ),
+        "man/hello.Rd"
+    )
+
+    .import_llms_txt(src_dir = ".", tar_dir = "docs", tool = "docute")
+
+    expect_true(fs::file_exists("docs/llms.txt"))
+    content <- .readlines("docs/llms.txt")
+    expect_true(any(grepl("^# ", content)))
+    expect_true(any(content == "## Reference"))
+    # The summary is the .Rd \title{}, so it cannot drift from the help page.
+    expect_true(any(grepl("Say hello to someone", content, fixed = TRUE)))
+    # docute serves the Markdown, so entries point at it, not at .html.
+    expect_true(any(grepl("man/hello.md", content, fixed = TRUE)))
+    expect_false(any(grepl(".html)", content, fixed = TRUE)))
 })

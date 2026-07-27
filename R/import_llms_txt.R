@@ -21,7 +21,8 @@
     base <- .site_url(src_dir)
     if (is.null(base)) {
         cli::cli_alert_info(
-            "No {.field URL} in {.file DESCRIPTION}, so {.file llms.txt} links are site-relative."
+            "No site {.field URL} found, so {.file llms.txt} links are
+             site-relative."
         )
     }
 
@@ -40,25 +41,29 @@
     writeLines(content, fs::path_join(c(tar_dir, "llms.txt")))
 
     cli::cli_alert_success(
-        "{.file llms.txt} written with {nrow(topics)} topic{?s} and {nrow(vignettes)} article{?s}."
+        "{.file llms.txt} written with {nrow(topics)} topic{?s} and
+         {nrow(vignettes)} article{?s}."
     )
 
     invisible()
 }
 
-# The extension of the page a consumer can actually fetch, which depends on
-# whether the generator serves the Markdown or compiles it away.
+# The extension of the page a consumer can actually fetch.
 #
-# docsify and docute are single-page apps that fetch the Markdown at runtime,
-# so the `.md` files are served as-is and are the better target: an LLM gets
-# the source rather than a page it has to strip tags from.
+# This deliberately mirrors `.import_reference()`'s split -- quarto_website on
+# one side, every other generator on the other -- because the underlying fact
+# is the same: quarto_website is the only generator that does not leave the
+# Markdown in the published tree. docsify and docute fetch it at runtime, and
+# mkdocs builds HTML alongside the `.md` sources rather than replacing them.
+# Markdown is also the better target when it is available: an LLM gets the
+# source instead of a page it has to strip tags from.
 #
-# mkdocs and quarto_website both build HTML and do not publish the Markdown,
-# so `.md` links would 404. They get `.html`. Emitting Markdown siblings for
-# those two would let them use `.md` as well; that is deliberately out of
-# scope here (see the follow-up noted on #40).
+# Do not give mkdocs `.html` on the reasoning that it "builds HTML": its
+# config does not set `use_directory_urls`, so mkdocs' default of `TRUE`
+# applies and pages are served at `/man/foo/`, never `/man/foo.html`. An
+# extension-based HTML link is wrong for it in two ways at once.
 .llms_txt_ext <- function(tool) {
-    if (tool %in% c("docsify", "docute")) "md" else "html"
+    if (identical(tool, "quarto_website")) "html" else "md"
 }
 
 # Vignettes actually present in the rendered site, with their titles.
