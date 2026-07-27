@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+* Added: `render_docs()` now discovers a package logo and copies it into the
+  site, so a package following the usual convention gets one without
+  hand-placing files. The search order matches `pkgdown`'s: `logo.svg`,
+  `man/figures/logo.svg`, `logo.png`, then `man/figures/logo.png`. The file
+  is copied under its own name and can be referenced from a settings file
+  with the new `$ALTDOC_LOGO` variable; as with the other `$ALTDOC_`
+  variables, a line using it is dropped when the package has no logo, so a
+  settings file can carry a logo entry unconditionally. Only the
+  `quarto_website` template wires it up so far, via `navbar: logo:`; the
+  other three generators copy the logo but do not yet reference it. Settings
+  files created before this release are never modified automatically, so add
+  a `$ALTDOC_LOGO` entry to pick it up. Favicons are deliberately not
+  included (#41).
+
 * Fixed: `render_docs()`'s documented list of source files it looks for now
   matches what it actually looks for. Three gaps: the `.Rd` and `inst/`
   candidates were listed for `NEWS` but for none of the other files, even

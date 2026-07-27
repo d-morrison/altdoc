@@ -130,6 +130,7 @@ render_docs <- function(
         freeze = freeze
     )
     .import_citation(src_dir = path, tar_dir = docs_dir)
+    .import_logo(src_dir = path, tar_dir = docs_dir)
 
     # Update functions reference
     cli::cli_h1("Man pages")
