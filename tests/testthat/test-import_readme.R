@@ -121,7 +121,7 @@ test_that("freeze re-copies when README.md changes beside an unchanged qmd", {
     )
 })
 
-test_that(".get_hashes returns the hashes it read", {
+test_that(".get_hashes returns the hashes it read, visibly", {
     dir <- withr::local_tempdir()
     fs::dir_create(fs::path_join(c(dir, "altdoc")))
 
@@ -132,4 +132,12 @@ test_that(".get_hashes returns the hashes it read", {
     hashes <- c(a = "one", b = "two")
     saveRDS(hashes, fs::path_join(c(dir, "altdoc", "freeze.rds")))
     expect_identical(.get_hashes(dir, freeze = TRUE), hashes)
+
+    # The value assertions above hold against the pre-fix function too: it
+    # returned these same values, just *invisibly*, because its last
+    # expression was the `if` block rather than a `return()`. Visibility is
+    # the only thing the explicit return changes, so it is the only thing
+    # that can pin it (#69).
+    expect_true(withVisible(.get_hashes(dir, freeze = TRUE))$visible)
+    expect_true(withVisible(.get_hashes(dir, freeze = FALSE))$visible)
 })
