@@ -215,3 +215,67 @@ test_that(".import_llms_txt writes a file listing the package's topics", {
     expect_true(any(grepl("man/hello.md", content, fixed = TRUE)))
     expect_false(any(grepl(".html)", content, fixed = TRUE)))
 })
+
+test_that(".llms_txt_vignettes does not double-list a rendered .qmd", {
+    create_local_package()
+    fs::dir_create("docs/vignettes", recurse = TRUE)
+
+    # What `.render_one_vignette()` actually leaves behind for docsify/docute/
+    # mkdocs: it copies the source in, renders a sibling .md, and -- unlike
+    # `.import_man()` -- never deletes the copy. This repo's own
+    # vignettes/customize.qmd produces exactly this pair.
+    writeLines("# Customize the site", "docs/vignettes/customize.qmd")
+    writeLines("# Customize the site", "docs/vignettes/customize.md")
+
+    out <- .llms_txt_vignettes(".", "docs", "docsify")
+
+    expect_equal(nrow(out), 1)
+    expect_equal(out$name, "customize")
+    # The rendered page, not the leftover source.
+    expect_equal(out$ext, "md")
+})
+
+test_that(".llms_txt_vignettes includes .Rmd under quarto_website", {
+    create_local_package()
+    fs::dir_create("_quarto/vignettes", recurse = TRUE)
+
+    # quarto_website copies vignettes/ verbatim, so the sources are what is
+    # there and Quarto renders both. The sidebar builder matches .Rmd too.
+    writeLines("# Get started", "_quarto/vignettes/get-started.Rmd")
+    writeLines("# Customize", "_quarto/vignettes/customize.qmd")
+
+    out <- .llms_txt_vignettes(".", "_quarto", "quarto_website")
+
+    expect_setequal(out$name, c("get-started", "customize"))
+    # Both are rendered by Quarto, so both are published as HTML.
+    expect_equal(unique(out$ext), "html")
+})
+
+test_that(".llms_txt_vignettes keeps a .pdf vignette at its own extension", {
+    create_local_package()
+    fs::dir_create("_quarto/vignettes", recurse = TRUE)
+
+    writeLines("# Guide", "_quarto/vignettes/guide.qmd")
+    writeLines("%PDF-1.4", "_quarto/vignettes/manual.pdf")
+
+    out <- .llms_txt_vignettes(".", "_quarto", "quarto_website")
+
+    # A .pdf is copied, not rendered, so it does not become .html with the
+    # rest -- and it is listed rather than silently dropped.
+    expect_equal(out$ext[out$name == "manual"], "pdf")
+    expect_equal(out$ext[out$name == "guide"], "html")
+})
+
+test_that(".llms_txt uses each article's own extension", {
+    vignettes <- data.frame(
+        name = c("guide", "manual"),
+        title = c("Guide", "Manual"),
+        ext = c("html", "pdf"),
+        stringsAsFactors = FALSE
+    )
+
+    out <- .llms_txt("mypkg", vignettes = vignettes, base = "https://e.org")
+
+    expect_true(any(out == "- [Guide](https://e.org/vignettes/guide.html)"))
+    expect_true(any(out == "- [Manual](https://e.org/vignettes/manual.pdf)"))
+})

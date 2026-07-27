@@ -46,12 +46,21 @@
     }
 
     if (!is.null(vignettes) && nrow(vignettes) > 0) {
+        # Articles carry their own extension: a `.pdf` vignette is copied
+        # rather than rendered, so it does not share its siblings'. Fall back
+        # to the section-wide `ext` for a caller that supplies no column.
+        vig_ext <- if (is.null(vignettes$ext)) ext else vignettes$ext
         out <- c(out, "## Articles", "")
         out <- c(
             out,
             .llms_txt_rows(
                 labels = vignettes$title,
-                urls = .llms_txt_url(base, "vignettes", vignettes$name, ext),
+                urls = .llms_txt_url(
+                    base,
+                    "vignettes",
+                    vignettes$name,
+                    vig_ext
+                ),
                 descriptions = NULL
             ),
             ""

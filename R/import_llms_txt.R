@@ -66,22 +66,48 @@
     if (identical(tool, "quarto_website")) "html" else "md"
 }
 
-# Vignettes actually present in the rendered site, with their titles.
+# Vignettes actually present in the rendered site, with their titles and the
+# extension each one is published under.
 #
-# `.import_vignettes()` keeps `.qmd` for quarto_website and renders everything
-# else down to `.md`, so both are looked for.
+# The file set differs by generator, and matching the wrong one goes wrong in
+# both directions:
+#
+#   - quarto_website gets `vignettes/` copied verbatim (`.import_vignettes()`
+#     returns early for it), so the sources are what is there and Quarto
+#     renders them. A `.Rmd` vignette is published and listed in the sidebar,
+#     so a pattern that only knows `.qmd` silently drops it.
+#   - Every other generator renders down to `.md` -- but
+#     `.render_one_vignette()` copies the source in first and, unlike
+#     `.import_man()`, never deletes it. So `customize.qmd` sits beside the
+#     `customize.md` built from it, and a pattern matching both lists the same
+#     vignette twice.
+#
+# Hence one pattern per generator, mirroring what the sidebar builders already
+# match, plus a dedup by name as a backstop for a package that hand-authors a
+# `.md` vignette alongside a `.qmd` of the same name.
+#
+# `ext` is per-vignette rather than one value for the whole section because a
+# `.pdf` vignette is copied, not rendered: under quarto_website its siblings
+# become `.html` while it stays `.pdf`.
 .llms_txt_vignettes <- function(src_dir, tar_dir, tool) {
     dir <- fs::path_join(c(tar_dir, "vignettes"))
     empty <- data.frame(
         name = character(0),
         title = character(0),
+        ext = character(0),
         stringsAsFactors = FALSE
     )
     if (!fs::dir_exists(dir)) {
         return(empty)
     }
 
-    files <- list.files(dir, pattern = "\\.(md|qmd)$", full.names = TRUE)
+    pattern <- if (identical(tool, "quarto_website")) {
+        "\\.(qmd|Rmd|md|pdf)$"
+    } else {
+        "\\.(md|pdf)$"
+    }
+
+    files <- list.files(dir, pattern = pattern, full.names = TRUE)
     if (length(files) == 0) {
         return(empty)
     }
@@ -102,9 +128,20 @@
         USE.NAMES = FALSE
     )
 
-    data.frame(
+    # quarto_website renders its sources to HTML; a .pdf is copied through
+    # unchanged, so it keeps its own extension either way.
+    src_ext <- fs::path_ext(files)
+    ext <- if (identical(tool, "quarto_website")) {
+        ifelse(src_ext == "pdf", "pdf", "html")
+    } else {
+        src_ext
+    }
+
+    out <- data.frame(
         name = fs::path_ext_remove(basename(files)),
         title = titles,
+        ext = ext,
         stringsAsFactors = FALSE
     )
+    out[!duplicated(out$name), , drop = FALSE]
 }
