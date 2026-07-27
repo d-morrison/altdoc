@@ -18,10 +18,13 @@ test_that(".llms_txt builds the llmstxt.org shape", {
     expect_equal(out[1], "# mypkg")
     expect_true(any(out == "> Do Useful Things"))
     expect_true(any(out == "## Reference"))
-    expect_true(any(out == paste0(
-        "- [as_pop_data()](https://example.org/mypkg/man/as_pop_data.html)",
-        ": Load a survey data set"
-    )))
+    expect_true(any(
+        out ==
+            paste0(
+                "- [as_pop_data()](https://example.org/mypkg/man/as_pop_data.html)",
+                ": Load a survey data set"
+            )
+    ))
     # Only topics documenting something callable get the `()` suffix.
     expect_true(any(grepl(
         "- [altdoc_options](https://example.org/mypkg/man/altdoc_options.html)",
@@ -78,7 +81,9 @@ test_that(".llms_txt lists vignettes under Articles", {
     )
 
     expect_true(any(out == "## Articles"))
-    expect_true(any(out == "- [Get started](https://example.org/vignettes/get-started.html)"))
+    expect_true(any(
+        out == "- [Get started](https://example.org/vignettes/get-started.html)"
+    ))
     # No `\title{}` equivalent for a vignette, so no trailing description.
     expect_false(any(grepl("Get started](.*): ", out)))
 })

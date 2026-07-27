@@ -27,7 +27,11 @@
 
     content <- .llms_txt(
         pkg_name = .pkg_name(src_dir),
-        pkg_title = desc::desc_get_field("Title", default = NULL, file = src_dir),
+        pkg_title = desc::desc_get_field(
+            "Title",
+            default = NULL,
+            file = src_dir
+        ),
         topics = topics,
         vignettes = vignettes,
         base = base,
