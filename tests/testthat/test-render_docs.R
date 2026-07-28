@@ -14,25 +14,53 @@ published_docs_files <- function(tool) {
 
     topics <- fs::path_ext_remove(list.files("man", pattern = "\\.Rd$"))
 
-    vignettes <- fs::path_rel(
-        fs::dir_ls(
-            "vignettes",
-            type = "file",
-            recurse = identical(tool, "quarto_website")
-        ),
-        "vignettes"
-    )
+    # `fs::dir_ls()` errors on a missing directory where `list.files()` above
+    # returns nothing, and three fixtures in this file ship no `vignettes/` at
+    # all. Guarding keeps a future caller on one of those to a legible testthat
+    # failure instead of `[ENOENT] Failed to search directory 'vignettes'`.
+    vignettes <- if (fs::dir_exists("vignettes")) {
+        fs::path_rel(
+            fs::dir_ls(
+                "vignettes",
+                type = "file",
+                # Only quarto_website publishes a nested article; see below.
+                recurse = identical(tool, "quarto_website")
+            ),
+            "vignettes"
+        )
+    } else {
+        character(0)
+    }
+
+    # Only the extensions the generators actually render, mirroring
+    # `.import_vignettes()`'s own `src_files` pattern. An unfiltered listing
+    # would take a resource file --- an image, a `.bib`, a `.css` --- and expect
+    # it published as `<name>.md`, which is a page no generator ever writes.
+    vignettes <- vignettes[grepl("\\.(Rmd|qmd|md|pdf)$", vignettes)]
+
+    # A `.pdf` is copied rather than rendered, so it alone keeps its own
+    # extension. It is in the set for every generator, `docute` included, even
+    # though `docute`'s `src_files` pattern excludes `.pdf`: that pattern only
+    # decides what gets *rendered*, and `.import_vignettes()` `dir_copy()`s the
+    # whole `vignettes/` directory into the target beforehand. Do not "fix"
+    # this to match `src_files` --- the published tree, not that pattern, is
+    # what this function is describing.
     vignettes <- ifelse(
         tolower(fs::path_ext(vignettes)) == "pdf",
         vignettes,
         paste0(fs::path_ext_remove(vignettes), ".", ext)
     )
 
+    # The two `length()` guards are load-bearing, not defensive: `paste0()`
+    # treats a zero-length argument as `""` rather than propagating the zero
+    # length, so `paste0("docs/vignettes/", character(0))` is the bare string
+    # `"docs/vignettes/"` --- a directory expected as though it were a page.
+    # `c()` drops the NULLs, the same way it drops the docsify branch below.
     c(
         "docs/index.html",
         paste0("docs/reference.", ext),
-        paste0("docs/man/", topics, ".", ext),
-        paste0("docs/vignettes/", vignettes),
+        if (length(topics) > 0) paste0("docs/man/", topics, ".", ext),
+        if (length(vignettes) > 0) paste0("docs/vignettes/", vignettes),
         "docs/llms.txt",
         # docsify is the only generator whose nav is a published file rather
         # than markup inside its landing page.
@@ -97,6 +125,43 @@ test_that("published_docs_files covers every part of the site", {
     # docsify publishes its nav as a file; nobody else does.
     expect_true("docs/_sidebar.md" %in% published_docs_files("docsify"))
     expect_false("docs/_sidebar.md" %in% published_docs_files("docute"))
+})
+
+test_that("published_docs_files handles a package with no vignettes", {
+    # Three fixtures in this file ship no `vignettes/` --- `testpkg.altdoc.noURL`,
+    # `testpkg.altdoc.nonGithubURL`, and `testpkg.lifecycle`. None of them uses
+    # the helper today, so this pins the guard rather than an observed failure:
+    # `fs::dir_ls()` errors on a missing directory, so without it a future
+    # caller would get an ENOENT rather than a test failure naming the page.
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "man")))
+    writeLines(
+        c("\\name{f}", "\\alias{f}", "\\title{T}", "\\description{d}"),
+        fs::path_join(c(dir, "man", "f.Rd"))
+    )
+    withr::local_dir(dir)
+
+    out <- published_docs_files("docute")
+
+    expect_true("docs/man/f.md" %in% out)
+    expect_false(any(grepl("^docs/vignettes/", out)))
+})
+
+test_that("published_docs_files ignores vignette resource files", {
+    # A resource under `vignettes/` is not a page: `.import_vignettes()` renders
+    # only `.Rmd`/`.qmd`/`.md` (and copies `.pdf`), so expecting `refs.md` here
+    # would blame the generator for a file it never claims to write.
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "man")))
+    fs::dir_create(fs::path_join(c(dir, "vignettes")))
+    writeLines("x", fs::path_join(c(dir, "vignettes", "intro.qmd")))
+    writeLines("x", fs::path_join(c(dir, "vignettes", "refs.bib")))
+    withr::local_dir(dir)
+
+    out <- published_docs_files("docute")
+
+    expect_true("docs/vignettes/intro.md" %in% out)
+    expect_false(any(grepl("refs", out)))
 })
 
 test_that("docute: main files are correct", {
@@ -238,9 +303,16 @@ for (tool in c("docute", "quarto_website")) {
         expect_published_docs(tool)
 
         ### A second render lands in a `docs/` that is already populated, which
-        ### no other test does --- and for every generator but quarto_website
-        ### that directory is never cleared, so a file the render no longer
-        ### produces simply stays.
+        ### no other test does. What this asserts is that every expected page is
+        ### still there afterwards --- that re-rendering over an existing site
+        ### does not drop one, which is a real failure mode for quarto_website,
+        ### whose staged `_quarto/` is wiped at the start of every render.
+        ###
+        ### It does NOT catch a stale leftover: `expect_published_docs()` looks
+        ### only for expected-but-absent files and never enumerates what is
+        ### present, so a page a render stops producing would go unnoticed here.
+        ### The opt-out check below is the one leftover assertion in this test,
+        ### and it is deliberately file-specific.
         render_docs(verbose = .on_ci())
         expect_published_docs(tool)
 
