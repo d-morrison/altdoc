@@ -4,13 +4,20 @@
 # derived from the .Rd file and can never drift out of sync with it.
 #
 # Columns:
-#   name     topic name (the \name{} tag, which is also the .Rd/.qmd basename)
+#   name     topic name (the \name{} tag), used to label and select a topic
+#   file     basename of the .Rd file, without extension, used to link to it
 #   title    \title{}, flattened to a single line of Markdown
 #   alias    list column of \alias{} entries
 #   keywords list column of \keyword{} entries
 #   concepts list column of \concept{} entries (roxygen2's @family)
 #   internal TRUE when \keyword{internal} is present
 #   is_fun   TRUE when the topic documents something callable
+#
+# `name` and `file` are usually the same string, and diverge for a topic whose
+# name is not filesystem-safe: roxygen2 mangles the filename, so `%+%` is
+# documented in `grapes-plus-grapes.Rd` and `[.foo` in `sub-.foo.Rd`. The
+# generators publish a page per .Rd file, named after the file, so anything
+# building a link needs `file` while anything naming the topic needs `name`.
 .rd_topics <- function(src_dir = ".") {
     man_dir <- fs::path_join(c(src_dir, "man"))
     if (!fs::dir_exists(man_dir)) {
@@ -38,6 +45,7 @@
         lapply(topics, function(x) {
             data.frame(
                 name = x$name,
+                file = x$file,
                 title = x$title,
                 internal = x$internal,
                 is_fun = x$is_fun,

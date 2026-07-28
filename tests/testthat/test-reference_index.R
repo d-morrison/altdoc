@@ -24,6 +24,57 @@ test_that("man page links follow the generator's own file extension", {
     )
 })
 
+test_that("a mangled topic links to its page and is labelled by its name", {
+    # The label and the link target come from different columns, and every
+    # other fixture in this file documents topics whose names are already
+    # filesystem-safe -- so the two columns hold the same string and a link
+    # built from the wrong one still resolves. Only a mangled topic separates
+    # them.
+    dir <- local_man_package(
+        `grapes-plus-grapes` = c(
+            "\\name{\\%+\\%}",
+            "\\alias{\\%+\\%}",
+            "\\title{Concatenate strings}",
+            "\\description{d}"
+        )
+    )
+    topics <- .rd_topics(dir)
+    sections <- .reference_sections(.reference_settings(dir), topics)
+
+    out <- .reference_index(sections, topics)
+
+    expect_true(
+        "- [`%+%`](man/grapes-plus-grapes.md) --- Concatenate strings" %in% out
+    )
+})
+
+test_that(".import_reference counts the topics the page lists", {
+    # Every documented topic is not the same number as every listed one, so a
+    # fixture with no internal topic cannot tell the two counts apart.
+    dir <- local_man_package(
+        pub = c(
+            "\\name{pub}",
+            "\\alias{pub}",
+            "\\title{A public topic}",
+            "\\description{d}"
+        ),
+        helper = c(
+            "\\name{helper}",
+            "\\alias{helper}",
+            "\\title{An internal helper}",
+            "\\description{d}",
+            "\\keyword{internal}"
+        )
+    )
+    tar_dir <- fs::path_join(c(dir, "docs"))
+    fs::dir_create(tar_dir)
+
+    expect_message(
+        .import_reference(src_dir = dir, tar_dir = tar_dir),
+        "written with 1 topic\\."
+    )
+})
+
 test_that("altdoc/reference.yml supplies the grouping", {
     dir <- local_reference_package(
         "reference:",
