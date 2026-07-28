@@ -2,13 +2,13 @@
 # and open a PR when the merge brings changes. This fork's own changes are
 # preserved; upstream's updates land via a reviewable PR.
 #
-# Uses the reusable workflow from d-morrison/gha. Requires Settings -> Actions
+# Uses the reusable workflow from Morrison-Lab/gha. Requires Settings -> Actions
 # -> General -> "Allow GitHub Actions to create and approve pull requests" so
 # the integrated GITHUB_TOKEN can open the PR.
 #
 # Pinning the moving @v2 tag (rather than a commit SHA) is intentional: it is
 # gha's convention for first-party reusable-workflow refs, so this fork picks up
-# fixes as the tag advances. The pin resolves once d-morrison/gha#255 (the
+# fixes as the tag advances. The pin resolves once Morrison-Lab/gha#255 (the
 # sync-upstream capability) merges and @v2 is advanced to include it; a manual
 # run before then fails with "workflow not found", and the weekly schedule gives
 # that time to land.
@@ -24,6 +24,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: d-morrison/gha/.github/workflows/sync-upstream.yml@v2
+    uses: Morrison-Lab/gha/.github/workflows/sync-upstream.yml@v2
     with:
       upstream-repo: etiennebacher/altdoc

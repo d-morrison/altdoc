@@ -111,15 +111,7 @@ render_docs <- function(
     fs::dir_create(docs_dir)
 
     cli::cli_h1("Basic files")
-    basics <- c(
-        "NEWS",
-        "CHANGELOG",
-        "ChangeLog",
-        "CODE_OF_CONDUCT",
-        "CONTRIBUTING",
-        "LICENSE",
-        "LICENCE"
-    )
+    basics <- .basic_file_names()
     for (b in basics) {
         .import_basic(src_dir = path, tar_dir = docs_dir, name = b)
     }

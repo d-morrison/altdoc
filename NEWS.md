@@ -35,6 +35,22 @@
   page leaves out, so a package with internal topics was told it wrote more
   entries than the page lists (#80).
 
+* Added: `check_altdoc()` reports configuration problems without rendering.
+  Five things `render_docs()` otherwise handles silently: an `$ALTDOC_*`
+  variable altdoc does not recognize, which reaches the published page as
+  literal text; a recognized one whose source file is missing, where the whole
+  line using it is dropped; a man page or vignette the navigation never links,
+  which is published but unreachable by clicking; a missing or
+  repository-only `URL:`, which leaves `downlit` no base to autolink vignette
+  code against; and an invalid `altdoc/reference.yml`.
+  Every check reports rather than aborts and all of them run, so one call
+  lists everything there is to fix, and the findings are returned invisibly as
+  a character vector so a CI script can act on them.
+  A settings file using `$ALTDOC_MAN_BLOCK` or `$ALTDOC_VIGNETTE_BLOCK` cannot
+  omit a page, so the navigation checks only apply to a hand-authored
+  navigation.
+  The function is opt-in: `render_docs()` does not call it (#39).
+
 * Internal: the render tests now assert which files each generator publishes,
   rather than only that `render_docs()` returned without an error.
   A render that succeeds while writing a page somewhere the site never reaches

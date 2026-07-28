@@ -44,17 +44,7 @@
 }
 
 .import_basic <- function(src_dir, tar_dir, name = "NEWS") {
-    src <- c(
-        "NEWS.md",
-        "NEWS.txt",
-        "NEWS",
-        "NEWS.Rd",
-        "inst/NEWS.md",
-        "inst/NEWS.txt",
-        "inst/NEWS",
-        "inst/NEWS.Rd"
-    )
-    src <- gsub("NEWS", name, src, fixed = TRUE)
+    src <- .basic_file_candidates(name)
     src <- sapply(src, function(x) fs::path_join(c(src_dir, x)))
     src <- Filter(fs::file_exists, src)
 
