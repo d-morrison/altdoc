@@ -4,6 +4,7 @@
 
 ## Reference
 
+- [check_altdoc()](https://altdoc.etiennebacher.com/man/check_altdoc.md): Check an altdoc project's settings before rendering
 - [preview_docs()](https://altdoc.etiennebacher.com/man/preview_docs.md): Preview the documentation in a webpage or in viewer
 - [render_docs()](https://altdoc.etiennebacher.com/man/render_docs.md): Update documentation
 - [setup_docs()](https://altdoc.etiennebacher.com/man/setup_docs.md): Initialize documentation website settings
