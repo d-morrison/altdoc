@@ -1,4 +1,4 @@
-# Migrated to the reusable workflow in d-morrison/gha (claude-code-review.yml).
+# Migrated to the reusable workflow in Morrison-Lab/gha (claude-code-review.yml).
 # The reusable workflow carries the reviewer stash/restore, the inline-comment
 # tool allowlist, review-only enforcement, the collapse/cancel handling, the
 # `/review` on-demand dispatch, and the workflow_dispatch path claude.yml uses
@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Parse this workflow's ref
         id: this-wf
-        uses: d-morrison/gha/.github/actions/parse-workflow-ref@v2
+        uses: Morrison-Lab/gha/.github/actions/parse-workflow-ref@v2
         with:
           workflow-ref: ${{ github.workflow_ref }}
 
@@ -66,7 +66,7 @@ jobs:
           # be looked up explicitly. --ref pins the dispatched run's check-runs
           # to that branch instead of the default branch workflow_dispatch
           # falls back to when no ref is given -- without it, a required
-          # review check-run can land on the wrong commit (d-morrison/gha#285).
+          # review check-run can land on the wrong commit (Morrison-Lab/gha#285).
           PR_JSON=$(gh api "repos/$REPO/pulls/$PR_NUMBER")
           PR_BRANCH=$(jq -r '.head.ref' <<< "$PR_JSON")
           PR_HEAD_REPO=$(jq -r '.head.repo.full_name' <<< "$PR_JSON")
@@ -96,7 +96,7 @@ jobs:
       issues: write
       id-token: write
       actions: read   # lets the reviewer read CI status (github_ci MCP server)
-    uses: d-morrison/gha/.github/workflows/claude-code-review.yml@v2
+    uses: Morrison-Lab/gha/.github/workflows/claude-code-review.yml@v2
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}   # Max-plan OAuth; empty when using API key
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}               # direct API key; empty when using OAuth
