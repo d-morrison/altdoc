@@ -15,8 +15,8 @@
 # document describing what changed, a package normally ships one of them, and
 # the template offers both.
 .altdoc_variable_alternatives <- function() {
-    list(
+    return(list(
         c("ALTDOC_NEWS", "ALTDOC_CHANGELOG"),
         c("ALTDOC_LICENSE", "ALTDOC_LICENCE")
-    )
+    ))
 }

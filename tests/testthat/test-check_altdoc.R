@@ -321,3 +321,118 @@ test_that("check_altdoc reports success on a clean project", {
         "No problems found"
     )
 })
+
+test_that(".check_altdoc_variables quotes the reason for the spelling used", {
+    # Resolution is judged across the alternatives group, but the advice has to
+    # name the file that would fix the variable in front of the reader. Quoting
+    # the first group member's reason regardless sent a file using only
+    # `$ALTDOC_CHANGELOG` after a `NEWS` file, which would not resolve it.
+    dir <- local_check_package("b: $ALTDOC_CHANGELOG")
+
+    out <- .check_altdoc_variables(dir, "docute")
+
+    expect_match(out, "no CHANGELOG file was found", fixed = TRUE)
+    expect_false(grepl("no NEWS file was found", out, fixed = TRUE))
+})
+
+test_that(".check_altdoc_reference reports a warning and keeps checking", {
+    # `tryCatch(warning = )` installs an exiting handler, so the warning would
+    # end the function and hide the error below it --- the one that actually
+    # aborts a render. Both have to be reported.
+    dir <- local_check_package(
+        "sidebar: $ALTDOC_MAN_BLOCK",
+        `man/hello.Rd` = check_rd("hello"),
+        `altdoc/reference.yml` = c(
+            "sidebar_label_width: 60",
+            "reference:",
+            "  - title: All",
+            "    contents:",
+            "      - no_such_topic"
+        )
+    )
+
+    out <- .check_altdoc_reference(dir)
+
+    expect_length(out, 2L)
+    expect_true(any(grepl("no effect", out)))
+    expect_true(any(grepl("not a known topic name or alias", out)))
+})
+
+test_that(".check_altdoc_nav does not count a prefix of another page as linked", {
+    # `plot` is a substring of `plot_group`, so an unanchored match let the
+    # entry for one page vouch for the other. Name-prefix families are ordinary
+    # in R packages.
+    dir <- local_check_package(
+        "{title: 'Plot group', link: 'man/plot_group.md'}",
+        `man/plot.Rd` = check_rd("plot"),
+        `man/plot_group.Rd` = check_rd("plot_group")
+    )
+
+    out <- .check_altdoc_nav(dir, "docute", "man")
+
+    expect_length(out, 1L)
+    expect_match(out, "`plot`", fixed = TRUE)
+})
+
+test_that(".check_altdoc_nav treats $ALTDOC_REFERENCE as reaching every topic", {
+    # The generated index lists every non-internal topic, so a nav that keeps
+    # the index line but drops the per-page block still reaches them all ---
+    # two clicks rather than one. The shipped templates carry both lines, so
+    # dropping one is an ordinary customization.
+    dir <- local_check_package(
+        "{title: 'Reference', link: '$ALTDOC_REFERENCE'}",
+        `man/hello.Rd` = check_rd("hello")
+    )
+
+    expect_identical(.check_altdoc_nav(dir, "docute", "man"), character(0))
+})
+
+test_that(".check_altdoc_nav still checks vignettes under $ALTDOC_REFERENCE", {
+    # The reference index lists topics, not articles, and altdoc builds no
+    # articles index (#36) --- so it must not exempt a vignette.
+    dir <- local_check_package(
+        "{title: 'Reference', link: '$ALTDOC_REFERENCE'}",
+        `vignettes/intro.qmd` = "# Intro"
+    )
+
+    out <- .check_altdoc_nav(dir, "docute", "vignettes")
+
+    expect_length(out, 1L)
+    expect_match(out, "intro", fixed = TRUE)
+})
+
+test_that("check_altdoc prints a finding containing braces without erroring", {
+    # Findings carry text altdoc only relays, and cli runs each item through
+    # glue: `{foo}` aborts the whole call ("Could not evaluate cli `{}`
+    # expression"), and a bare `{}` is silently deleted. Either defeats the
+    # report-do-not-abort design this function is built on.
+    #
+    # `altdoc/pkgdown.yml` is hand-edited, so an unexpanded template
+    # placeholder left in a URL is an ordinary way for a brace to reach a
+    # finding --- and the URL is quoted back verbatim in the message.
+    skip_if_not_installed("yaml")
+    dir <- local_check_package("sidebar: $ALTDOC_MAN_BLOCK")
+    desc::desc_set_urls("https://foo.github.io/bar", file = dir)
+    writeLines(
+        c("urls:", "  reference: https://example.com/{version}/man"),
+        fs::path_join(c(dir, "altdoc", "pkgdown.yml"))
+    )
+
+    expect_no_error(out <- suppressMessages(check_altdoc(dir)))
+
+    expect_length(out, 1L)
+    # The finding keeps the braces; only what cli is handed is escaped.
+    expect_match(out, "{version}", fixed = TRUE)
+})
+
+test_that(".escape_braces doubles both braces", {
+    expect_identical(.escape_braces("a {} b"), "a {{}} b")
+    expect_identical(.escape_braces("x {foo} y"), "x {{foo}} y")
+})
+
+test_that(".escape_regex quotes a mangled topic name", {
+    # `sub-.foo`'s `.` would otherwise match any character, so an unrelated
+    # `sub-Xfoo` entry in the nav would vouch for it.
+    expect_false(grepl(paste0(.escape_regex("sub-.foo"), "$"), "sub-Xfoo"))
+    expect_true(grepl(paste0(.escape_regex("sub-.foo"), "$"), "sub-.foo"))
+})

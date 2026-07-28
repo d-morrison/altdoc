@@ -77,8 +77,16 @@ check_altdoc <- function(path = ".") {
         "Found {length(findings)} problem{?s} in {.file altdoc/}:"
     )
     cli::cli_div(theme = list(ul = list(`margin-left` = 2, before = "")))
-    cli::cli_ul(findings)
+    # Escape braces before cli sees them. Findings carry text altdoc did not
+    # write --- a `conditionMessage()` forwarded from the reference validation,
+    # a URL, a topic name --- and cli runs each item through glue, where a
+    # brace is syntax. `{foo}` aborts `check_altdoc()` outright ("Could not
+    # evaluate cli `{}` expression"), which would defeat the report-do-not-
+    # abort design; a bare `{}` is quietly deleted instead, so a finding
+    # naming the Rd tag `\name{}` would print as `\name`. The first is worse
+    # and the second is still wrong.
+    cli::cli_ul(.escape_braces(findings))
     cli::cli_end()
 
-    invisible(findings)
+    return(invisible(findings))
 }

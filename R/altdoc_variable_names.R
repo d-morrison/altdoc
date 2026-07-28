@@ -19,7 +19,7 @@
 # template that `setup_github_actions()` fills in, not settings-file variables
 # that `.substitute_altdoc_variables()` ever sees.
 .altdoc_variable_names <- function() {
-    c(
+    return(c(
         # One per basic document, from the file name. `.import_basic()` decides
         # whether each resolves; see `.check_altdoc_variables()`.
         # `unique()` after `toupper()`, not before: `CHANGELOG` and `ChangeLog`
@@ -38,5 +38,5 @@
         "ALTDOC_PACKAGE_URL",
         "ALTDOC_PACKAGE_URL_GITHUB",
         "ALTDOC_VERSION"
-    )
+    ))
 }

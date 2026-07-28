@@ -17,21 +17,41 @@
         return(character(0))
     }
 
-    settings <- tryCatch(
-        .reference_settings(path),
-        error = function(e) e,
-        # A warning is a real finding too --- `.reference_settings()` warns that
-        # `sidebar_label_width` alone does nothing --- but it must not abort the
-        # rest of this function, so it is captured and the call continues.
-        warning = function(w) w
+    # A warning is a real finding too --- `.reference_settings()` warns that
+    # `sidebar_label_width` alone does nothing --- but it must not stop the
+    # checks below from running.
+    #
+    # `withCallingHandlers()` rather than `tryCatch(warning = )`: the latter
+    # installs an *exiting* handler, so the warning would unwind the stack back
+    # to this call and `.reference_sections()`/`.reference_index()` would never
+    # run. A file that both sets `sidebar_label_width` alone and names a topic
+    # that does not exist would then report only the harmless width warning and
+    # hide the error that actually aborts `render_docs()` --- the opposite of
+    # this function's one-call-lists-everything contract. `muffleWarning`
+    # resumes execution after recording it.
+    warnings <- character(0)
+    settings <- withCallingHandlers(
+        tryCatch(.reference_settings(path), error = function(e) e),
+        warning = function(w) {
+            warnings <<- c(warnings, conditionMessage(w))
+            invokeRestart("muffleWarning")
+        }
     )
+    out <- if (length(warnings) > 0) {
+        paste0("`altdoc/reference.yml`: ", warnings)
+    } else {
+        character(0)
+    }
     if (inherits(settings, "condition")) {
-        return(paste0("`altdoc/reference.yml`: ", conditionMessage(settings)))
+        return(c(
+            out,
+            paste0("`altdoc/reference.yml`: ", conditionMessage(settings))
+        ))
     }
 
     topics <- .rd_topics(path)
     if (nrow(topics) == 0) {
-        return(character(0))
+        return(out)
     }
 
     sections <- tryCatch(
@@ -39,7 +59,10 @@
         error = function(e) e
     )
     if (inherits(sections, "condition")) {
-        return(paste0("`altdoc/reference.yml`: ", conditionMessage(sections)))
+        return(c(
+            out,
+            paste0("`altdoc/reference.yml`: ", conditionMessage(sections))
+        ))
     }
 
     # Selector resolution is what catches a `contents:` entry naming a topic
@@ -52,8 +75,11 @@
         error = function(e) e
     )
     if (inherits(built, "condition")) {
-        return(paste0("`altdoc/reference.yml`: ", conditionMessage(built)))
+        return(c(
+            out,
+            paste0("`altdoc/reference.yml`: ", conditionMessage(built))
+        ))
     }
 
-    return(character(0))
+    return(out)
 }

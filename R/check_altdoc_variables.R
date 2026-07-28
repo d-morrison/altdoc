@@ -54,21 +54,22 @@
                 next
             }
 
-            # Name only the members this file actually uses. Resolution is
-            # judged across the whole group, but a template using just one
-            # spelling should not be told it uses both.
+            # Report the members this file actually uses, each with *its own*
+            # reason. Resolution is judged across the whole group, but the
+            # advice has to name the file that would fix the variable in front
+            # of the reader: a settings file using only `$ALTDOC_CHANGELOG`
+            # told to add a `NEWS` file has been sent after the wrong document.
+            in_use <- intersect(group, used)
+            why <- unique(unlist(reasons[match(in_use, group)]))
             out <- c(
                 out,
                 sprintf(
-                    "%s uses %s, but %s, so the line using it is dropped from the rendered page. That is expected if the package has none; add the file, or remove the line to make the omission deliberate.",
+                    "%s uses %s, but %s, so the line%s using %s dropped from the rendered page. That is expected if the package has none; add the file, or remove the line to make the omission deliberate.",
                     rel,
-                    paste0(
-                        "`$",
-                        intersect(group, used),
-                        "`",
-                        collapse = " and "
-                    ),
-                    reasons[[1]]
+                    paste0("`$", in_use, "`", collapse = " and "),
+                    paste(why, collapse = " and "),
+                    if (length(in_use) > 1) "s" else "",
+                    if (length(in_use) > 1) "them are" else "it is"
                 )
             )
         }

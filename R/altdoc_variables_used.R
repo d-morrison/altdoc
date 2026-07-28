@@ -13,5 +13,5 @@
 # only ever confirm the names it already had.
 .altdoc_variables_used <- function(lines) {
     found <- regmatches(lines, gregexpr("\\$ALTDOC_[A-Z_]+", lines))
-    sub("^\\$", "", unique(unlist(found)))
+    return(sub("^\\$", "", unique(unlist(found))))
 }

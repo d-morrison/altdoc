@@ -10,5 +10,5 @@
         return(character(0))
     }
     files <- list.files(dir, pattern = "\\.Rmd$|\\.qmd$|\\.md$|\\.pdf$")
-    as.character(fs::path_ext_remove(files))
+    return(as.character(fs::path_ext_remove(files)))
 }

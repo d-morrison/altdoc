@@ -6,7 +6,7 @@
 # `.substitute_altdoc_variables()` upper-cases the file name to build the
 # variable it looks for.
 .basic_file_names <- function() {
-    c(
+    return(c(
         "NEWS",
         "CHANGELOG",
         "ChangeLog",
@@ -14,5 +14,5 @@
         "CONTRIBUTING",
         "LICENSE",
         "LICENCE"
-    )
+    ))
 }
