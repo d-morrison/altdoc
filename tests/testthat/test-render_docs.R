@@ -1,18 +1,110 @@
+# The files a generator is expected to publish, derived from the source tree of
+# the package the test has already moved into rather than listed by hand --- so
+# adding an .Rd file or a vignette to a fixture extends the assertion with it,
+# instead of leaving a new page nothing checks for.
+#
+# The extension split is `.import_reference()`'s and `.llms_txt_ext()`'s:
+# quarto_website compiles the Markdown away, and the other three leave it in the
+# published tree. A `.pdf` vignette is copied rather than rendered, so it keeps
+# its own extension under all four. Recursion follows `.import_vignettes()`:
+# only quarto_website gets `vignettes/` copied whole, so only it publishes a
+# nested `vignettes/articles/*`.
+published_docs_files <- function(tool) {
+    ext <- if (identical(tool, "quarto_website")) "html" else "md"
+
+    topics <- fs::path_ext_remove(list.files("man", pattern = "\\.Rd$"))
+
+    vignettes <- fs::path_rel(
+        fs::dir_ls(
+            "vignettes",
+            type = "file",
+            recurse = identical(tool, "quarto_website")
+        ),
+        "vignettes"
+    )
+    vignettes <- ifelse(
+        tolower(fs::path_ext(vignettes)) == "pdf",
+        vignettes,
+        paste0(fs::path_ext_remove(vignettes), ".", ext)
+    )
+
+    c(
+        "docs/index.html",
+        paste0("docs/reference.", ext),
+        paste0("docs/man/", topics, ".", ext),
+        paste0("docs/vignettes/", vignettes),
+        "docs/llms.txt",
+        # docsify is the only generator whose nav is a published file rather
+        # than markup inside its landing page.
+        if (identical(tool, "docsify")) "docs/_sidebar.md"
+    )
+}
+
+# Assert that a render published everything it was supposed to.
+#
+# The existing snapshot tests cover the *content* of a handful of these files;
+# what they cannot see is a page that was written somewhere the site never
+# reaches, or one a generator quietly stopped emitting. Reporting the whole set
+# of absentees at once, rather than one `expect_true(file_exists(...))` per
+# path, keeps a broken render to a single legible failure.
+#
+# `except` drops paths a test has deliberately turned off, so that it can still
+# assert the rest of the site is intact rather than checking only the one file
+# it changed.
+expect_published_docs <- function(tool, except = character(0)) {
+    expected <- setdiff(published_docs_files(tool), except)
+    absent <- expected[!fs::file_exists(expected)]
+    expect_identical(absent, character(0))
+}
+
+# The generator tests below need a real render each, so this one checks the
+# helper itself against a fixture in place --- no render, no skips, and it runs
+# whether or not Quarto is installed.
+#
+# The failure it exists to catch is a silent one: a `published_docs_files()`
+# that returned nothing, or lost a whole category, would leave every
+# `expect_published_docs()` call passing vacuously while checking less and less.
+test_that("published_docs_files covers every part of the site", {
+    withr::local_dir(test_path("examples/testpkg.altdoc"))
+
+    expect_identical(
+        published_docs_files("docute"),
+        c(
+            "docs/index.html",
+            "docs/reference.md",
+            "docs/man/examplesIf_false.md",
+            "docs/man/examplesIf_true.md",
+            "docs/man/hello_base.md",
+            "docs/man/hello_dontrun.md",
+            "docs/man/hello_r6.md",
+            # `here.pdf` is copied rather than rendered, so it alone keeps its
+            # own extension.
+            "docs/vignettes/here.pdf",
+            "docs/vignettes/test.md",
+            "docs/llms.txt"
+        )
+    )
+
+    # quarto_website is the one generator that compiles the Markdown away, so
+    # it is the only one whose man pages and reference index are `.html`.
+    quarto <- published_docs_files("quarto_website")
+    expect_true("docs/man/hello_base.html" %in% quarto)
+    expect_true("docs/reference.html" %in% quarto)
+    expect_false(any(grepl("\\.md$", quarto)))
+    # A `.pdf` vignette is copied under every generator, this one included.
+    expect_true("docs/vignettes/here.pdf" %in% quarto)
+
+    # docsify publishes its nav as a file; nobody else does.
+    expect_true("docs/_sidebar.md" %in% published_docs_files("docsify"))
+    expect_false("docs/_sidebar.md" %in% published_docs_files("docute"))
+})
+
 test_that("docute: main files are correct", {
     skip_on_cran()
     skip_if(.is_windows() && .on_ci(), "Windows on CI")
     skip_if(!.quarto_is_installed())
 
-    ### setup: create a temp package using the structure of testpkg.altdoc
-    path_to_example_pkg <- fs::path_abs(test_path("examples/testpkg.altdoc"))
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.altdoc", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.altdoc")
+    setup_example_package("testpkg.altdoc")
 
     ### generate docs
     install.packages(".", repos = NULL, type = "source")
@@ -20,6 +112,7 @@ test_that("docute: main files are correct", {
     render_docs(verbose = .on_ci())
 
     ### test
+    expect_published_docs("docute")
     expect_snapshot_file("docs/README.md", variant = "docute")
     expect_snapshot_file("docs/docute.html", variant = "docute")
     expect_snapshot_file("docs/NEWS.md", variant = "docute")
@@ -37,16 +130,7 @@ test_that("docsify: main files are correct", {
     skip_if(.is_windows() && .on_ci(), "Windows on CI")
     skip_if(!.quarto_is_installed())
 
-    ### setup: create a temp package using the structure of testpkg.altdoc
-    path_to_example_pkg <- fs::path_abs(test_path("examples/testpkg.altdoc"))
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.altdoc", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.altdoc")
+    setup_example_package("testpkg.altdoc")
 
     ### generate docs
     install.packages(".", repos = NULL, type = "source")
@@ -54,6 +138,7 @@ test_that("docsify: main files are correct", {
     render_docs(verbose = .on_ci())
 
     ### test
+    expect_published_docs("docsify")
     expect_snapshot_file("docs/README.md", variant = "docsify")
     expect_snapshot_file("docs/_sidebar.md", variant = "docsify")
     expect_snapshot_file("docs/NEWS.md", variant = "docsify")
@@ -76,16 +161,7 @@ test_that("mkdocs: main files are correct", {
     skip_if(.is_windows() && .on_ci(), "Windows on CI")
     skip_if(!.quarto_is_installed())
 
-    ### setup: create a temp package using the structure of testpkg.altdoc
-    path_to_example_pkg <- fs::path_abs(test_path("examples/testpkg.altdoc"))
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.altdoc", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.altdoc")
+    setup_example_package("testpkg.altdoc")
 
     ### special mkdocs stuff
     if (.is_windows()) {
@@ -110,6 +186,7 @@ test_that("mkdocs: main files are correct", {
     ### test
     # no good way to test the site structure ("docs/mkdocs.yml" only shows
     # the old yaml, not the one with replaced variables)
+    expect_published_docs("mkdocs")
     expect_snapshot_file("docs/NEWS.md", variant = "mkdocs")
     expect_snapshot_file("docs/reference.md", variant = "mkdocs")
     expect_snapshot_file("docs/man/hello_base.md", variant = "mkdocs")
@@ -123,32 +200,62 @@ test_that("quarto: no error for basic workflow", {
     skip_if(.is_windows() && .on_ci(), "Windows on CI")
     skip_if(!.quarto_is_installed())
 
-    ### setup: create a temp package using the structure of testpkg.altdoc
-    path_to_example_pkg <- fs::path_abs(test_path("examples/testpkg.altdoc"))
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.altdoc", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.altdoc")
+    setup_example_package("testpkg.altdoc")
 
     ### generate docs
     install.packages(".", repos = NULL, type = "source")
     setup_docs("quarto_website")
     expect_no_error(render_docs(verbose = .on_ci()))
 
-    ### Quarto output changes depending on the version, I don't have a solution for
-    ### now.
+    ### Quarto's own HTML changes between versions, so its content cannot be
+    ### snapshotted --- but which pages it publishes can be, and that is the
+    ### half that keeps going wrong.
 
     ### test
-    # expect_snapshot_file("docs/index.html")
-    # expect_snapshot_file("docs/NEWS.html")
-    # expect_snapshot_file("docs/man/hello_base.html")
-    # expect_snapshot_file("docs/man/hello_r6.html")
-    # expect_snapshot_file("docs/vignettes/test.html")
+    expect_published_docs("quarto_website")
 })
+
+# The description is built from `tool` rather than shared across the loop, so a
+# failure names the generator that produced it instead of leaving the reader to
+# guess which pass it came from.
+#
+# Two generators rather than all four: `docute` builds straight into `docs/`,
+# and `quarto_website` stages into a throwaway `_quarto/` that Quarto then
+# renders into `docs/`. Those are the two shapes a publishing bug can take, and
+# each further generator costs three more full renders of a path already
+# covered.
+for (tool in c("docute", "quarto_website")) {
+    test_that(paste0(tool, ": re-rendering republishes the whole site"), {
+        skip_on_cran()
+        skip_if(.is_windows() && .on_ci(), "Windows on CI")
+        skip_if(!.quarto_is_installed())
+
+        setup_example_package("testpkg.altdoc")
+
+        install.packages(".", repos = NULL, type = "source")
+        setup_docs(tool)
+        render_docs(verbose = .on_ci())
+        expect_published_docs(tool)
+
+        ### A second render lands in a `docs/` that is already populated, which
+        ### no other test does --- and for every generator but quarto_website
+        ### that directory is never cleared, so a file the render no longer
+        ### produces simply stays.
+        render_docs(verbose = .on_ci())
+        expect_published_docs(tool)
+
+        ### Opting out has to reach the published tree, not just the directory
+        ### the generator was handed: `llms.txt` is written before
+        ### quarto_website's staged build, so "not written this time" and "not
+        ### on the site" are separate questions.
+        writeLines("llms_txt: false", "altdoc/reference.yml")
+        render_docs(verbose = .on_ci())
+        expect_false(fs::file_exists("docs/llms.txt"))
+
+        ### ...and taking one file away leaves the rest of the site standing.
+        expect_published_docs(tool, except = "docs/llms.txt")
+    })
+}
 
 # https://github.com/etiennebacher/altdoc/issues/307
 test_that("quarto: no error for basic workflow, no Github URL", {
@@ -156,18 +263,7 @@ test_that("quarto: no error for basic workflow, no Github URL", {
     skip_if(.is_windows() && .on_ci(), "Windows on CI")
     skip_if(!.quarto_is_installed())
 
-    ### setup: create a temp package using the structure of testpkg.altdoc.noURL
-    path_to_example_pkg <- fs::path_abs(
-        test_path("examples/testpkg.altdoc.noURL")
-    )
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.altdoc.noURL", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.altdoc.noURL")
+    setup_example_package("testpkg.altdoc.noURL")
 
     install.packages(".", repos = NULL, type = "source")
     setup_docs("quarto_website")
@@ -180,19 +276,7 @@ test_that("quarto: no error for basic workflow, non-GitHub URL", {
     skip_if(.is_windows() && .on_ci(), "Windows on CI")
     skip_if(!.quarto_is_installed())
 
-    ### setup: create a temp package using the structure of
-    ### testpkg.altdoc.nonGithubURL
-    path_to_example_pkg <- fs::path_abs(
-        test_path("examples/testpkg.altdoc.nonGithubURL")
-    )
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.altdoc.nonGithubURL", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.altdoc.nonGithubURL")
+    setup_example_package("testpkg.altdoc.nonGithubURL")
 
     install.packages(".", repos = NULL, type = "source")
     setup_docs("quarto_website")
@@ -244,16 +328,7 @@ test_that("quarto: autolink", {
     skip_if(.is_windows() && .on_ci(), "Windows on CI")
     skip_if(!.quarto_is_installed())
 
-    ### setup: create a temp package using the structure of testpkg.altdoc
-    path_to_example_pkg <- fs::path_abs(test_path("examples/testpkg.altdoc"))
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.altdoc", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.altdoc")
+    setup_example_package("testpkg.altdoc")
 
     ### generate docs
     install.packages(".", repos = NULL, type = "source")
@@ -271,16 +346,7 @@ test_that("quarto: pkgdown.yml is at docs root after render_docs", {
     skip_if(.is_windows() && .on_ci(), "Windows on CI")
     skip_if(!.quarto_is_installed())
 
-    ### setup: create a temp package using the structure of testpkg.altdoc
-    path_to_example_pkg <- fs::path_abs(test_path("examples/testpkg.altdoc"))
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.altdoc", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.altdoc")
+    setup_example_package("testpkg.altdoc")
     desc::desc_add_urls("https://mywebsite.com")
 
     ### generate docs
@@ -298,15 +364,7 @@ test_that("quarto: pkgdown.yml is at docs root after render_docs", {
 test_that("files in man/figures are copied to docs/help/figures", {
     skip_on_cran()
     skip_if(!.quarto_is_installed())
-    path_to_example_pkg <- fs::path_abs(test_path("examples/testpkg.lifecycle"))
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.lifecycle", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.lifecycle")
+    setup_example_package("testpkg.lifecycle")
 
     ### generate docs
     install.packages(".", repos = NULL, type = "source")
@@ -401,16 +459,7 @@ test_that(".add_pkgdown() works", {
     skip_if(.is_windows() && .on_ci(), "Windows on CI")
     skip_if(!.quarto_is_installed())
 
-    ### setup: create a temp package using the structure of testpkg.altdoc
-    path_to_example_pkg <- fs::path_abs(test_path("examples/testpkg.altdoc"))
-    create_local_project()
-    fs::dir_delete("R")
-    fs::dir_copy(path_to_example_pkg, ".")
-    all_files <- list.files("testpkg.altdoc", full.names = TRUE)
-    for (i in all_files) {
-        fs::file_move(i, ".")
-    }
-    fs::dir_delete("testpkg.altdoc")
+    setup_example_package("testpkg.altdoc")
     desc::desc_add_urls("https://mywebsite.com")
 
     timestamp_regex <- "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+\\d{4}"
@@ -529,7 +578,20 @@ test_that("quarto_website: recursive vignette discovery in subfolders", {
     expect_no_error(render_docs(verbose = .on_ci()))
 
     ### test that vignettes in subfolders are rendered
+    expect_published_docs("quarto_website")
     expect_true(fs::file_exists("docs/vignettes/articles/article_test.html"))
+
+    ### ...and that the machine-readable index knows about them. Rendering a
+    ### nested article and listing it are separate steps, and the file being on
+    ### the site is exactly what makes a missing entry easy to overlook: the
+    ### page loads for anyone who navigates to it, and only a consumer reading
+    ### `llms.txt` finds it absent.
+    llms <- .readlines("docs/llms.txt")
+    expect_true(any(grepl(
+        "vignettes/articles/article_test.html",
+        llms,
+        fixed = TRUE
+    )))
 })
 
 # Test for singleton entries in custom sidebars
