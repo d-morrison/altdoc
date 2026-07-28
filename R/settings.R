@@ -44,14 +44,7 @@
         }
     }
 
-    fn <- switch(
-        tool,
-        docsify = "docsify.md",
-        docute = "docute.html",
-        mkdocs = "mkdocs.yml",
-        quarto_website = "quarto_website.yml"
-    )
-    fn <- fs::path_join(c(path, "altdoc", fn))
+    fn <- .settings_file(path, tool)
     settings <- .readlines(fn)
 
     settings <- .substitute_altdoc_variables(settings, path = path, tool = tool)
