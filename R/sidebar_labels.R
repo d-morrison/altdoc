@@ -10,9 +10,10 @@
 # index --- `name()` for a callable topic, bare `name` otherwise --- so the two
 # surfaces cannot disagree about how a topic is written.
 #
-# `topics` is a character vector of topic names, in the order they should
-# appear. The return value is a character vector of the same length, so a
-# caller can drop it into whatever structure its generator builds.
+# `topics` is a character vector of published page basenames, in the order they
+# should appear -- every caller globs its generator's man directory and passes
+# what it found. The return value is a character vector of the same length, so
+# a caller can drop it into whatever structure its generator builds.
 .sidebar_labels <- function(topics, src_dir = ".", width = 40L) {
     if (length(topics) == 0) {
         return(topics)
@@ -28,13 +29,20 @@
     }
 
     rd <- .rd_topics(src_dir)
-    idx <- match(topics, rd$name)
+    # Every caller passes the basenames of the pages it found on disk, so the
+    # join key is the .Rd file's basename, not the topic's `\name{}`. The two
+    # differ for a topic whose name is not filesystem-safe (see
+    # `.rd_topics()`), and matching on the wrong one leaves exactly those
+    # topics unmatched -- so `%+%` would be the one entry in the sidebar
+    # showing a mangled file name and no summary.
+    idx <- match(topics, rd$file)
 
     # A sidebar entry with no matching .Rd row keeps its bare name: the file is
     # on the site, so dropping or blanking its label would hide a reachable
     # page.
     is_fun <- !is.na(idx) & rd$is_fun[idx]
-    name <- ifelse(is_fun, paste0(topics, "()"), topics)
+    topic <- ifelse(is.na(idx), topics, rd$name[idx])
+    name <- ifelse(is_fun, paste0(topic, "()"), topic)
 
     title <- rd$title[idx]
     has_title <- !is.na(title) & nzchar(title)

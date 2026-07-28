@@ -68,7 +68,8 @@
     unknown <- setdiff(names(settings), known)
     if (length(unknown) > 0) {
         cli::cli_abort(c(
-            "Unknown top-level key{?s} in {.file altdoc/reference.yml}: {.val {unknown}}.",
+            "Unknown top-level key{?s} in {.file altdoc/reference.yml}:
+             {.val {unknown}}.",
             "i" = "Known keys are {.val {known}}."
         ))
     }

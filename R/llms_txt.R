@@ -12,6 +12,11 @@
 # `base` is the site root for absolute links, or NULL to emit site-relative
 # ones. `ext` is the extension of the pages a reader would actually open,
 # which differs by generator (see `.import_llms_txt()`).
+#
+# A topic's link is built from its .Rd file's basename rather than its
+# `\name{}`, which matters more here than on the human-facing index: the whole
+# audience is machines fetching the links directly, with no one to notice a
+# 404 and navigate around it. See `.rd_topics()` for when the two diverge.
 .llms_txt <- function(
     pkg_name,
     pkg_title = NULL,
@@ -27,14 +32,14 @@
     }
 
     if (!is.null(topics) && nrow(topics) > 0) {
-        listed <- .llms_txt_listed(topics)
+        listed <- .listed_topics(topics)
         if (nrow(listed) > 0) {
             out <- c(out, "## Reference", "")
             out <- c(
                 out,
                 .llms_txt_rows(
                     labels = .llms_txt_topic_labels(listed),
-                    urls = .llms_txt_url(base, "man", listed$name, ext),
+                    urls = .llms_txt_url(base, "man", listed$file, ext),
                     descriptions = listed$title
                 ),
                 ""
@@ -65,20 +70,6 @@
     }
 
     out
-}
-
-# The topics that actually reach the file.
-#
-# Internal topics are excluded for the same reason the reference index omits
-# them: they document things a caller is not meant to reach for, so listing
-# them invites an agent to suggest one.
-#
-# Shared with `.import_llms_txt()`, which needs the same subset to decide
-# whether there is anything to write and to report how many entries it wrote.
-# Applying the rule in only one of the two places is how a package whose
-# topics are all internal ends up with a file carrying no entries.
-.llms_txt_listed <- function(topics) {
-    topics[!topics$internal, , drop = FALSE]
 }
 
 # `fn()` for a topic that documents something callable, matching how the

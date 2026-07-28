@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+* Fixed: the reference index and `llms.txt` now link to a topic's page by its
+  `.Rd` file name rather than its `\name{}`.
+  roxygen2 mangles the file name of a topic whose name is not filesystem-safe,
+  so `%+%` is documented in `grapes-plus-grapes.Rd` and published as
+  `man/grapes-plus-grapes`, while both indexes linked to `man/%+%` and 404'd.
+  Entries are still labelled `%+%`, the name a reader is looking for.
+  The generated sidebar was affected by the same divergence when
+  `sidebar_labels: name-and-title` is set: it looked such a topic up by the
+  wrong key, found no `.Rd` row, and fell back to showing the mangled file
+  name with no summary (#80).
+
+* Fixed: the message `render_docs()` prints after writing the reference index
+  counted every documented topic, including the `\keyword{internal}` ones the
+  page leaves out, so a package with internal topics was told it wrote more
+  entries than the page lists (#80).
+
 * Internal: the render tests now assert which files each generator publishes,
   rather than only that `render_docs()` returned without an error.
   A render that succeeds while writing a page somewhere the site never reaches
