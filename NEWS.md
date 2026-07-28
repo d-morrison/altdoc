@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+* Internal: the render tests now assert which files each generator publishes,
+  rather than only that `render_docs()` returned without an error.
+  A render that succeeds while writing a page somewhere the site never reaches
+  used to pass every test, which is how three bugs in the `llms.txt` work
+  reached review.
+  Each generator's expected file set is derived from the fixture package's own
+  `man/` and `vignettes/` directories, so adding a topic or an article to a
+  fixture extends the assertion with it.
+  Two generators also re-render into an already-populated `docs/`, a case
+  nothing covered before and where several of those bugs only appear (#79).
+
 * Added: `render_docs()` now writes an [`llms.txt`](https://llmstxt.org/) at
   the site root, indexing every public topic and rendered article so a
   coding agent can read the package's documentation without scraping HTML.
