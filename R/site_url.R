@@ -17,8 +17,14 @@
 # repository is common, and using it as the base yields links like
 # `https://github.com/user/pkg/man/foo.md`, which do not exist. Returning NULL
 # instead falls back to relative links, which at least resolve against
-# wherever the file is actually served. `.add_pkgdown()` refuses forge URLs
-# for the same reason and shares `.is_forge_url()` with this function.
+# wherever the file is actually served. `.add_pkgdown()` shares
+# `.is_forge_url()` with this function, but only as a *preference*: it picks a
+# non-forge `URL:` when one exists and falls back to a forge URL otherwise,
+# appending `/man` and `/vignettes` to whatever it picked. So a package whose
+# only `URL:` is its GitLab repo gets `reference: https://gitlab.com/o/r/man`
+# written into `altdoc/pkgdown.yml` --- which is what the `.is_forge_url(root)`
+# guard in `.site_url_from_pkgdown()` below is there to catch, rather than a
+# redundant second application of the same rule.
 #
 # `.substitute_altdoc_variables()` is not a third instance of the same rule,
 # though it looks like one. It drops only `github.com` from

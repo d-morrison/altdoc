@@ -84,11 +84,12 @@
             error = function(e) NULL
         )
         # `github.com` only, deliberately --- this is not an incomplete
-        # `.is_forge_url()` (`R/utils.R`), which `.add_pkgdown()` and
-        # `.site_url()` use to keep a repo URL from being treated as a site
-        # root. Nothing is appended to this one, so a repo URL here is a
-        # working link, not a 404. What it avoids is rendering the same URL
-        # twice on one page: `$ALTDOC_PACKAGE_URL_GITHUB` above already carries
+        # `.is_forge_url()` (`R/utils.R`), which `.site_url()` uses to keep a
+        # repo URL from being treated as a site root (and `.add_pkgdown()` as a
+        # preference between candidate URLs). Nothing is appended to this one,
+        # so a repo URL here is a working link, not a 404. What it avoids is
+        # rendering the same URL twice on one page:
+        # `$ALTDOC_PACKAGE_URL_GITHUB` above already carries
         # the repo link, and `.gh_url()` fills that in from
         # `github.com`/`github.io` alone. A GitLab- or Codeberg-hosted package
         # gets nothing from that half, so its URL is the only project link the
