@@ -14,9 +14,9 @@ concurrency:
 jobs:
   test-coverage:
     # @v2, not @v1 like claude.yml/claude-code-review.yml: test-coverage.yml
-    # only ever shipped at v2 in d-morrison/gha (too new to exist at the
+    # only ever shipped at v2 in Morrison-Lab/gha (too new to exist at the
     # frozen @v1 tag), so there's no @v1 version to pin to instead.
-    uses: d-morrison/gha/.github/workflows/test-coverage.yml@v2
+    uses: Morrison-Lab/gha/.github/workflows/test-coverage.yml@v2
     secrets:
       # Add CODECOV_TOKEN as a repository secret. Optional for public repos, but
       # recommended -- tokenless uploads are rate-limited and flaky on PRs.
