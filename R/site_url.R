@@ -17,9 +17,18 @@
 # repository is common, and using it as the base yields links like
 # `https://github.com/user/pkg/man/foo.md`, which do not exist. Returning NULL
 # instead falls back to relative links, which at least resolve against
-# wherever the file is actually served. `.add_pkgdown()` and
-# `.substitute_altdoc_variables()` already refuse forge URLs for the same
-# reason; `.is_forge_url()` is shared with the former.
+# wherever the file is actually served. `.add_pkgdown()` refuses forge URLs
+# for the same reason and shares `.is_forge_url()` with this function.
+#
+# `.substitute_altdoc_variables()` is not a third instance of the same rule,
+# though it looks like one. It drops only `github.com` from
+# `$ALTDOC_PACKAGE_URL`, and not to avoid a broken link --- it appends no path,
+# so a repo URL there resolves fine. It is avoiding a duplicate: the templates
+# render `$ALTDOC_PACKAGE_URL_GITHUB` as the repo link on the same page, and
+# `.gh_url()` populates that one from `github.com`/`github.io` only. Widening
+# its filter to `.is_forge_url()` would therefore leave a GitLab- or
+# Codeberg-hosted package with no link to its project at all, since neither
+# half would fire. See #81.
 .site_url <- function(path = ".") {
     from_pkgdown <- .site_url_from_pkgdown(path)
     if (!is.null(from_pkgdown)) {
