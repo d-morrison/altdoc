@@ -151,19 +151,17 @@
             call. = FALSE
         )
     }
-    url <- setdiff(desc::desc_get_urls(), .gh_url(path))
+    # `.description_site_url()` returns NULL when every `URL:` is a code
+    # repository, so `urls:` is omitted rather than rooted at a forge. Appending
+    # `/man` to a repository root yields a path that does not exist, and
+    # `downlit` reads this block to autolink vignettes -- so a wrong value here
+    # produces autolinks that 404, while a missing one makes it skip
+    # autolinking. See #85.
+    url <- .description_site_url(path)
     output_path <- fs::path_join(c(path, "altdoc/pkgdown.yml"))
     already_exists <- fs::file_exists(output_path)
 
-    if (length(url) > 0) {
-        url_not_repo <- url[!.is_forge_url(url)]
-        if (length(url_not_repo) > 0) {
-            url <- url_not_repo[1]
-        } else {
-            url <- url[1]
-        }
-
-        url <- gsub("/$", "", url)
+    if (!is.null(url)) {
         vig <- paste0(url, "/vignettes")
         man <- paste0(url, "/man")
 
@@ -210,6 +208,15 @@
             "{if (already_exists) 'Updated' else 'Added'} altdoc/pkgdown.yml file."
         )
         yaml::write_yaml(yaml_content, output_path)
+    } else {
+        # Say so at render time. Otherwise the absence is silent, and the
+        # maintainer of a forge-hosted package learns their `DESCRIPTION` needs
+        # a site `URL:` only by following a missing autolink on the published
+        # site -- or never. Not a warning: a package with no site is a valid
+        # state, and the render itself is unaffected.
+        cli::cli_alert_info(
+            "No documentation site URL found in DESCRIPTION, so {.file altdoc/pkgdown.yml} declares no {.field urls}: {.pkg downlit} will not autolink function calls in vignettes. Add a site {.field URL} to DESCRIPTION to enable it; a code repository URL is not one."
+        )
     }
 }
 
