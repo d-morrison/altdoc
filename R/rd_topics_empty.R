@@ -3,6 +3,7 @@
 .rd_topics_empty <- function() {
     out <- data.frame(
         name = character(0),
+        file = character(0),
         title = character(0),
         internal = logical(0),
         is_fun = logical(0),

@@ -1,6 +1,7 @@
 test_that(".llms_txt builds the llmstxt.org shape", {
     topics <- data.frame(
         name = c("as_pop_data", "altdoc_options"),
+        file = c("as_pop_data", "altdoc_options"),
         title = c("Load a survey data set", "Package options"),
         internal = c(FALSE, FALSE),
         is_fun = c(TRUE, FALSE),
@@ -37,6 +38,7 @@ test_that(".llms_txt builds the llmstxt.org shape", {
 test_that(".llms_txt omits internal topics", {
     topics <- data.frame(
         name = c("public_fn", "dot_helper"),
+        file = c("public_fn", "dot_helper"),
         title = c("A public function", "An internal helper"),
         internal = c(FALSE, TRUE),
         is_fun = c(TRUE, TRUE),
@@ -52,6 +54,7 @@ test_that(".llms_txt omits internal topics", {
 test_that(".llms_txt falls back to relative links without a base URL", {
     topics <- data.frame(
         name = "as_pop_data",
+        file = "as_pop_data",
         title = "Load a survey data set",
         internal = FALSE,
         is_fun = TRUE,
@@ -92,6 +95,7 @@ test_that(".llms_txt lists vignettes under Articles", {
 test_that(".llms_txt drops a description identical to its label", {
     topics <- data.frame(
         name = "as_pop_data",
+        file = "as_pop_data",
         title = "as_pop_data",
         internal = FALSE,
         is_fun = FALSE,
@@ -591,6 +595,7 @@ test_that(".llms_txt escapes brackets in a topic name", {
     # same way a bracketed vignette title does.
     topics <- data.frame(
         name = "[.myclass",
+        file = "sub-.myclass",
         title = "Subset a myclass object",
         internal = FALSE,
         is_fun = TRUE,
@@ -600,6 +605,33 @@ test_that(".llms_txt escapes brackets in a topic name", {
     out <- .llms_txt("mypkg", topics = topics, base = NULL, ext = "md")
 
     expect_true(any(grepl("- [\\[.myclass()](", out, fixed = TRUE)))
+})
+
+test_that(".llms_txt links a mangled topic to the file roxygen2 wrote", {
+    # `name` and `file` diverge only for a topic whose name is not
+    # filesystem-safe, so a fixture where they are equal cannot tell a
+    # correct link from one built off the wrong column. Both rows are needed:
+    # the ordinary one pins that the label still comes from `name`.
+    topics <- data.frame(
+        name = c("%+%", "as_pop_data"),
+        file = c("grapes-plus-grapes", "as_pop_data"),
+        title = c("Concatenate strings", "Load a survey data set"),
+        internal = c(FALSE, FALSE),
+        is_fun = c(TRUE, TRUE),
+        stringsAsFactors = FALSE
+    )
+
+    out <- .llms_txt("mypkg", topics = topics, base = NULL, ext = "md")
+
+    expect_true(any(
+        out ==
+            paste0(
+                "- [%+%()](man/grapes-plus-grapes.md)",
+                ": Concatenate strings"
+            )
+    ))
+    expect_false(any(grepl("man/%+%.md", out, fixed = TRUE)))
+    expect_true(any(grepl("(man/as_pop_data.md)", out, fixed = TRUE)))
 })
 
 test_that(".llms_txt uses each article's own extension", {

@@ -74,6 +74,34 @@ test_that(".sidebar_labels only parenthesizes callable topics", {
     ))
 })
 
+test_that(".sidebar_labels matches on the .Rd file name, not the topic name", {
+    # Callers pass the basenames of the pages they found on disk, which is the
+    # .Rd file name -- so a topic roxygen2 mangled matches nothing if the join
+    # runs on `\name{}`, and falls through to the no-.Rd branch below. That
+    # looks like a missing help page rather than the labelling bug it is.
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "man")))
+    writeLines(
+        c(
+            "\\name{\\%+\\%}",
+            "\\alias{\\%+\\%}",
+            "\\title{Concatenate strings}",
+            "\\description{d}"
+        ),
+        fs::path_join(c(dir, "man", "grapes-plus-grapes.Rd"))
+    )
+    fs::dir_create(fs::path_join(c(dir, "altdoc")))
+    writeLines(
+        "sidebar_labels: name-and-title",
+        fs::path_join(c(dir, "altdoc", "reference.yml"))
+    )
+
+    expect_identical(
+        .sidebar_labels("grapes-plus-grapes", src_dir = dir),
+        "%+%: Concatenate strings"
+    )
+})
+
 test_that(".sidebar_labels keeps the bare name for a topic with no .Rd", {
     # The page is still on the site, so it needs a usable label.
     dir <- local_labels_package("sidebar_labels: name-and-title")

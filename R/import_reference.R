@@ -30,8 +30,11 @@
     )
     writeLines(content, fs::path_join(c(tar_dir, "reference.md")))
 
+    # Count the topics the page actually lists, not every documented one:
+    # `.reference_index()` omits internal topics, so a package with any would
+    # otherwise be told it wrote more entries than the page carries.
     cli::cli_alert_success(
-        "Reference index written with {nrow(topics)} topic{?s}."
+        "Reference index written with {nrow(.listed_topics(topics))} topic{?s}."
     )
 
     invisible()
