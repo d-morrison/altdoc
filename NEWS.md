@@ -26,8 +26,10 @@
   Each generator's expected file set is derived from the fixture package's own
   `man/` and `vignettes/` directories, so adding a topic or an article to a
   fixture extends the assertion with it.
-  Two generators also re-render into an already-populated `docs/`, a case
-  nothing covered before and where several of those bugs only appear (#79).
+  Two generators also render a second time into an already-populated `docs/`,
+  a case nothing covered before, and check that opting out of `llms.txt`
+  removes the previously published file rather than only stopping a new one
+  from being written (#79).
 
 * Added: `render_docs()` now writes an [`llms.txt`](https://llmstxt.org/) at
   the site root, indexing every public topic and rendered article so a
