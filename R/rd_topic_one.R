@@ -18,8 +18,7 @@
     }
 
     name <- .rd_tag_values(rd, "\\name")
-    # An .Rd file without a \name{} cannot be linked to, since the rendered page
-    # is named after the topic.
+    # An .Rd file without a \name{} carries no topic to label a row with.
     if (length(name) == 0) {
         return(NULL)
     }
@@ -34,6 +33,7 @@
 
     list(
         name = name,
+        file = fs::path_ext_remove(basename(file)),
         title = .rd_title(rd),
         alias = alias,
         keywords = keywords,

@@ -19,7 +19,7 @@
     # `.llms_txt()` drops internal topics, so a package whose topics are all
     # internal has nothing indexable: gating on `nrow(topics)` would write a
     # file holding only the H1 and the title, with no `## Reference` section.
-    listed <- .llms_txt_listed(topics)
+    listed <- .listed_topics(topics)
 
     if (nrow(listed) == 0 && nrow(vignettes) == 0) {
         .remove_llms_txt(tar_dir)

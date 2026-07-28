@@ -41,6 +41,8 @@
         }
     }
 
+    # `.listed_topics()` is the same rule as a row subset; this needs the
+    # positions instead, to diff against what the sections already claimed.
     missing <- setdiff(which(!topics$internal), listed)
     if (length(missing) > 0) {
         names_missing <- topics$name[missing]
