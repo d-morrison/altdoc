@@ -63,6 +63,81 @@ test_that(".add_pkgdown() still writes urls: when a site URL exists", {
     expect_equal(urls$article, "https://forgepkg.example.org/vignettes")
 })
 
+# An `altdoc/pkgdown.yml` written by an earlier render, or by hand. The
+# `last_built` value is deliberately stale so a refresh is visible as a change
+# rather than as a value that happens to be right.
+.existing_pkgdown_yml <- function(dir, urls = NULL) {
+    content <- list(
+        altdoc = "0.0.0",
+        pandoc = "0.0.0",
+        pkgdown = "2.1.3",
+        last_built = "1970-01-01T00:00:00+0000"
+    )
+    if (!is.null(urls)) {
+        content[["urls"]] <- urls
+    }
+    yaml::write_yaml(content, fs::path(dir, "altdoc", "pkgdown.yml"))
+    return(invisible(dir))
+}
+
+test_that(".add_pkgdown() refreshes metadata and keeps a hand-written urls: block", {
+    dir <- withr::local_tempdir()
+    # The case the first fix regressed: no site URL in DESCRIPTION, but the
+    # maintainer has already recorded where the site lives.
+    .forge_fixture(dir, "https://gitlab.com/foo/bar")
+    .existing_pkgdown_yml(
+        dir,
+        urls = list(
+            reference = "https://forgepkg.example.org/man",
+            article = "https://forgepkg.example.org/vignettes"
+        )
+    )
+
+    .add_pkgdown(dir)
+
+    yml <- yaml::read_yaml(fs::path(dir, "altdoc", "pkgdown.yml"))
+    # The refresh is unconditional: it records what produced this render, which
+    # does not depend on which `URL:` DESCRIPTION declares.
+    expect_equal(yml$altdoc, .altdoc_version())
+    expect_false(identical(yml$last_built, "1970-01-01T00:00:00+0000"))
+    # The maintainer's block outranks anything derived from DESCRIPTION, so it
+    # survives untouched -- and is emphatically not replaced by a forge root.
+    expect_equal(yml$urls$reference, "https://forgepkg.example.org/man")
+    expect_equal(yml$urls$article, "https://forgepkg.example.org/vignettes")
+})
+
+test_that(".add_pkgdown() stays quiet when an existing file already declares urls:", {
+    dir <- withr::local_tempdir()
+    .forge_fixture(dir, "https://gitlab.com/foo/bar")
+    .existing_pkgdown_yml(
+        dir,
+        urls = list(
+            reference = "https://forgepkg.example.org/man",
+            article = "https://forgepkg.example.org/vignettes"
+        )
+    )
+
+    # The advice asks for something the file already has, so printing it here
+    # would be telling the maintainer a falsehood about their own file.
+    msgs <- capture_messages(.add_pkgdown(dir))
+    expect_false(any(grepl("No documentation site URL", msgs)))
+})
+
+test_that(".add_pkgdown() still advises when an existing file declares no urls:", {
+    dir <- withr::local_tempdir()
+    .forge_fixture(dir, "https://gitlab.com/foo/bar")
+    # No `urls:` -- the complement of the test above. The pair distinguishes
+    # "preserved an existing block" from "skipped the write entirely", which a
+    # fixture covering only one side cannot.
+    .existing_pkgdown_yml(dir)
+
+    expect_message(.add_pkgdown(dir), "No documentation site URL")
+
+    yml <- yaml::read_yaml(fs::path(dir, "altdoc", "pkgdown.yml"))
+    expect_null(yml$urls)
+    expect_equal(yml$altdoc, .altdoc_version())
+})
+
 test_that(".add_pkgdown() reads the DESCRIPTION at `path`, not the working directory", {
     dir <- withr::local_tempdir()
     .forge_fixture(dir, "https://forgepkg.example.org")

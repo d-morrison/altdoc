@@ -161,54 +161,61 @@
     output_path <- fs::path_join(c(path, "altdoc/pkgdown.yml"))
     already_exists <- fs::file_exists(output_path)
 
-    if (!is.null(url)) {
-        vig <- paste0(url, "/vignettes")
-        man <- paste0(url, "/man")
+    # Whether the file ends up declaring `urls:`, which is a different question
+    # from whether `DESCRIPTION` named a site: an existing file can carry a
+    # hand-written block that no `URL:` implies. The advice below is gated on
+    # this rather than on `url`, so it is never printed at a file that already
+    # has what it asks for.
+    declares_urls <- FALSE
 
-        if (!already_exists) {
-            yaml_content <- list(
-                altdoc = .altdoc_version(),
-                pandoc = as.character(rmarkdown::pandoc_version()),
-                pkgdown = "2.1.3", # don't know if this actually matters
-                pkgdown_sha = NULL,
+    if (already_exists) {
+        # Refreshing `last_built` and the tool versions records what produced
+        # the current render, so it is unconditional: it has nothing to do with
+        # which `URL:` the package declares, and skipping it when there is no
+        # site URL would leave the file describing a build that no longer
+        # happened.
+        yaml_content <- yaml::read_yaml(output_path)
+        yaml_content[["altdoc"]] <- .altdoc_version()
+        yaml_content[["pandoc"]] <- as.character(rmarkdown::pandoc_version())
+        if (is.null(yaml_content[["pkgdown"]])) {
+            yaml_content[["pkgdown"]] <- "2.1.3" # don't know if this actually matters
+        }
+        yaml_content["pkgdown_sha"] <- list(NULL)
+        # https://stackoverflow.com/questions/29517896/current-time-in-iso-8601-format
+        yaml_content[["last_built"]] <- strftime(
+            as.POSIXlt(Sys.time(), "UTC"),
+            "%Y-%m-%dT%H:%M:%S%z"
+        )
+        # A `urls:` block is only ever added, never overwritten. One already in
+        # the file is the maintainer's, and it outranks anything derived from
+        # `DESCRIPTION` -- this file is where a site served from somewhere other
+        # than the first `URL:` entry gets recorded.
+        if (is.null(yaml_content[["urls"]]) && !is.null(url)) {
+            yaml_content[["urls"]] <- .pkgdown_urls(url)
+        }
+        declares_urls <- !is.null(yaml_content[["urls"]])
+        cli::cli_alert_info("Updated altdoc/pkgdown.yml file.")
+        yaml::write_yaml(yaml_content, output_path)
+    } else if (!is.null(url)) {
+        yaml_content <- list(
+            altdoc = .altdoc_version(),
+            pandoc = as.character(rmarkdown::pandoc_version()),
+            pkgdown = "2.1.3", # don't know if this actually matters
+            pkgdown_sha = NULL,
 
-                # https://stackoverflow.com/questions/29517896/current-time-in-iso-8601-format
-                last_built = strftime(
-                    as.POSIXlt(Sys.time(), "UTC"),
-                    "%Y-%m-%dT%H:%M:%S%z"
-                ),
-                urls = list(
-                    reference = man,
-                    article = vig
-                )
-            )
-        } else {
-            yaml_content <- yaml::read_yaml(output_path)
-            yaml_content[["altdoc"]] <- .altdoc_version()
-            yaml_content[[
-                "pandoc"
-            ]] <- as.character(rmarkdown::pandoc_version())
-            if (is.null(yaml_content[["pkgdown"]])) {
-                yaml_content[["pkgdown"]] <- "2.1.3" # don't know if this actually matters
-            }
-            yaml_content["pkgdown_sha"] <- list(NULL)
             # https://stackoverflow.com/questions/29517896/current-time-in-iso-8601-format
-            yaml_content[["last_built"]] <- strftime(
+            last_built = strftime(
                 as.POSIXlt(Sys.time(), "UTC"),
                 "%Y-%m-%dT%H:%M:%S%z"
-            )
-            if (is.null(yaml_content[["urls"]])) {
-                yaml_content[["urls"]] <- list(
-                    reference = man,
-                    article = vig
-                )
-            }
-        }
-        cli::cli_alert_info(
-            "{if (already_exists) 'Updated' else 'Added'} altdoc/pkgdown.yml file."
+            ),
+            urls = .pkgdown_urls(url)
         )
+        declares_urls <- TRUE
+        cli::cli_alert_info("Added altdoc/pkgdown.yml file.")
         yaml::write_yaml(yaml_content, output_path)
-    } else {
+    }
+
+    if (!declares_urls) {
         # Say so at render time. Otherwise the absence is silent, and the
         # maintainer of a forge-hosted package learns their `DESCRIPTION` needs
         # a site `URL:` only by following a missing autolink on the published
@@ -218,6 +225,15 @@
             "No documentation site URL found in DESCRIPTION, so {.file altdoc/pkgdown.yml} declares no {.field urls}: {.pkg downlit} will not autolink function calls in vignettes. Add a site {.field URL} to DESCRIPTION to enable it; a code repository URL is not one."
         )
     }
+}
+
+# The `urls:` block `downlit` reads, rooted at a site URL. `/man` and
+# `/vignettes` are pkgdown's conventional subdirectories for the two.
+.pkgdown_urls <- function(url) {
+    return(list(
+        reference = paste0(url, "/man"),
+        article = paste0(url, "/vignettes")
+    ))
 }
 
 .add_rbuildignore <- function(x = "^docs$", path = ".") {
