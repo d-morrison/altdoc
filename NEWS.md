@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+* Fixed: `altdoc/pkgdown.yml` no longer gets a `urls:` block rooted at a code
+  repository.
+  A package whose only `DESCRIPTION` `URL:` was a non-GitHub forge repo (GitLab,
+  Codeberg) had `/man` and `/vignettes` appended to that repo URL, so `downlit`
+  autolinked vignette function calls to paths like
+  `https://gitlab.com/foo/bar/man` that do not exist.
+  The block is now omitted when no `URL:` is a documentation site, which makes
+  `downlit` skip autolinking instead, and `render_docs()` says so rather than
+  leaving the omission silent.
+  GitHub-hosted packages were unaffected, by accident rather than design: their
+  repo URL was already removed before the fallback ran ([#85](https://github.com/etiennebacher/altdoc/issues/85)).
+
+* Fixed: `.add_pkgdown()` read `DESCRIPTION` from the working directory instead
+  of from its `path` argument, so rendering a package from outside its own
+  directory wrote *another* package's site URL into its `altdoc/pkgdown.yml`
+  ([#85](https://github.com/etiennebacher/altdoc/issues/85)).
+
 * Fixed: the reference index and `llms.txt` now link to a topic's page by its
   `.Rd` file name rather than its `\name{}`.
   roxygen2 mangles the file name of a topic whose name is not filesystem-safe,
