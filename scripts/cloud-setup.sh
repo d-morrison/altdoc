@@ -134,8 +134,22 @@ echo "==> Installing R (release) from the CRAN apt repository"
 # See the "WHY R COMES FROM CRAN'S APT REPO" note above -- Ubuntu's 4.3.3 breaks
 # 28 tests. apt uses the system CA store, so this works behind the TLS proxy
 # (unlike rig, whose rustls client rejects the proxy cert).
-if ! command -v R >/dev/null 2>&1 || \
-   ! R --version | head -1 | grep -qE ' 4\.(([6-9])|([1-9][0-9]))'; then
+# Compare the version numerically rather than by regex. A pattern enumerating
+# acceptable 4.x minors stops matching the moment R reaches 5.0.0 and would then
+# reinstall on every build of an already-fine environment -- the check has to
+# outlive the version it was written against.
+r_is_new_enough() {
+  command -v R >/dev/null 2>&1 || return 1
+  local ver major minor
+  ver="$(R --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+' | head -1)"
+  major="${ver%%.*}"
+  minor="${ver##*.}"
+  # An unparseable version (empty strings) falls back to 0.0, i.e. "too old",
+  # so the install runs rather than being skipped on a bad read.
+  [ "${major:-0}" -gt 4 ] || { [ "${major:-0}" -eq 4 ] && [ "${minor:-0}" -ge 6 ]; }
+}
+
+if ! r_is_new_enough; then
   . /etc/os-release
   $SUDO install -d -m 0755 /etc/apt/keyrings
   curl -fsSL https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc \
@@ -204,7 +218,12 @@ echo "==> Installing R package dependencies"
 # packagemanager.posit.co is ever allowlisted, adding it as the repo turns this
 # into a binary install and cuts it to a couple of minutes.
 $SUDO Rscript -e '
-  options(repos = c(CRAN = "https://cloud.r-project.org"), Ncpus = max(1L, parallel::detectCores()))
+  # detectCores() returns NA on some configurations, and max(1L, NA) is NA.
+  # install.packages() happens to treat Ncpus = NA as 1, so this is belt-and-
+  # braces rather than a live bug -- but relying on that is an undocumented
+  # detail of a function we do not own.
+  options(repos = c(CRAN = "https://cloud.r-project.org"),
+          Ncpus = max(1L, parallel::detectCores(), na.rm = TRUE))
   pkgs <- c(
     # Imports
     "cli", "desc", "evaluate", "fs", "quarto", "rmarkdown", "rex",
