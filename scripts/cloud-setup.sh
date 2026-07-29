@@ -2,11 +2,12 @@
 #
 # Setup script for altdoc in Claude Code (claude.ai/code) cloud sessions.
 #
-# Paste the CONTENTS of this file into the environment's "Setup script" field
-# (claude.ai web UI -> the environment for this repo). Do NOT point the field at
-# a repo path: the Setup script runs at environment-build time, before the repo
-# checkout, so nothing under the repo is on disk yet. This script touches no
-# repo files, so it works whether or not the repo is present.
+# This file is the version-controlled source of the environment's "Setup script"
+# field (claude.ai web UI -> the environment for this repo). That field holds
+# the script's contents, not a path to it: it runs at environment-build time,
+# before the repo checkout, so nothing under the repo is on disk yet and a repo
+# path cannot resolve. The script itself touches no repo files, so it works
+# whether or not the repo is present.
 #
 # Source of truth for these steps: .github/workflows/R-CMD-check.yaml, which is
 # the setup actually verified in CI. It uses, in order:
@@ -278,10 +279,11 @@ if command -v mkdocs >/dev/null 2>&1; then mkdocs --version; else echo "mkdocs: 
 # The one failure is pre-existing and unrelated to this script:
 #   test-render_docs.R:411 "quarto: autolink" -- expects downlit to autolink
 #   library() to https://rdrr.io/r/base/library.html in the rendered vignette.
-# It reproduces identically on a clean checkout of main, so treat a run that
-# shows exactly this one failure as GREEN. Anything else is a real regression.
+# It reproduces identically on a clean checkout of main. A run showing exactly
+# that one failure therefore matches the known-good baseline; any additional
+# failure is a regression.
 #
 # For comparison, the same suite on Ubuntu's R 4.3.3 gives FAIL 28 -- all 28
-# from the single Rd2HTML `<h2 id=...>` cause described at the top. If you see
-# 28 failures, the CRAN apt repo step did not take effect and you are on 4.3.3;
-# check with `R --version`.
+# from the single Rd2HTML `<h2 id=...>` cause described at the top. A run with
+# 28 failures therefore indicates the CRAN apt repo step did not take effect and
+# R is still 4.3.3, which `R --version` confirms.
