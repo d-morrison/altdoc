@@ -17,14 +17,18 @@
 # repository is common, and using it as the base yields links like
 # `https://github.com/user/pkg/man/foo.md`, which do not exist. Returning NULL
 # instead falls back to relative links, which at least resolve against
-# wherever the file is actually served. `.add_pkgdown()` shares
-# `.is_forge_url()` with this function, but only as a *preference*: it picks a
-# non-forge `URL:` when one exists and falls back to a forge URL otherwise,
-# appending `/man` and `/vignettes` to whatever it picked. So a package whose
-# only `URL:` is its GitLab repo gets `reference: https://gitlab.com/o/r/man`
-# written into `altdoc/pkgdown.yml` --- which is what the `.is_forge_url(root)`
-# guard in `.site_url_from_pkgdown()` below is there to catch, rather than a
-# redundant second application of the same rule.
+# wherever the file is actually served. That rule now lives in
+# `.description_site_url()`, which this function and `.add_pkgdown()` share, so
+# the two cannot disagree about which `URL:` is a site.
+#
+# They did disagree until #85: `.add_pkgdown()` treated the filter as a mere
+# *preference*, falling back to a forge URL when no other candidate existed and
+# appending `/man` and `/vignettes` to it, so a package whose only `URL:` was
+# its GitLab repo got `reference: https://gitlab.com/o/r/man` written into
+# `altdoc/pkgdown.yml`. The `.is_forge_url(root)` guard in
+# `.site_url_from_pkgdown()` below was what caught that value on the way back
+# *in*. It is kept: `altdoc/pkgdown.yml` is hand-editable and can predate the
+# fix, so the guard still has work to do on a file this package did not write.
 #
 # `.substitute_altdoc_variables()` is not a third instance of the same rule,
 # though it looks like one. It drops only `github.com` from
@@ -41,15 +45,7 @@
         return(from_pkgdown)
     }
 
-    urls <- desc::desc_get_urls(path)
-    urls <- urls[!.is_forge_url(urls)]
-    if (length(urls) == 0) {
-        return(NULL)
-    }
-
-    # The first remaining URL is the site by convention; BugReports is a
-    # separate DESCRIPTION field and is deliberately not consulted here.
-    .strip_trailing_slash(urls[[1]])
+    return(.description_site_url(path))
 }
 
 # The site root implied by `altdoc/pkgdown.yml`'s `urls$reference`, which by
