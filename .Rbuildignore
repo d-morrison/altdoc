@@ -21,3 +21,6 @@ man-roxygen
 ^flir$
 
 ^air.toml$
+
+# Cloud-session setup, not part of the package
+^scripts$
