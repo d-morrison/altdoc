@@ -85,11 +85,26 @@ fi
 # ANY `apt-get update` fail with exit 100 before anything installs. altdoc needs
 # neither. Harmless no-op on images that do not have them (this one did not).
 echo "==> Removing broken third-party apt sources, if present"
+PPA_RE='launchpadcontent\.net|deadsnakes|ondrej'
+
+# Files under sources.list.d/ are one-repo-per-file, so deleting the whole file
+# is the right treatment -- and the only safe one for deb822 `.sources` files,
+# where stripping the single matching URI line would leave a malformed stanza
+# that apt then rejects.
 while IFS= read -r src; do
   echo "    removing $src"
   $SUDO rm -f "$src"
-done < <(grep -rlE 'launchpadcontent\.net|deadsnakes|ondrej' \
-          /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null || true)
+done < <(grep -rlE "$PPA_RE" /etc/apt/sources.list.d/ 2>/dev/null || true)
+
+# `/etc/apt/sources.list` is deliberately NOT deleted the same way. It also
+# carries the distribution's own archive entries, so removing the file to drop
+# one appended PPA line would take every base repo with it and break apt
+# outright -- the exact failure this whole step exists to prevent. Strip only
+# the offending lines.
+if [ -f /etc/apt/sources.list ] && grep -qE "$PPA_RE" /etc/apt/sources.list 2>/dev/null; then
+  echo "    stripping PPA lines from /etc/apt/sources.list"
+  $SUDO sed -i -E "/$PPA_RE/d" /etc/apt/sources.list
+fi
 
 echo "==> Installing system libraries (apt)"
 # pandoc is the CI `setup-pandoc` step. The -dev libraries are what the R
