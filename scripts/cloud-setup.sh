@@ -216,6 +216,28 @@ $SUDO Rscript -e '
   )
   missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
   if (length(missing)) install.packages(missing)
+
+  # Verify, because `install.packages()` will NOT fail the script on its own: a
+  # compile or lazy-load failure is reported as a warning and Rscript still
+  # exits 0, so `set -e` never fires and the build claims success with packages
+  # missing. That resurfaces much later as a confusing test failure in a run
+  # that has no obvious connection to setup.
+  #
+  # Not hypothetical -- observed in this very environment while building the
+  # script: an install whose log carried
+  #     ERROR: lazy loading failed for package `servr`
+  # (plus usethis and rmarkdown) still exited 0.
+  #
+  # Re-check the whole list rather than just `missing`, so a package that was
+  # present but broken is caught too.
+  still_missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
+  if (length(still_missing)) {
+    stop(
+      "Failed to install R package(s): ",
+      paste(still_missing, collapse = ", "),
+      call. = FALSE
+    )
+  }
 '
 
 echo "==> Setup complete:"
