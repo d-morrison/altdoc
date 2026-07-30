@@ -60,15 +60,13 @@
                     sub("\\.qmd$", "", basename(fn_man)),
                     src_dir = path
                 )
-                man_list <- Map(
-                    function(label, file) list(text = label, file = file),
-                    man_labels,
-                    fn_man
-                )
-                names(man_list) <- NULL
                 yml$website$sidebar$contents[[i]] <- list(
                     section = "Reference",
-                    contents = man_list
+                    contents = .sidebar_man_contents(
+                        fn_man,
+                        man_labels,
+                        src_dir = path
+                    )
                 )
             } else {
                 yml$website$sidebar$contents[[i]] <- NULL
