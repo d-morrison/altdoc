@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+* Added: `quarto_website`'s `$ALTDOC_MAN_BLOCK` now groups the sidebar's
+  `Reference` section into the sections declared in `altdoc/reference.yml`,
+  the same ones that already group the reference index page.
+  Quarto renders each as a collapsible entry, so a large reference folds down
+  to its section headings instead of scrolling as one unbroken list.
+  Sections appear in the order they are declared, and topics in the order they
+  are listed; a section with no `title:` contributes its topics without a
+  wrapper; and a non-internal topic no section claims goes into a trailing
+  `Other` section, mirroring what the index page does with it.
+  A package with no `reference:` block keeps the flat list, so no existing
+  sidebar moves ([#101](https://github.com/etiennebacher/altdoc/issues/101)).
+
+* Fixed: the `quarto_website` sidebar listed `\keyword{internal}` topics.
+  It was built by globbing the rendered man pages, and `.import_man()` renders
+  internal topics too, so the sidebar advertised pages about helpers a caller
+  is not meant to reach for -- 150 of the 282 entries on one package's site.
+  The index page and `llms.txt` have always excluded them via
+  `.listed_topics()`; the sidebar now agrees, for any package that declares a
+  `reference:` block ([#101](https://github.com/etiennebacher/altdoc/issues/101)).
+
 * Added: `docsify` and `mkdocs` now render and link vignettes kept in a
   subdirectory, such as the `vignettes/articles/` layout `pkgdown` users
   arrive with.
