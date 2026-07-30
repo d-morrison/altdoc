@@ -266,16 +266,23 @@
         "\\.(md|pdf)$"
     }
 
-    # Recursion follows the same generator split, for the same reason the
-    # pattern does: quarto_website gets `vignettes/` copied whole by
-    # `fs::dir_copy()`, subdirectories included, and Quarto renders a nested
-    # `vignettes/articles/deep-dive.qmd` -- the usual pkgdown layout -- which
-    # `.sidebar_vignettes_quarto_website()` then lists, since it globs
-    # recursively too. Missing it here would publish and link an article the
-    # index never mentions. The other generators render vignettes
-    # non-recursively, and their sidebars glob non-recursively to match, so
-    # nothing of theirs lives in a subdirectory to find.
-    recursive <- identical(tool, "quarto_website")
+    # Recursion does NOT follow the same generator split the pattern does.
+    #
+    # It tracks a different question -- whether that generator can put a page
+    # in a subdirectory at all -- and three of the four now can. Missing one
+    # here would publish and link an article the index never mentions.
+    #
+    #   - quarto_website gets `vignettes/` copied whole by `fs::dir_copy()`,
+    #     subdirectories included, and Quarto renders a nested
+    #     `vignettes/articles/deep-dive.qmd` -- the usual pkgdown layout.
+    #   - docsify and mkdocs render that same nested layout themselves, since
+    #     `.import_vignettes()` globs recursively for them, and their sidebar
+    #     builders glob recursively to match.
+    #   - docute is the exception: it still discovers vignettes
+    #     non-recursively, because its static-asset handling relocates every
+    #     `vignettes/` subdirectory to the site root. Nothing of its own lives
+    #     in a subdirectory to find. See the follow-up on #2.
+    recursive <- !identical(tool, "docute")
 
     files <- list.files(
         dir,
