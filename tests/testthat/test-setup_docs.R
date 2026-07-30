@@ -72,9 +72,17 @@ test_that("mkdocs: venv path can be set with ALTDOC_VENV", {
     dir <- withr::local_tempdir()
     create_local_package(dir = fs::path(dir, "package_dir"))
 
-    expect_error(
-        setup_docs("mkdocs"),
-        "needs `mkdocs` to be installed in a Python virtual environment"
+    # Unset `ALTDOC_VENV` rather than assume it is absent. This assertion is
+    # about the path where no virtualenv is configured at all, and
+    # `R-CMD-check.yaml` exports the variable for the whole job, so leaving it
+    # ambient makes the assertion depend on the environment the suite happens
+    # to run in.
+    withr::with_envvar(
+        list(ALTDOC_VENV = NA),
+        expect_error(
+            setup_docs("mkdocs"),
+            "needs `mkdocs` to be installed in a Python virtual environment"
+        )
     )
 
     if (.is_windows()) {
