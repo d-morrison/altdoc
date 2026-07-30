@@ -190,9 +190,9 @@
 
     fs::file_copy(origin, destination, overwrite = TRUE)
 
-    # raw markdown should just be copied over
+    # raw markdown should just be copied over -- which the copy above already
+    # did, since `destination` is `out_dir` plus this file's own basename
     if (fs::path_ext(vignette) == "md") {
-        fs::file_copy(origin, out_dir, overwrite = TRUE)
         return("success")
     }
 
@@ -209,7 +209,7 @@
     }
 
     if (fs::path_ext(origin) %in% c("md", "pdf")) {
-        fs::file_copy(origin, out_dir, overwrite = TRUE)
+        # Already copied to `destination` above; nothing further to do.
         worked <- TRUE
 
         # We now use Quarto to render all vignettes, even .Rmd ones, because this
