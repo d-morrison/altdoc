@@ -48,10 +48,44 @@ jobs:
           python-version: 3.11
           architecture: x64
 
-      - name: Install Mkdocs
+      # MkDocs has to live in a virtualenv, not on PATH. `.settings_mkdocs()`
+      # invokes it as `<venv>/bin/python3 -m mkdocs build`, and `.venv_exists()`
+      # gates the mkdocs tests on that venv existing, so a plain
+      # `pip install mkdocs` was never consulted by anything (#70).
+      #
+      # `ALTDOC_VENV` must be ABSOLUTE. Its fallback, `.venv_altdoc`, is
+      # resolved against the *working* directory, and the tests run inside
+      # throwaway package directories -- `test-parallel.R` calls
+      # `.venv_exists()` before it even creates one. A repo-root venv would
+      # therefore satisfy the guard in one directory and be missing from the
+      # other when the build actually runs.
+      #
+      # The venv lives under RUNNER_TEMP rather than in the repo so it stays out
+      # of the tarball `R CMD build` assembles (`.venv_altdoc` is in neither
+      # `.Rbuildignore` nor `.gitignore`).
+      #
+      # mkdocs-material is installed alongside mkdocs because
+      # `test-render_docs.R`'s "index.html is reset at every render_docs()" test
+      # renders with `theme: name: material`. Without it, exporting ALTDOC_VENV
+      # would redirect that test away from the venv it builds inline and break
+      # a check that passes today.
+      - name: Install MkDocs into a virtualenv
+        shell: bash
         run: |
-          python3 -m pip install --upgrade pip     # install pip
-          python3 -m pip install mkdocs            # install mkdocs
+          set -euo pipefail
+          venv="${RUNNER_TEMP}/altdoc-venv"
+          python3 -m venv "${venv}"
+          if [ -x "${venv}/Scripts/python.exe" ]; then
+            py="${venv}/Scripts/python.exe"   # Windows layout
+          else
+            py="${venv}/bin/python"
+          fi
+          "${py}" -m pip install --upgrade pip
+          "${py}" -m pip install mkdocs mkdocs-material
+          # Emit the path in the platform's own format: this is read by R, and
+          # on Windows the bash-style path this script uses is not one R can
+          # resolve.
+          echo "ALTDOC_VENV=$("${py}" -c 'import pathlib, sys; print(pathlib.Path(sys.argv[1]).resolve())' "${venv}")" >> "${GITHUB_ENV}"
 
       - name: Install R dependencies
         uses: r-lib/actions/setup-r-dependencies@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
