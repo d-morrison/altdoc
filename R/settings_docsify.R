@@ -39,15 +39,21 @@
 
 .sidebar_vignettes_docsify <- function(sidebar, path) {
     dn <- fs::path_join(c(.doc_path(path), "vignettes"))
+    # Recursive, to match `.import_vignettes()`, which renders a nested
+    # `vignettes/articles/` for this generator. Listing non-recursively would
+    # publish those pages without linking them from anywhere.
     fn_vignettes <- list.files(
         dn,
         pattern = "\\.md$|\\.pdf$",
-        full.names = TRUE
+        full.names = TRUE,
+        recursive = TRUE
     )
     # before gsub on files
     titles <- sapply(fn_vignettes, .get_vignettes_titles)
+    # `path_rel()` rather than `basename()`, so a nested page keeps the
+    # subdirectory it was published into and the link resolves.
     fn_vignettes <- sapply(fn_vignettes, function(x) {
-        fs::path_join(c("vignettes", basename(x)))
+        fs::path_join(c("vignettes", fs::path_rel(x, dn)))
     })
     if (length(fn_vignettes) > 0) {
         idx <- grep("\\$ALTDOC_VIGNETTE_BLOCK", sidebar)
