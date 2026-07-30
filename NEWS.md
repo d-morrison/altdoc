@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+* Added: `docsify` and `mkdocs` now render and link vignettes kept in a
+  subdirectory, such as the `vignettes/articles/` layout `pkgdown` users
+  arrive with.
+  Previously only `quarto_website` did, and under the other generators a
+  nested vignette was copied to the site as its unrendered `.qmd` source,
+  absent from both the sidebar and `llms.txt`.
+  `docute` is unchanged: it relocates every `vignettes/` subdirectory to the
+  site root, so distinguishing an asset directory from a vignette directory
+  there is a separate question, tracked in [#2](https://github.com/etiennebacher/altdoc/issues/2).
+
 * Fixed: `altdoc/pkgdown.yml` no longer gets a `urls:` block rooted at a code
   repository.
   A package whose only `DESCRIPTION` `URL:` was a non-GitHub forge repo (GitLab,
