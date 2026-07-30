@@ -248,20 +248,27 @@
 
     out <- gsub("\\.md$", "", basename(fn))
 
-    # title in vignette of the same name
+    # title from the vignette's own source
     #
-    # Searched recursively so a nested vignette still finds its own source;
-    # otherwise its title would silently fall through to the first-h1 and
-    # then filename branches below.
-    vig <- fs::path_ext_remove(basename(fn))
-    p <- list.files(
-        fs::path_join(c(path, "vignettes")),
-        pattern = vig,
-        recursive = TRUE
+    # Addressed by path rather than by searching for the name. `fn` is a
+    # published page under some `.../vignettes/`, so the part after that
+    # segment is exactly the source's path relative to the package's own
+    # `vignettes/`, extension aside. Constructing the candidate directly is
+    # both simpler than a search and immune to two ways a search goes wrong
+    # once nested vignettes exist: `articles/intro.qmd` and
+    # `tutorials/intro.qmd` share a basename, and a name that is a substring
+    # of another vignette's name matches it too. Either returns more than one
+    # hit, and the old `length(p) == 1` guard then silently fell through to
+    # the weaker branches below.
+    vig_rel <- fs::path_ext_remove(sub(".*/vignettes/", "", fn))
+    candidates <- file.path(
+        path,
+        "vignettes",
+        paste0(vig_rel, c(".Rmd", ".qmd"))
     )
-    p <- p[grepl("\\.Rmd$|\\.qmd$", p)]
+    p <- candidates[fs::file_exists(candidates)]
     if (length(p) == 1) {
-        z <- .readlines(fs::path_join(c(path, "vignettes", p)))
+        z <- .readlines(p)
         out <- z[grepl("^out:\\w*", z)]
         out <- trimws(gsub("^out:\\w*", "", out))
     }
