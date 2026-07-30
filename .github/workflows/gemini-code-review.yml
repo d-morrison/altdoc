@@ -36,6 +36,18 @@ jobs:
 
   review:
     if: github.event_name != 'issue_comment'
+    # Serialize reviews per PR so a rapid string of pushes (e.g. an
+    # unattended automated session) doesn't fire N overlapping reviews.
+    # cancel-in-progress: true means only the latest push's review survives
+    # -- the earlier ones are canceled rather than piling up and each
+    # separately consuming the API quota. This is part of the remediation
+    # for the 2026-07-29/30 Gemini API suspension incident: this workflow
+    # re-triggered on every synchronize event with no debounce at all,
+    # repeatedly exhausting the free tier's 20-requests/day quota over more
+    # than 20 hours straight.
+    concurrency:
+      group: gemini-review-${{ github.event.pull_request.number || inputs.pr_number }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     permissions:
       contents: read
