@@ -528,19 +528,30 @@ test_that(".site_url_from_pkgdown falls through on a malformed urls key", {
     expect_equal(.site_url("."), "https://docs.example.org/pkg")
 })
 
-test_that(".llms_txt_vignettes does not recurse for the other generators", {
+test_that(".llms_txt_vignettes recurses for every generator but docute", {
     create_local_package()
     fs::dir_create("docs/vignettes/nested", recurse = TRUE)
 
-    # These generators render vignettes non-recursively and their sidebars
-    # glob non-recursively to match, so nothing of theirs lives in a
-    # subdirectory. Recursing here would index a page the site never built.
     writeLines("# Top", "docs/vignettes/top.md")
     writeLines("# Buried", "docs/vignettes/nested/buried.md")
 
-    out <- .llms_txt_vignettes(".", "docs", "docsify")
+    # docsify and mkdocs discover `vignettes/` recursively and their sidebars
+    # glob recursively to match, so a nested page really is on the site and
+    # omitting it here would publish and link an article the index never
+    # mentions.
+    for (tool in c("docsify", "mkdocs")) {
+        expect_equal(
+            .llms_txt_vignettes(".", "docs", tool)$name,
+            c("nested/buried", "top"),
+            info = tool
+        )
+    }
 
-    expect_equal(out$name, "top")
+    # docute is the exception, and the assertion that keeps this honest: its
+    # static-asset handling relocates every `vignettes/` subdirectory to the
+    # site root, so it renders nothing into one. Recursing for it would index
+    # a page the site never built.
+    expect_equal(.llms_txt_vignettes(".", "docs", "docute")$name, "top")
 })
 
 test_that(".llms_txt_vignettes keeps a .pdf vignette at its own extension", {

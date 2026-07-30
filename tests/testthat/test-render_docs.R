@@ -7,8 +7,9 @@
 # quarto_website compiles the Markdown away, and the other three leave it in the
 # published tree. A `.pdf` vignette is copied rather than rendered, so it keeps
 # its own extension under all four. Recursion follows `.import_vignettes()`:
-# only quarto_website gets `vignettes/` copied whole, so only it publishes a
-# nested `vignettes/articles/*`.
+# quarto_website gets `vignettes/` copied whole and Quarto renders the nested
+# tree, while docsify and mkdocs discover it recursively themselves, so all
+# three publish a nested `vignettes/articles/*`. docute does not.
 published_docs_files <- function(tool) {
     ext <- if (identical(tool, "quarto_website")) "html" else "md"
 
@@ -23,8 +24,9 @@ published_docs_files <- function(tool) {
             fs::dir_ls(
                 "vignettes",
                 type = "file",
-                # Only quarto_website publishes a nested article; see below.
-                recurse = identical(tool, "quarto_website")
+                # Every generator but docute publishes a nested article; see
+                # above.
+                recurse = !identical(tool, "docute")
             ),
             "vignettes"
         )
@@ -661,6 +663,83 @@ test_that("quarto_website: recursive vignette discovery in subfolders", {
     llms <- .readlines("docs/llms.txt")
     expect_true(any(grepl(
         "vignettes/articles/article_test.html",
+        llms,
+        fixed = TRUE
+    )))
+})
+
+# The docsify and mkdocs counterparts of the test above. These two discover
+# `vignettes/` recursively themselves rather than handing the tree to Quarto,
+# so each of the three steps -- render it, link it, index it -- is separately
+# capable of dropping a nested page, and each is asserted separately below.
+#
+# The link assertion is the one worth keeping honest: publishing a page nobody
+# links to is the exact state this fixture was in before, and it is invisible
+# to a file-existence check.
+test_that("docsify: recursive vignette discovery in subfolders", {
+    skip_on_cran()
+    skip_if(.is_windows() && .on_ci(), "Windows on CI")
+    skip_if(!.quarto_is_installed())
+
+    ### setup: create a temp package using the structure of testpkg.recursive
+    setup_example_package("testpkg.recursive")
+
+    ### generate docs
+    install.packages(".", repos = NULL, type = "source")
+    setup_docs("docsify")
+    expect_no_error(render_docs(verbose = .on_ci()))
+
+    ### rendered, not merely copied in as its `.qmd` source
+    expect_published_docs("docsify")
+    expect_true(fs::file_exists("docs/vignettes/articles/article_test.md"))
+
+    ### linked from the nav, with the path it was published at and the title
+    ### read from its own front matter rather than its file name
+    sidebar <- .readlines("docs/_sidebar.md")
+    expect_true(any(grepl(
+        "[Article in subfolder](vignettes/articles/article_test.md)",
+        sidebar,
+        fixed = TRUE
+    )))
+
+    ### ...and listed in the machine-readable index
+    llms <- .readlines("docs/llms.txt")
+    expect_true(any(grepl(
+        "vignettes/articles/article_test.md",
+        llms,
+        fixed = TRUE
+    )))
+})
+
+test_that("mkdocs: recursive vignette discovery in subfolders", {
+    skip_on_cran()
+    skip_if_offline()
+    skip_if(.is_windows() && .on_ci(), "Windows on CI")
+    skip_if(!.quarto_is_installed())
+    skip_if(!.venv_exists())
+
+    ### setup: create a temp package using the structure of testpkg.recursive
+    setup_example_package("testpkg.recursive")
+
+    ### generate docs
+    install.packages(".", repos = NULL, type = "source")
+    setup_docs("mkdocs")
+    expect_no_error(render_docs(verbose = .on_ci()))
+
+    ### rendered, not merely copied in as its `.qmd` source
+    expect_published_docs("mkdocs")
+    expect_true(fs::file_exists("docs/vignettes/articles/article_test.md"))
+
+    ### mkdocs built a page from it, which is what proves the nav entry
+    ### reached mkdocs rather than only the file
+    expect_true(fs::file_exists(
+        "docs/vignettes/articles/article_test/index.html"
+    ))
+
+    ### ...and listed in the machine-readable index
+    llms <- .readlines("docs/llms.txt")
+    expect_true(any(grepl(
+        "vignettes/articles/article_test.md",
         llms,
         fixed = TRUE
     )))

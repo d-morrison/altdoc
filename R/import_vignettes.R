@@ -43,11 +43,26 @@
 
     # source files
     # docute can't open PDF in external tab because it adds ".md" after all files
-    src_files <- if (tool == "docute") {
-        list.files(vig_dir, pattern = "\\.Rmd$|\\.qmd$|\\.md$")
+    pattern <- if (tool == "docute") {
+        "\\.Rmd$|\\.qmd$|\\.md$"
     } else {
-        list.files(vig_dir, pattern = "\\.Rmd$|\\.qmd$|\\.md$|\\.pdf$")
+        "\\.Rmd$|\\.qmd$|\\.md$|\\.pdf$"
     }
+
+    # Recursion is per-generator, and deliberately off for docute.
+    #
+    # docsify and mkdocs serve `vignettes/` as a directory, so a nested
+    # `vignettes/articles/` -- the layout pkgdown users arrive with -- is a
+    # place a page can live. docute is the exception because the static-asset
+    # loop just below relocates every `vignettes/` subdirectory to the site
+    # root, so under docute the same directory is both a candidate vignette
+    # directory and an asset directory, and telling those apart needs a rule
+    # this does not have. Left to the follow-up on #2.
+    #
+    # quarto_website is absent because it returned above: Quarto renders the
+    # copied `vignettes/` tree itself, subdirectories included.
+    recursive <- tool %in% c("docsify", "mkdocs")
+    src_files <- list.files(vig_dir, pattern = pattern, recursive = recursive)
 
     # copy all subdirectories: images, static files, etc.
     # docsify: vignettes/
@@ -164,11 +179,20 @@
     # only process new or modified vignettes
     origin <- fs::path_join(c(vig_dir, vignette))
     destination <- fs::path_join(c(tar_dir, vignette))
+
+    # `vignette` carries its subdirectory when the generator discovers
+    # vignettes recursively, so the output directory is the file's own
+    # directory under `tar_dir` rather than `tar_dir` itself. For a
+    # non-recursive generator the two are the same, and `dir_create()` is a
+    # no-op on a directory that already exists.
+    out_dir <- fs::path_dir(destination)
+    fs::dir_create(out_dir)
+
     fs::file_copy(origin, destination, overwrite = TRUE)
 
-    # raw markdown should just be copied over
+    # raw markdown should just be copied over -- which the copy above already
+    # did, since `destination` is `out_dir` plus this file's own basename
     if (fs::path_ext(vignette) == "md") {
-        fs::file_copy(origin, tar_dir, overwrite = TRUE)
         return("success")
     }
 
@@ -185,7 +209,7 @@
     }
 
     if (fs::path_ext(origin) %in% c("md", "pdf")) {
-        fs::file_copy(origin, tar_dir, overwrite = TRUE)
+        # Already copied to `destination` above; nothing further to do.
         worked <- TRUE
 
         # We now use Quarto to render all vignettes, even .Rmd ones, because this
@@ -207,7 +231,7 @@
         } else {
             pre <- NULL
         }
-        worked <- .qmd2md(origin, tar_dir, verbose = verbose, preamble = pre)
+        worked <- .qmd2md(origin, out_dir, verbose = verbose, preamble = pre)
     }
 
     return(ifelse(worked, "success", "failure"))
@@ -224,12 +248,27 @@
 
     out <- gsub("\\.md$", "", basename(fn))
 
-    # title in vignette of the same name
-    vig <- fs::path_ext_remove(basename(fn))
-    p <- list.files(fs::path_join(c(path, "vignettes")), pattern = vig)
-    p <- p[grepl("\\.Rmd$|\\.qmd$", p)]
+    # title from the vignette's own source
+    #
+    # Addressed by path rather than by searching for the name. `fn` is a
+    # published page under some `.../vignettes/`, so the part after that
+    # segment is exactly the source's path relative to the package's own
+    # `vignettes/`, extension aside. Constructing the candidate directly is
+    # both simpler than a search and immune to two ways a search goes wrong
+    # once nested vignettes exist: `articles/intro.qmd` and
+    # `tutorials/intro.qmd` share a basename, and a name that is a substring
+    # of another vignette's name matches it too. Either returns more than one
+    # hit, and the old `length(p) == 1` guard then silently fell through to
+    # the weaker branches below.
+    vig_rel <- fs::path_ext_remove(sub(".*/vignettes/", "", fn))
+    candidates <- file.path(
+        path,
+        "vignettes",
+        paste0(vig_rel, c(".Rmd", ".qmd"))
+    )
+    p <- candidates[fs::file_exists(candidates)]
     if (length(p) == 1) {
-        z <- .readlines(fs::path_join(c(path, "vignettes", p)))
+        z <- .readlines(p)
         out <- z[grepl("^out:\\w*", z)]
         out <- trimws(gsub("^out:\\w*", "", out))
     }
