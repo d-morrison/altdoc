@@ -169,6 +169,37 @@ documentation generator.
 </li>
 <li>
 
+<code style="white-space: pre;">$ALTDOC_SIDEBAR_FOLD</code>: File name
+of a snippet adding a navbar button that folds the whole sidebar away,
+giving the content the width the sidebar held. Quarto’s own
+<code>collapse-level</code> folds sections <em>within</em> the sidebar
+and has no control for the sidebar itself. This snippet is shipped by
+altdoc rather than created in
+<code style="white-space: pre;">altdoc/</code>, so a site picks up
+changes to it by upgrading the package. Point
+<code style="white-space: pre;">include-in-header</code> at it under
+<code style="white-space: pre;">format: html:</code> in
+<code>altdoc/quarto_website.yml</code>:
+
+</li>
+</ul>
+
+<pre>format:
+  html:
+    include-in-header: \$ALTDOC_SIDEBAR_FOLD
+</pre>
+
+The reader’s choice is remembered across pages, and the sidebar starts
+open unless <code>sidebar_fold: collapsed</code> is set in
+<code>altdoc/reference.yml</code>. Below Quarto’s own 992px breakpoint
+the sidebar is already a drawer laid over the content, so no button is
+shown. This variable resolves only for the <code>quarto_website</code>
+generator; lines containing it are removed from the settings file of any
+other.
+
+<ul>
+<li>
+
 <code style="white-space: pre;">$ALTDOC_VERSION</code>: Version number
 of the altdoc package.
 
@@ -312,6 +343,23 @@ entries stay scannable by the name a reader is looking for. Set
 sidebar_label_width: 60
 </pre>
 
+A <code>quarto_website</code> site whose
+<code>altdoc/quarto_website.yml</code> uses
+<code style="white-space: pre;">$ALTDOC_SIDEBAR_FOLD</code> gets a
+navbar button that folds the sidebar away entirely. That button starts
+the sidebar open; set <code>sidebar_fold</code> to
+<code>collapsed</code> for a site whose pages are better served by the
+full width, with the sidebar something a reader opens when they want it:
+
+<pre>sidebar_fold: collapsed
+</pre>
+
+Either way the reader’s own choice, once made, is remembered and wins
+over this setting. It applies only to the button’s starting state on a
+site that has one, so setting it without
+<code style="white-space: pre;">$ALTDOC_SIDEBAR_FOLD</code> does
+nothing.
+
 <code>render_docs()</code> also writes an
 <a href="https://llmstxt.org/"><code>llms.txt</code></a> at the site
 root: an index of the site’s public topics and rendered articles, in
@@ -325,14 +373,16 @@ Skipping it also removes a copy an earlier render left behind, so the
 site does not go on serving an index you have opted out of.
 
 <code>title</code>, <code>reference</code>, <code>sidebar_labels</code>,
-<code>sidebar_label_width</code>, and <code>llms_txt</code> are the only
-top-level keys <code>altdoc/reference.yml</code> accepts; anything else
-is an error. So is an unrecognized <code>sidebar_labels</code> value, an
-<code>llms_txt</code> that is not an unquoted <code>true</code> or
-<code>false</code>, and a <code>sidebar_label_width</code> that is not a
-whole number of at least 4 — below 4 leaves no room for the ellipsis,
-and a fractional width would be silently truncated, so <code>4.5</code>
-would quietly behave as <code>4</code>.
+<code>sidebar_label_width</code>, <code>sidebar_fold</code>, and
+<code>llms_txt</code> are the only top-level keys
+<code>altdoc/reference.yml</code> accepts; anything else is an error. So
+is an unrecognized <code>sidebar_labels</code> or
+<code>sidebar_fold</code> value, an <code>llms_txt</code> that is not an
+unquoted <code>true</code> or <code>false</code>, and a
+<code>sidebar_label_width</code> that is not a whole number of at least
+4 — below 4 leaves no room for the ellipsis, and a fractional width
+would be silently truncated, so <code>4.5</code> would quietly behave as
+<code>4</code>.
 
 Setting <code>sidebar_label_width</code> without <code>sidebar_labels:
 name-and-title</code> warns, since the width has nothing to apply to on

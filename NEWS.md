@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+* Added: `$ALTDOC_SIDEBAR_FOLD`, a `quarto_website` variable that adds a navbar
+  button folding the whole sidebar away and giving the content the width it
+  held.
+  Quarto's own `collapse-level` folds sections *within* the sidebar and has no
+  control for the sidebar itself, so a site wanting one had to carry its own
+  script and stylesheet.
+  Point `include-in-header` at the variable under `format: html:` to opt in.
+  The reader's choice is remembered across pages; `sidebar_fold: collapsed` in
+  `altdoc/reference.yml` starts the sidebar folded for a reader who has not
+  chosen yet.
+  The snippet ships with altdoc rather than being copied into `altdoc/`, so a
+  site picks up changes to it by upgrading the package.
+
+* Added: `sidebar_fold` is now accepted in `altdoc/reference.yml`, taking
+  `expanded` (the default) or `collapsed`.
+  Any other value is an error, as with the other sidebar keys.
+
 * Added: `quarto_website`'s `$ALTDOC_MAN_BLOCK` now groups the sidebar's
   `Reference` section into the sections declared in `altdoc/reference.yml`,
   the same ones that already group the reference index page.
