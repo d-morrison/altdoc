@@ -19,7 +19,8 @@ reading the console.
 Report configuration problems that \code{render_docs()} would otherwise handle
 silently: an \verb{$ALTDOC_*} variable altdoc does not recognize, one whose
 source file is missing, a man page or vignette the navigation never links,
-a missing or inconsistent site URL, and an invalid \code{altdoc/reference.yml}.
+a missing or inconsistent site URL, an invalid \code{altdoc/reference.yml}, and a
+\code{sidebar_fold} setting with no fold control to apply to.
 
 Every check reports rather than aborts, and all checks run even when an
 earlier one finds something, so one call lists everything there is to fix.
@@ -51,6 +52,13 @@ it yields a link that does not exist.
 \strong{An invalid \code{altdoc/reference.yml}.} This runs the same validation
 \code{render_docs()} runs, so it reports exactly what a render would refuse,
 without waiting for one.
+
+\strong{A setting with nothing to apply to.} \code{sidebar_fold} chooses the fold
+control's starting state but does not create the control, so setting it
+without pointing a settings file at \verb{$ALTDOC_SIDEBAR_FOLD} --- or on a
+generator other than \code{quarto_website} --- does nothing whatever. Deciding
+this needs both files at once, which is why it is here rather than part of
+the validation a render performs.
 
 The function is opt-in: \code{render_docs()} does not call it. A render that
 warned about every one of these would be noisy on every build, and one that
