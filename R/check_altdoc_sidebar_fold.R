@@ -12,7 +12,17 @@
 # `render_docs()`, which is right for a finding that is about intent rather
 # than validity: a file part-way through being wired up is not broken.
 .check_altdoc_sidebar_fold <- function(path = ".", tool = "docsify") {
-    settings <- tryCatch(.reference_settings(path), error = function(e) NULL)
+    # `.reference_settings()` warns about a `sidebar_label_width` with no
+    # opt-in, and `tryCatch(error = )` does not intercept a warning --- so
+    # without the muffle this reads the file for its own purposes and emits
+    # someone else's warning as a side effect, raw, outside the `cli_ul`
+    # findings list. Muffled rather than collected because
+    # `.check_altdoc_reference()` runs on the same file and already reports it;
+    # collecting it here would print it twice.
+    settings <- withCallingHandlers(
+        tryCatch(.reference_settings(path), error = function(e) NULL),
+        warning = function(w) invokeRestart("muffleWarning")
+    )
     if (is.null(settings) || is.null(settings[["sidebar_fold"]])) {
         return(character(0))
     }
