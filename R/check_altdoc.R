@@ -4,7 +4,8 @@
 #' Report configuration problems that `render_docs()` would otherwise handle
 #' silently: an `$ALTDOC_*` variable altdoc does not recognize, one whose
 #' source file is missing, a man page or vignette the navigation never links,
-#' a missing or inconsistent site URL, and an invalid `altdoc/reference.yml`.
+#' a missing or inconsistent site URL, an invalid `altdoc/reference.yml`, and a
+#' `sidebar_fold` setting with no fold control to apply to.
 #'
 #' Every check reports rather than aborts, and all checks run even when an
 #' earlier one finds something, so one call lists everything there is to fix.
@@ -37,6 +38,13 @@
 #' `render_docs()` runs, so it reports exactly what a render would refuse,
 #' without waiting for one.
 #'
+#' **A setting with nothing to apply to.** `sidebar_fold` chooses the fold
+#' control's starting state but does not create the control, so setting it
+#' without pointing a settings file at `$ALTDOC_SIDEBAR_FOLD` --- or on a
+#' generator other than `quarto_website` --- does nothing whatever. Deciding
+#' this needs both files at once, which is why it is here rather than part of
+#' the validation a render performs.
+#'
 #' The function is opt-in: `render_docs()` does not call it. A render that
 #' warned about every one of these would be noisy on every build, and one that
 #' errored would refuse work it can complete.
@@ -65,7 +73,8 @@ check_altdoc <- function(path = ".") {
         .check_altdoc_nav(path, tool, kind = "man"),
         .check_altdoc_nav(path, tool, kind = "vignettes"),
         .check_altdoc_urls(path),
-        .check_altdoc_reference(path)
+        .check_altdoc_reference(path),
+        .check_altdoc_sidebar_fold(path, tool)
     )
 
     if (length(findings) == 0) {

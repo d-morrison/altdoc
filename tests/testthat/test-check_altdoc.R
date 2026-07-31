@@ -436,3 +436,92 @@ test_that(".escape_regex quotes a mangled topic name", {
     expect_false(grepl(paste0(.escape_regex("sub-.foo"), "$"), "sub-Xfoo"))
     expect_true(grepl(paste0(.escape_regex("sub-.foo"), "$"), "sub-.foo"))
 })
+
+test_that(".check_altdoc_sidebar_fold says nothing when the setting is absent", {
+    dir <- local_check_package(
+        "    include-in-header: $ALTDOC_SIDEBAR_FOLD",
+        tool = "quarto_website"
+    )
+    expect_identical(
+        .check_altdoc_sidebar_fold(dir, "quarto_website"),
+        character(0)
+    )
+})
+
+test_that(".check_altdoc_sidebar_fold says nothing when the variable is used", {
+    dir <- local_check_package(
+        "    include-in-header: $ALTDOC_SIDEBAR_FOLD",
+        tool = "quarto_website",
+        `altdoc/reference.yml` = "sidebar_fold: collapsed"
+    )
+    expect_identical(
+        .check_altdoc_sidebar_fold(dir, "quarto_website"),
+        character(0)
+    )
+})
+
+test_that(".check_altdoc_sidebar_fold flags a setting with no control", {
+    dir <- local_check_package(
+        "    include-in-header: header.html",
+        tool = "quarto_website",
+        `altdoc/reference.yml` = "sidebar_fold: collapsed"
+    )
+    out <- .check_altdoc_sidebar_fold(dir, "quarto_website")
+    expect_length(out, 1)
+    expect_match(out, "ALTDOC_SIDEBAR_FOLD", fixed = TRUE)
+})
+
+test_that(".check_altdoc_sidebar_fold flags a generator that cannot use it", {
+    # `expanded` is the default, so this fires on the key being present rather
+    # than on the value asking for anything.
+    dir <- local_check_package(
+        character(0),
+        tool = "docute",
+        `altdoc/reference.yml` = "sidebar_fold: expanded"
+    )
+    out <- .check_altdoc_sidebar_fold(dir, "docute")
+    expect_length(out, 1)
+    expect_match(out, "docute", fixed = TRUE)
+})
+
+test_that("check_altdoc() reports a sidebar_fold with no control", {
+    dir <- local_check_package(
+        "    include-in-header: header.html",
+        tool = "quarto_website",
+        `altdoc/reference.yml` = "sidebar_fold: collapsed"
+    )
+    out <- suppressMessages(check_altdoc(dir))
+    expect_true(any(grepl("ALTDOC_SIDEBAR_FOLD", out, fixed = TRUE)))
+})
+
+test_that("check_altdoc() does not leak the sidebar_label_width warning", {
+    # `sidebar_label_width` alone makes `.reference_settings()` warn, and every
+    # caller inside `check_altdoc()` reads the same file --- so a caller that
+    # does not muffle turns one finding into a finding plus a raw R warning
+    # printed outside the findings list.
+    dir <- local_check_package(
+        "    include-in-header: header.html",
+        tool = "quarto_website",
+        `altdoc/reference.yml` = c(
+            "sidebar_label_width: 60",
+            "sidebar_fold: collapsed"
+        )
+    )
+
+    expect_no_warning(.check_altdoc_sidebar_fold(dir, "quarto_website"))
+
+    warnings <- character(0)
+    out <- withCallingHandlers(
+        suppressMessages(check_altdoc(dir)),
+        warning = function(w) {
+            warnings <<- c(warnings, conditionMessage(w))
+            invokeRestart("muffleWarning")
+        }
+    )
+    expect_identical(warnings, character(0))
+
+    # Muffled, not lost: the width finding is still reported, exactly once, by
+    # the check that owns it.
+    width <- grepl("sidebar_label_width", out, fixed = TRUE)
+    expect_length(out[width], 1)
+})
