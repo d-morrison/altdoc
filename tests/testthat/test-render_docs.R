@@ -763,3 +763,42 @@ test_that("quarto_website: singleton entries in custom sidebars", {
     ### test that the custom sidebar with singleton entries renders without error
     expect_no_error(render_docs(verbose = .on_ci()))
 })
+
+# The unit tests around `.import_sidebar_fold()` check that the partial is
+# staged and its placeholder resolved. This checks the half they cannot: that
+# Quarto actually carries the partial into every published page, which depends
+# on `include-in-header` resolving a project-relative path inside `_quarto/`.
+test_that("quarto_website: $ALTDOC_SIDEBAR_FOLD reaches the published HTML", {
+    skip_on_cran()
+    skip_if(.is_windows() && .on_ci(), "Windows on CI")
+    skip_if(!.quarto_is_installed())
+
+    setup_example_package("testpkg.altdoc")
+    install.packages(".", repos = NULL, type = "source")
+    setup_docs("quarto_website")
+
+    settings <- .readlines("altdoc/quarto_website.yml")
+    settings <- sub(
+        "^    code-link: true$",
+        "    code-link: true\n    include-in-header: $ALTDOC_SIDEBAR_FOLD",
+        settings
+    )
+    writeLines(settings, "altdoc/quarto_website.yml")
+    writeLines("sidebar_fold: collapsed", "altdoc/reference.yml")
+
+    render_docs(verbose = .on_ci())
+
+    for (page in c("index.html", "NEWS.html")) {
+        html <- .readlines(fs::path_join(c("docs", page)))
+        expect_true(any(grepl("quarto-sidebar-fold", html, fixed = TRUE)))
+        expect_true(any(grepl(
+            "FOLDED_BY_DEFAULT = true;",
+            html,
+            fixed = TRUE
+        )))
+    }
+
+    # Staged into the render directory, never into the user's `altdoc/`: a copy
+    # there would be a second source of truth that upgrading altdoc cannot fix.
+    expect_false(fs::file_exists("altdoc/sidebar-fold.html"))
+})

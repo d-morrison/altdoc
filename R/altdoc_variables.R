@@ -65,6 +65,26 @@
         x <- x[!grepl("\\$ALTDOC_LOGO", x)]
     }
 
+    # Sidebar fold control. Staged only when a settings file asks for it, so
+    # the extra markup lands on the sites that opted in rather than on every
+    # Quarto site altdoc builds. The `quarto_website` guard is not just a
+    # shortcut: the partial styles Quarto's own grid and navbar, which the
+    # other generators do not have.
+    if (any(grepl("\\$ALTDOC_SIDEBAR_FOLD", x))) {
+        staged <- NULL
+        if (identical(tool, "quarto_website")) {
+            staged <- .import_sidebar_fold(
+                src_dir = path,
+                tar_dir = fs::path_join(c(path, "_quarto"))
+            )
+        }
+        if (is.null(staged)) {
+            x <- x[!grepl("\\$ALTDOC_SIDEBAR_FOLD", x)]
+        } else {
+            x <- gsub("\\$ALTDOC_SIDEBAR_FOLD", staged, x)
+        }
+    }
+
     # DESCRIPTION file
     fn <- fs::path_join(c(path, "DESCRIPTION"))
     if (fs::file_exists(fn)) {

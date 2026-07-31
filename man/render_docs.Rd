@@ -75,6 +75,16 @@ The settings files in the \verb{altdoc/} directory can include \verb{$ALTDOC} va
 \item \verb{$ALTDOC_MAN_BLOCK}: Nested list of links to the individual help pages for each exported function of the package. The format of this block depends on the documentation generator.
 \item \verb{$ALTDOC_REFERENCE}: Link to the generated reference index, a page listing every documented topic with a one-line summary. See the "Reference index" section below.
 \item \verb{$ALTDOC_VIGNETTE_BLOCK}: Nested list of links to the vignettes. The format of this block depends on the documentation generator.
+\item \verb{$ALTDOC_SIDEBAR_FOLD}: File name of a snippet adding a navbar button that folds the whole sidebar away, giving the content the width the sidebar held. Quarto's own \code{collapse-level} folds sections \emph{within} the sidebar and has no control for the sidebar itself. This snippet is shipped by altdoc rather than created in \verb{altdoc/}, so a site picks up changes to it by upgrading the package. Point \verb{include-in-header} at it under \verb{format: html:} in \code{altdoc/quarto_website.yml}:
+}
+
+\if{html}{\out{<div class="sourceCode yaml">}}\preformatted{format:
+  html:
+    include-in-header: $ALTDOC_SIDEBAR_FOLD
+}\if{html}{\out{</div>}}
+
+The reader's choice is remembered across pages, and the sidebar starts open unless \code{sidebar_fold: collapsed} is set in \code{altdoc/reference.yml}. Below Quarto's own 992px breakpoint the sidebar is already a drawer laid over the content, so no button is shown. This variable resolves only for the \code{quarto_website} generator; lines containing it are removed from the settings file of any other.
+\itemize{
 \item \verb{$ALTDOC_VERSION}: Version number of the altdoc package.
 }
 
@@ -146,6 +156,13 @@ Titles are truncated to 40 characters so a long one cannot overflow a narrow sid
 sidebar_label_width: 60
 }\if{html}{\out{</div>}}
 
+A \code{quarto_website} site whose \code{altdoc/quarto_website.yml} uses \verb{$ALTDOC_SIDEBAR_FOLD} gets a navbar button that folds the sidebar away entirely. That button starts the sidebar open; set \code{sidebar_fold} to \code{collapsed} for a site whose pages are better served by the full width, with the sidebar something a reader opens when they want it:
+
+\if{html}{\out{<div class="sourceCode yaml">}}\preformatted{sidebar_fold: collapsed
+}\if{html}{\out{</div>}}
+
+Either way the reader's own choice, once made, is remembered and wins over this setting. It applies only to the button's starting state on a site that has one, so setting it without \verb{$ALTDOC_SIDEBAR_FOLD} does nothing.
+
 \code{render_docs()} also writes an \href{https://llmstxt.org/}{\code{llms.txt}} at the site root: an index of the site's public topics and rendered articles, in Markdown, so a coding agent can read the documentation without scraping HTML. Set \code{llms_txt: false} to skip it:
 
 \if{html}{\out{<div class="sourceCode yaml">}}\preformatted{llms_txt: false
@@ -153,7 +170,7 @@ sidebar_label_width: 60
 
 Skipping it also removes a copy an earlier render left behind, so the site does not go on serving an index you have opted out of.
 
-\code{title}, \code{reference}, \code{sidebar_labels}, \code{sidebar_label_width}, and \code{llms_txt} are the only top-level keys \code{altdoc/reference.yml} accepts; anything else is an error. So is an unrecognized \code{sidebar_labels} value, an \code{llms_txt} that is not an unquoted \code{true} or \code{false}, and a \code{sidebar_label_width} that is not a whole number of at least 4 --- below 4 leaves no room for the ellipsis, and a fractional width would be silently truncated, so \code{4.5} would quietly behave as \code{4}.
+\code{title}, \code{reference}, \code{sidebar_labels}, \code{sidebar_label_width}, \code{sidebar_fold}, and \code{llms_txt} are the only top-level keys \code{altdoc/reference.yml} accepts; anything else is an error. So is an unrecognized \code{sidebar_labels} or \code{sidebar_fold} value, an \code{llms_txt} that is not an unquoted \code{true} or \code{false}, and a \code{sidebar_label_width} that is not a whole number of at least 4 --- below 4 leaves no room for the ellipsis, and a fractional width would be silently truncated, so \code{4.5} would quietly behave as \code{4}.
 
 Setting \code{sidebar_label_width} without \code{sidebar_labels: name-and-title} warns, since the width has nothing to apply to on its own.
 }

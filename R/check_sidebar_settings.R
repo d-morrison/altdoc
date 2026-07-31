@@ -1,21 +1,21 @@
-# Validate the sidebar-label keys of `altdoc/reference.yml`.
+# Validate the sidebar keys of `altdoc/reference.yml`.
 #
-# Both keys are optional. When present they are checked here rather than where
+# All three are optional. When present they are checked here rather than where
 # they are used, so a typo is reported once, at render time, naming the file
 # the reader has to edit --- instead of silently falling back to the default
 # and leaving them to wonder why the setting did nothing.
 .check_sidebar_settings <- function(settings) {
     labels <- settings[["sidebar_labels"]]
-    known <- c("name", "name-and-title")
+    known_labels <- c("name", "name-and-title")
     if (
         !is.null(labels) &&
             (!is.character(labels) ||
                 length(labels) != 1 ||
-                !labels %in% known)
+                !labels %in% known_labels)
     ) {
         cli::cli_abort(c(
             "Invalid {.field sidebar_labels} in {.file altdoc/reference.yml}: {.val {labels}}.",
-            "i" = "Valid values are {.val {known}}."
+            "i" = "Valid values are {.val {known_labels}}."
         ))
     }
 
@@ -39,7 +39,21 @@
         }
     }
 
-    # A width with no opt-in is inert, which is the same silent no-op the two
+    fold <- settings[["sidebar_fold"]]
+    known_fold <- c("expanded", "collapsed")
+    if (
+        !is.null(fold) &&
+            (!is.character(fold) ||
+                length(fold) != 1 ||
+                !fold %in% known_fold)
+    ) {
+        cli::cli_abort(c(
+            "Invalid {.field sidebar_fold} in {.file altdoc/reference.yml}: {.val {fold}}.",
+            "i" = "Valid values are {.val {known_fold}}."
+        ))
+    }
+
+    # A width with no opt-in is inert, which is the same silent no-op the
     # checks above exist to prevent. It is not invalid, though --- an author
     # part-way through opting in would hit it --- so it warns rather than
     # aborting.
