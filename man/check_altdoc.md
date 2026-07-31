@@ -8,8 +8,9 @@ Report configuration problems that <code>render_docs()</code> would
 otherwise handle silently: an
 <code style="white-space: pre;">$ALTDOC\_\*</code> variable altdoc does
 not recognize, one whose source file is missing, a man page or vignette
-the navigation never links, a missing or inconsistent site URL, and an
-invalid <code>altdoc/reference.yml</code>.
+the navigation never links, a missing or inconsistent site URL, an
+invalid <code>altdoc/reference.yml</code>, and a
+<code>sidebar_fold</code> setting with no fold control to apply to.
 
 Every check reports rather than aborts, and all checks run even when an
 earlier one finds something, so one call lists everything there is to
@@ -65,6 +66,14 @@ autolinks simply do not appear, and a repository URL is not a substitute
 <strong>An invalid <code>altdoc/reference.yml</code>.</strong> This runs
 the same validation <code>render_docs()</code> runs, so it reports
 exactly what a render would refuse, without waiting for one.
+
+<strong>A setting with nothing to apply to.</strong>
+<code>sidebar_fold</code> chooses the fold control’s starting state but
+does not create the control, so setting it without pointing a settings
+file at <code style="white-space: pre;">$ALTDOC_SIDEBAR_FOLD</code> — or
+on a generator other than <code>quarto_website</code> — does nothing
+whatever. Deciding this needs both files at once, which is why it is
+here rather than part of the validation a render performs.
 
 The function is opt-in: <code>render_docs()</code> does not call it. A
 render that warned about every one of these would be noisy on every

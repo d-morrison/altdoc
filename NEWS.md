@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+* Added: `check_altdoc()` now reports a `sidebar_fold` setting that cannot take
+  effect --- one set without a settings file pointing at
+  `$ALTDOC_SIDEBAR_FOLD`, or set for a generator other than `quarto_website`.
+  The key chooses the fold control's starting state but does not create the
+  control, so on its own it does nothing at all.
+  It is reported here rather than at render time because deciding it needs
+  `altdoc/reference.yml` and the settings file together, and because a project
+  part-way through being wired up is not broken.
+
 * Added: `$ALTDOC_SIDEBAR_FOLD`, a `quarto_website` variable that adds a navbar
   button folding the whole sidebar away and giving the content the width it
   held.
