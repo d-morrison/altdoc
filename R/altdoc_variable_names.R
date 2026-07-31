@@ -31,6 +31,9 @@
         "ALTDOC_REFERENCE",
         "ALTDOC_MAN_BLOCK",
         "ALTDOC_VIGNETTE_BLOCK",
+        # Shipped by altdoc rather than by the package, so this one resolves
+        # for the `quarto_website` generator and is dropped for the rest.
+        "ALTDOC_SIDEBAR_FOLD",
         # Resolved from the package itself.
         "ALTDOC_LOGO",
         "ALTDOC_PACKAGE_NAME",
