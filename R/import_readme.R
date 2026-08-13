@@ -41,8 +41,31 @@
     if (tool == "quarto_website") {
         writeLines(
             enc2utf8("{{< include README.md >}}"),
-            fs::path_join(c(tar_dir, "index.md"))
+            fs::path_join(c(tar_dir, "index.qmd"))
         )
+
+        # Check for YAML front matter in README.md and warn if present
+        if (fs::file_exists(src_file)) {
+            lines_md <- .readlines(src_file)
+            if (length(.front_matter_lines(lines_md)) > 0) {
+                cli::cli_alert_warning(
+                    "{.file README.md} contains a YAML front matter. This can cause rendering issues with Quarto websites."
+                )
+            }
+        }
+
+        # Check if README.qmd exists and has YAML front matter
+        if ("README.qmd" %in% readme_files) {
+            src_qmd <- fs::path_join(c(src_dir, "README.qmd"))
+            if (fs::file_exists(src_qmd)) {
+                lines_qmd <- .readlines(src_qmd)
+                if (length(.front_matter_lines(lines_qmd)) > 0) {
+                    cli::cli_alert_warning(
+                        "{.file README.qmd} contains a YAML front matter. This can cause rendering issues with Quarto websites."
+                    )
+                }
+            }
+        }
     }
 
     tmp <- fs::path_join(c(src_dir, "README.markdown_strict_files"))
