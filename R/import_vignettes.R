@@ -239,7 +239,7 @@
 
 # Get a filename with a vignette and try to extract its title
 
-.get_vignettes_titles <- function(fn, path = ".") {
+.get_vignettes_titles <- function(fn, path = ".", vig_root = NULL) {
     if (!fs::file_exists(fn)) {
         return(invisible())
     }
@@ -260,7 +260,11 @@
     # of another vignette's name matches it too. Either returns more than one
     # hit, and the old `length(p) == 1` guard then silently fell through to
     # the weaker branches below.
-    vig_rel <- fs::path_ext_remove(sub(".*/vignettes/", "", fn))
+    if (!is.null(vig_root)) {
+        vig_rel <- fs::path_ext_remove(fs::path_rel(fn, vig_root))
+    } else {
+        vig_rel <- fs::path_ext_remove(sub(".*/vignettes/", "", fn))
+    }
     candidates <- file.path(
         path,
         "vignettes",
