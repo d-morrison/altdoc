@@ -48,7 +48,7 @@
     fn_vignettes <- list.files(dn, pattern = "\\.md$", full.names = TRUE)
 
     # before gsub on paths
-    titles <- sapply(fn_vignettes, .get_vignettes_titles)
+    titles <- sapply(fn_vignettes, .get_vignettes_titles, path = path, vig_root = dn)
     fn_vignettes <- gsub(.doc_path(path), "", fn_vignettes, fixed = TRUE)
 
     # escape because we enclose in single quotes in the json file
