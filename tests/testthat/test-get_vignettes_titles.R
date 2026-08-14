@@ -67,7 +67,10 @@ test_that(".get_vignettes_titles handles vig_root when paths contain vignettes s
 
     # Case 2: Subdirectory named 'vignettes'
     dir2 <- fs::path_join(c(base_dir, "pkg2"))
-    fs::dir_create(fs::path_join(c(dir2, "vignettes", "vignettes")), recurse = TRUE)
+    fs::dir_create(
+        fs::path_join(c(dir2, "vignettes", "vignettes")),
+        recurse = TRUE
+    )
     vig_root2 <- fs::path_join(c(dir2, "docs", "vignettes"))
     fs::dir_create(fs::path_join(c(vig_root2, "vignettes")), recurse = TRUE)
 
