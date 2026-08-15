@@ -99,6 +99,8 @@
     title_text <- .rd_title(rd)
     if (is.na(title_text)) {
         title_text <- ""
+    } else {
+        title_text <- gsub("[“”]", "\"", title_text)
     }
     title <- paste0("## ", title_text, " {.unnumbered}\n")
 
