@@ -102,10 +102,9 @@
     }
     title <- paste0("## ", title_text, " {.unnumbered}\n")
 
-    h2_start <- grep("^<h2", tmp)[1]
     h2_end <- grep("</h2>", tmp)[1]
-    if (!is.na(h2_start) && !is.na(h2_end)) {
-        tmp <- tmp[-(h2_start:h2_end)]
+    if (!is.na(h2_end)) {
+        tmp <- tmp[(h2_end + 1):length(tmp)]
     }
     tmp <- c(title, tmp)
 
