@@ -7,5 +7,9 @@
     }
     out <- .rd_flatten_text(node)
     out <- gsub("[[:space:]]+", " ", out)
+    out <- gsub("\u201c", "\"", out, fixed = TRUE)
+    out <- gsub("\u201d", "\"", out, fixed = TRUE)
+    out <- gsub("\u2018", "'", out, fixed = TRUE)
+    out <- gsub("\u2019", "'", out, fixed = TRUE)
     trimws(out)
 }
