@@ -100,14 +100,13 @@
     if (is.na(title_text)) {
         title_text <- ""
     } else {
-        title_text <- gsub("[\u201c\u201d]", "\"", title_text)
-        title_text <- gsub("[\u2018\u2019]", "'", title_text)
+        title_text <- gsub("\"", "&quot;", title_text, fixed = TRUE)
     }
     title <- paste0("## ", title_text, " {.unnumbered}\n")
 
     h2_end <- grep("</h2>", tmp)[1]
     if (!is.na(h2_end)) {
-        tmp <- tmp[(h2_end + 1):length(tmp)]
+        tmp <- utils::tail(tmp, -h2_end)
     }
     tmp <- c(title, tmp)
 
