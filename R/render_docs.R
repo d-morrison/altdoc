@@ -107,13 +107,13 @@ render_docs <- function(
             if (isTRUE(freeze)) {
                 man_dir <- fs::path_join(c(docs_dir, "man"))
                 if (fs::dir_exists(man_dir)) {
-                    rd_stems <- fs::path_ext_remove(basename(
-                        list.files(fs::path_join(c(path, "man")),
-                            pattern = "\\.Rd$"
-                        )
-                    ))
+                    man_path <- fs::path_join(c(path, "man"))
+                    rd_files <- list.files(man_path, pattern = "\\.Rd$")
+                    rd_stems <- fs::path_ext_remove(basename(rd_files))
                     old_qmds <- fs::dir_ls(man_dir, regexp = "\\.qmd$")
-                    stale <- old_qmds[!fs::path_ext_remove(basename(old_qmds)) %in% rd_stems]
+                    stale <- old_qmds[
+                        !fs::path_ext_remove(basename(old_qmds)) %in% rd_stems
+                    ]
                     if (length(stale) > 0) {
                         fs::file_delete(stale)
                     }
