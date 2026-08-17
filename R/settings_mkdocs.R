@@ -27,24 +27,26 @@
         }
         prefix <- paste(rep("../", depth + 1), collapse = "")
 
-        txt <- gsub(
-            sprintf('src="%s.markdown_strict_files', base_name),
-            sprintf('src="%s%s.markdown_strict_files', prefix, stem),
-            txt,
-            fixed = TRUE
-        )
-        txt <- gsub(
-            sprintf('src=\\"%s.markdown_strict_files', base_name),
-            sprintf('src=\\"%s%s.markdown_strict_files', prefix, stem),
-            txt,
-            fixed = TRUE
-        )
-        txt <- gsub(
-            sprintf('src=\\"%s.markdown_strict_files', v),
-            sprintf('src=\\"%s%s.markdown_strict_files', prefix, stem),
-            txt,
-            fixed = TRUE
-        )
+        for (suffix in c(".markdown_strict_files", "_files")) {
+            txt <- gsub(
+                sprintf('src="%s%s', base_name, suffix),
+                sprintf('src="%s%s%s', prefix, stem, suffix),
+                txt,
+                fixed = TRUE
+            )
+            txt <- gsub(
+                sprintf('src=\\"%s%s', base_name, suffix),
+                sprintf('src=\\"%s%s%s', prefix, stem, suffix),
+                txt,
+                fixed = TRUE
+            )
+            txt <- gsub(
+                sprintf('src=\\"%s%s', v, suffix),
+                sprintf('src=\\"%s%s%s', prefix, stem, suffix),
+                txt,
+                fixed = TRUE
+            )
+        }
         writeLines(txt, fn)
     }
 

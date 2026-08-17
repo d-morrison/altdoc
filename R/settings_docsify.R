@@ -19,9 +19,12 @@
             rel_path <- fs::path_rel(md, dn)
             stem <- fs::path_ext_remove(rel_path)
             base_name <- fs::path_file(stem)
-            src <- sprintf('src="%s.markdown_strict_files', base_name)
-            tar <- sprintf('src="vignettes/%s.markdown_strict_files', stem)
-            content <- gsub(src, tar, .readlines(md), fixed = TRUE)
+            content <- .readlines(md)
+            for (suffix in c(".markdown_strict_files", "_files")) {
+                src <- sprintf('src="%s%s', base_name, suffix)
+                tar <- sprintf('src="vignettes/%s%s', stem, suffix)
+                content <- gsub(src, tar, content, fixed = TRUE)
+            }
             writeLines(content, md)
         }
     }
