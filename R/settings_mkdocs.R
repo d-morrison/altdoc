@@ -20,7 +20,11 @@
         stem <- fs::path_ext_remove(v)
         base_name <- fs::path_file(stem)
         dir_part <- fs::path_dir(v)
-        depth <- if (identical(dir_part, ".")) 0L else length(fs::path_split(dir_part)[[1]])
+        depth <- if (identical(dir_part, ".")) {
+            0L
+        } else {
+            length(fs::path_split(dir_part)[[1]])
+        }
         prefix <- paste(rep("../", depth + 1), collapse = "")
 
         txt <- gsub(
