@@ -709,6 +709,14 @@ test_that("docsify: recursive vignette discovery in subfolders", {
         llms,
         fixed = TRUE
     )))
+
+    ### ...and generated asset paths are correctly rewritten for nested page
+    article_md <- .readlines("docs/vignettes/articles/article_test.md")
+    expect_true(any(grepl(
+        "src=\"vignettes/articles/article_test.markdown_strict_files",
+        article_md,
+        fixed = TRUE
+    )))
 })
 
 test_that("mkdocs: recursive vignette discovery in subfolders", {
@@ -741,6 +749,14 @@ test_that("mkdocs: recursive vignette discovery in subfolders", {
     expect_true(any(grepl(
         "vignettes/articles/article_test.md",
         llms,
+        fixed = TRUE
+    )))
+
+    ### ...and generated asset paths are correctly rewritten for nested page
+    article_md <- .readlines("docs/vignettes/articles/article_test.md")
+    expect_true(any(grepl(
+        "src=\"../../articles/article_test.markdown_strict_files",
+        article_md,
         fixed = TRUE
     )))
 })
