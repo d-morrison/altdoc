@@ -12,19 +12,19 @@
     writeLines(settings, fn)
 
     # relative links
-    dn <- fs::path_join(c(path, "docs", "vignettes"))
+    dn <- fs::path_join(c(.doc_path(path), "vignettes"))
     if (fs::dir_exists(dn)) {
-        md_files <- fs::dir_ls(dn, regexp = "\\.md$")
+        md_files <- fs::dir_ls(dn, regexp = "\\.md$", recurse = TRUE)
         for (md in md_files) {
-            src <- sprintf(
-                'src="%s.markdown_strict_files',
-                gsub("\\.md$|\\.pdf$", "", basename(md))
-            )
-            tar <- sprintf(
-                'src="vignettes/%s.markdown_strict_files',
-                gsub("\\.md$|\\.pdf$", "", basename(md))
-            )
-            content <- gsub(src, tar, .readlines(md), fixed = TRUE)
+            rel_path <- fs::path_rel(md, dn)
+            stem <- fs::path_ext_remove(rel_path)
+            base_name <- fs::path_file(stem)
+            content <- .readlines(md)
+            for (suffix in c(".markdown_strict_files", "_files")) {
+                src <- sprintf('src="%s%s', base_name, suffix)
+                tar <- sprintf('src="vignettes/%s%s', stem, suffix)
+                content <- gsub(src, tar, content, fixed = TRUE)
+            }
             writeLines(content, md)
         }
     }
