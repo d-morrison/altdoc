@@ -96,7 +96,11 @@
     tmp <- gsub("&#8288;", "", tmp, fixed = TRUE)
 
     # title
-    title <- paste0("## ", .rd_title(rd), " {.unnumbered}\n")
+    # TODO: remove this dirty hack, which is necessary when the title tag in the
+    # Rd file is split across several lines.
+    title <- tmp[grep("<h2[^>]*>", tmp)[1]:grep("</h2>", tmp)[1]]
+    title <- paste(title, collapse = " ")
+    title <- gsub("<h2[^>]*>(.*)</h2>", "## \\1 {.unnumbered}\n", title)
     tmp <- tmp[(grep("</h2>", tmp)[1] + 1):length(tmp)]
     tmp <- c(title, tmp)
 
