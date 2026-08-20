@@ -7,20 +7,20 @@
         cli::cli_abort("README.md is mandatory.")
     }
 
-    # `README.md` is the only README this function reads: `docs/README.md` is
-    # always a copy of it, and altdoc does not render a `README.qmd` or
-    # `README.Rmd` down to it (hence the sync reminder at the end of this
-    # function). So the freeze check below has to hash `README.md` too --
-    # hashing whichever variant the author edits would let an edit made
-    # directly to `README.md` go undetected, leaving `docs/README.md` stale.
-    src_file <- fs::path_join(c(src_dir, "README.md"))
+    use_qmd <- "README.qmd" %in% readme_files && tool == "quarto_website"
+
+    src_file <- if (use_qmd) {
+        fs::path_join(c(src_dir, "README.qmd"))
+    } else {
+        fs::path_join(c(src_dir, "README.md"))
+    }
 
     # Skip file when frozen
     if (isTRUE(freeze)) {
         hashes <- .get_hashes(src_dir = src_dir, freeze = freeze)
         flag <- .is_frozen(
             input = basename(src_file),
-            output = fs::path_join(c(src_dir, "docs", "README.md")),
+            output = fs::path_join(c(tar_dir, basename(src_file))),
             hashes = hashes
         )
         if (isTRUE(flag)) {
@@ -32,16 +32,27 @@
     }
 
     tar_file <- fs::path_join(c(tar_dir, "README.md"))
-    fs::file_copy(src_file, tar_file, overwrite = TRUE)
+    fs::file_copy(
+        fs::path_join(c(src_dir, "README.md")),
+        tar_file,
+        overwrite = TRUE
+    )
     .check_md_structure(tar_file)
 
-    # Add the index page which includes README.md. This is unconditional: the
-    # mandatory-README.md check above guarantees `README.md` is present, so an
-    # `index.qmd` copied from `README.qmd` instead was never reachable (#69).
+    if (use_qmd) {
+        fs::file_copy(
+            src_file,
+            fs::path_join(c(tar_dir, "README.qmd")),
+            overwrite = TRUE
+        )
+    }
+
+    # Add the index page which includes README.qmd (if present for Quarto) or README.md
     if (tool == "quarto_website") {
+        inc_file <- if (use_qmd) "README.qmd" else "README.md"
         writeLines(
-            enc2utf8("{{< include README.md >}}"),
-            fs::path_join(c(tar_dir, "index.md"))
+            enc2utf8(paste0("{{< include ", inc_file, " >}}")),
+            fs::path_join(c(tar_dir, "index.qmd"))
         )
     }
 
@@ -60,8 +71,14 @@
     )
     cli::cli_alert_success("{.file README} imported.")
     if ("README.qmd" %in% readme_files) {
-        cli::cli_alert(
-            "Altdoc does not render README.qmd automatically to markdown. Please ensure that your README.md file is in sync."
-        )
+        if (use_qmd) {
+            cli::cli_alert(
+                "Altdoc uses {.file README.qmd} directly for Quarto website rendering."
+            )
+        } else {
+            cli::cli_alert(
+                "Altdoc does not render README.qmd automatically to markdown. Please ensure that your README.md file is in sync."
+            )
+        }
     }
 }
