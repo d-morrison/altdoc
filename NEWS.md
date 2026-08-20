@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Added: `altdoc` now uses `README.qmd` directly when present for Quarto website rendering (`quarto_website`), copying `README.qmd` to the output directory and including it in `index.qmd` (#368).
+
 * Added: `check_altdoc()` now reports a `sidebar_fold` setting that cannot take
   effect --- one set without a settings file pointing at
   `$ALTDOC_SIDEBAR_FOLD`, or set for a generator other than `quarto_website`.
