@@ -518,11 +518,11 @@ test_that("quarto_website: ensure that README.qmd is used when present", {
     create_local_package()
 
     cat("hello there", file = "README.md")
-    cat("---hello there\nhello again", file = "README.qmd")
+    cat("# hello from qmd\nhello again", file = "README.qmd")
     setup_docs("quarto_website")
     render_docs(verbose = .on_ci())
     expect_true(any(grepl(
-        "hello again",
+        "hello from qmd",
         .readlines("docs/index.html"),
         fixed = TRUE
     )))
