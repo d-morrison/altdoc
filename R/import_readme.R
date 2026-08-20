@@ -32,11 +32,19 @@
     }
 
     tar_file <- fs::path_join(c(tar_dir, "README.md"))
-    fs::file_copy(fs::path_join(c(src_dir, "README.md")), tar_file, overwrite = TRUE)
+    fs::file_copy(
+        fs::path_join(c(src_dir, "README.md")),
+        tar_file,
+        overwrite = TRUE
+    )
     .check_md_structure(tar_file)
 
     if (use_qmd) {
-        fs::file_copy(src_file, fs::path_join(c(tar_dir, "README.qmd")), overwrite = TRUE)
+        fs::file_copy(
+            src_file,
+            fs::path_join(c(tar_dir, "README.qmd")),
+            overwrite = TRUE
+        )
     }
 
     # Add the index page which includes README.qmd (if present for Quarto) or README.md
