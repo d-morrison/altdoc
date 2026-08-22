@@ -36,29 +36,29 @@ The base names searched for, and the file each produces:
 }
 \item \code{docs/NEWS.md}
 \itemize{
-\item NEWS
+\item NEWS (searched with \code{.md}, \code{.txt}, no extension, \code{.Rd} in root and \verb{inst/})
 \item Note: Where possible, Github contributors and issues are linked automatically.
 }
 \item \code{docs/CHANGELOG.md}
 \itemize{
-\item CHANGELOG, ChangeLog
+\item CHANGELOG, ChangeLog (searched with \code{.md}, \code{.txt}, no extension, \code{.Rd} in root and \verb{inst/})
 \item Note: These are two separate searches writing to the same file, so on a case-sensitive file system holding both, \code{ChangeLog} is the one used.
 }
 \item \code{docs/CODE_OF_CONDUCT.md}
 \itemize{
-\item CODE_OF_CONDUCT
+\item CODE_OF_CONDUCT (searched with \code{.md}, \code{.txt}, no extension, \code{.Rd} in root and \verb{inst/})
 }
 \item \code{docs/CONTRIBUTING.md}
 \itemize{
-\item CONTRIBUTING
+\item CONTRIBUTING (searched with \code{.md}, \code{.txt}, no extension, \code{.Rd} in root and \verb{inst/})
 }
 \item \code{docs/LICENSE.md}
 \itemize{
-\item LICENSE
+\item LICENSE (searched with \code{.md}, \code{.txt}, no extension, \code{.Rd} in root and \verb{inst/})
 }
 \item \code{docs/LICENCE.md}
 \itemize{
-\item LICENCE
+\item LICENCE (searched with \code{.md}, \code{.txt}, no extension, \code{.Rd} in root and \verb{inst/})
 }
 }
 }
