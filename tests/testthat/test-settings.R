@@ -44,7 +44,10 @@ test_that(".finalize_docsify rewrites asset paths in nested vignettes", {
 
     vig_dir <- fs::dir_create(file.path(tmp, "docs", "vignettes", "articles"))
     nested_md <- file.path(vig_dir, "nested.md")
-    writeLines('<img src="nested.markdown_strict_files/figure-html/fig.png">', nested_md)
+    writeLines(
+        '<img src="nested.markdown_strict_files/figure-html/fig.png">',
+        nested_md
+    )
 
     altdoc_dir <- fs::dir_create(file.path(tmp, "altdoc"))
     writeLines("<html></html>", file.path(altdoc_dir, "docsify.html"))
@@ -52,7 +55,11 @@ test_that(".finalize_docsify rewrites asset paths in nested vignettes", {
     .finalize_docsify(settings = c("link"), path = tmp)
 
     res <- .readlines(nested_md)
-    expect_true(any(grepl('src="vignettes/articles/nested.markdown_strict_files', res, fixed = TRUE)))
+    expect_true(any(grepl(
+        'src="vignettes/articles/nested.markdown_strict_files',
+        res,
+        fixed = TRUE
+    )))
 })
 
 test_that(".finalize_mkdocs rewrites asset paths in nested vignettes", {
@@ -61,10 +68,13 @@ test_that(".finalize_mkdocs rewrites asset paths in nested vignettes", {
 
     vig_dir <- fs::dir_create(file.path(tmp, "docs", "vignettes", "articles"))
     nested_md <- file.path(vig_dir, "nested.md")
-    writeLines(c(
-        '<img src="nested.markdown_strict_files/figure-html/fig.png">',
-        '![](docs/vignettes/articles/nested.markdown_strict_files/fig.png)'
-    ), nested_md)
+    writeLines(
+        c(
+            '<img src="nested.markdown_strict_files/figure-html/fig.png">',
+            '![](docs/vignettes/articles/nested.markdown_strict_files/fig.png)'
+        ),
+        nested_md
+    )
 
     # Mock mkdocs.yml reading
     writeLines("nav:\n  - Home: index.md\n", file.path(tmp, "mkdocs.yml"))
