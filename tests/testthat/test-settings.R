@@ -51,6 +51,7 @@ test_that(".finalize_docsify rewrites asset paths in nested vignettes", {
 
     altdoc_dir <- fs::dir_create(file.path(tmp, "altdoc"))
     writeLines("<html></html>", file.path(altdoc_dir, "docsify.html"))
+    file.create(file.path(altdoc_dir, "docsify.md"))
 
     .finalize_docsify(settings = c("link"), path = tmp)
 
