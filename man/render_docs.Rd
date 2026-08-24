@@ -32,7 +32,7 @@ The base names searched for, and the file each produces:
 \item \code{docs/README.md}
 \itemize{
 \item README.md
-\item Note: \code{README.md} is required, and is always the file copied. \code{README.qmd} and \code{README.Rmd} are not rendered for you, so keep \code{README.md} in step with whichever of them you write in. When more than one is present, the first of \code{README.qmd}, \code{README.Rmd}, \code{README.md} is the one the \code{freeze} check watches for changes.
+\item Note: \code{README.md} is required. For Quarto websites (\code{quarto_website}), if \code{README.qmd} is present, it is copied and included in \code{index.qmd}. For other site generators, \code{README.md} is copied to \code{docs/README.md} and \code{README.qmd}/\code{README.Rmd} are not rendered automatically.
 }
 \item \code{docs/NEWS.md}
 \itemize{

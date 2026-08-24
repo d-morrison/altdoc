@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Fixed: for `quarto_website`, if `README.qmd` is present in the package root, it is now copied and included directly in `index.qmd`, enabling Quarto features in the website homepage (#368).
+
 * Added: `check_altdoc()` now reports a `sidebar_fold` setting that cannot take
   effect --- one set without a settings file pointing at
   `$ALTDOC_SIDEBAR_FOLD`, or set for a generator other than `quarto_website`.
