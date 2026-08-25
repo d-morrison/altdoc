@@ -66,3 +66,31 @@ test_that(".get_vignettes_titles still resolves a top-level vignette", {
         "Getting Started"
     )
 })
+
+test_that(".get_vignettes_titles resolves correctly when ancestor path contains 'vignettes'", {
+    base_dir <- withr::local_tempdir()
+    # Create directory tree with ancestor path segment named "vignettes"
+    dir <- fs::path_join(c(base_dir, "vignettes", "my_package"))
+    vig_src <- fs::path_join(c(dir, "vignettes"))
+    vig_pub <- fs::path_join(c(dir, "docs", "vignettes"))
+    fs::dir_create(vig_src, recurse = TRUE)
+    fs::dir_create(vig_pub, recurse = TRUE)
+
+    writeLines(
+        c("---", "out: Ancestor Test Title", "---"),
+        fs::path_join(c(vig_src, "test.qmd"))
+    )
+    writeLines(
+        "some body text",
+        fs::path_join(c(vig_pub, "test.md"))
+    )
+
+    expect_equal(
+        .get_vignettes_titles(
+            fs::path_join(c(vig_pub, "test.md")),
+            path = dir,
+            vig_root = vig_pub
+        ),
+        "Ancestor Test Title"
+    )
+})
