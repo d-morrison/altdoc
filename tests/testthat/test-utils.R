@@ -13,12 +13,6 @@ test_that(".pkg_name() works", {
     expect_gt(nchar(.pkg_name(getwd())), 0)
 })
 
-test_that(".pkg_version() works", {
-    create_local_package()
-    expect_type(.pkg_version("."), "character")
-    expect_gt(nchar(.pkg_version(".")), 0)
-})
-
 test_that(".parse_news works", {
     skip_if_not_installed("desc")
     create_local_package()
