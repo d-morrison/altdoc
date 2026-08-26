@@ -4,13 +4,22 @@
     }
     if (is.call(expr)) {
         fun <- expr[[1]]
-        if (!is.name(fun)) return(FALSE)
+        if (!is.name(fun)) {
+            return(FALSE)
+        }
 
         fun_name <- as.character(fun)
         allowed_funcs <- c(
-            "-", "c",
-            "starts_with", "ends_with", "contains", "matches",
-            "has_keyword", "has_concept", "lacks_concepts", "lacks_concept",
+            "-",
+            "c",
+            "starts_with",
+            "ends_with",
+            "contains",
+            "matches",
+            "has_keyword",
+            "has_concept",
+            "lacks_concepts",
+            "lacks_concept",
             "everything"
         )
 
