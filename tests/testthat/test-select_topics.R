@@ -149,3 +149,22 @@ test_that("the keyword and concept selectors skip internal topics", {
         c("hidden", "shown")
     )
 })
+
+test_that(".select_topics rejects arbitrary code execution", {
+    topics <- .rd_topics(testthat::test_path("examples/testpkg.altdoc"))
+
+    expect_error(
+        .select_topics(list("system('ls')"), topics),
+        "is not a supported selection call"
+    )
+
+    expect_error(
+        .select_topics(list("base::print('x')"), topics),
+        "is not a supported selection call"
+    )
+
+    expect_error(
+        .select_topics(list("starts_with(system('ls'))"), topics),
+        "is not a supported selection call"
+    )
+})
