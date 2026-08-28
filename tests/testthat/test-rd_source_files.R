@@ -100,7 +100,10 @@ test_that(".rd_source_files() drops files the package no longer has", {
 test_that(".rd_source_files() returns nothing for a file that is not there", {
     root <- withr::local_tempdir()
     expect_equal(
-        .rd_source_files(fs::path_join(c(root, "man", "absent.Rd")), root),
+        .rd_source_files(
+            fs::path_join(c(root, "man", "absent.Rd")),
+            src_dir = root
+        ),
         character(0)
     )
 })
