@@ -275,6 +275,11 @@ test_that("the toc-action class is matched as a token, not as a substring", {
             paste0(
                 '<a href="https://github.com/user/pkg/blob/main/man/tok.qmd"',
                 ' data-class="toc-action">elsewhere</a>'
+            ),
+            ### and one whose class merely contains the name
+            paste0(
+                '<a href="https://github.com/user/pkg/blob/main/man/tok.qmd"',
+                ' class="not-toc-action">elsewhere</a>'
             )
         ),
         html
@@ -285,6 +290,7 @@ test_that("the toc-action class is matched as a token, not as a substring", {
     out <- .readlines(html)
     expect_true(grepl("/blob/main/R/tok.R\"", out[1], fixed = TRUE))
     expect_true(grepl("/blob/main/man/tok.qmd\"", out[2], fixed = TRUE))
+    expect_true(grepl("/blob/main/man/tok.qmd\"", out[3], fixed = TRUE))
 })
 
 test_that("a source path is percent-encoded before it becomes an href", {

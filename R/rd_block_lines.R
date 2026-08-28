@@ -11,24 +11,36 @@
 # comma-terminated block is still growing whatever the filesystem says, so that
 # case short-circuits.
 #
+# A stale entry must not cost the rest, so the run is scored by how many
+# entries resolve rather than by whether all of them do, and the shortest run
+# achieving the best score wins -- consuming a foreign comment is the harm to
+# avoid, so a tie does not buy another line.
+#
 # Two shapes stay ambiguous and no parser resolves them: a filename containing
 # a comma, which roxygen2's own comma-joined format cannot express, and a
 # trailing comment whose text happens to complete an existing filename. Both
 # lose the R source and fall back to the .Rd, which is a link that works.
 .rd_block_lines <- function(block, candidates, src_dir) {
-    kept <- 0L
-
-    for (n in seq_along(candidates)) {
+    resolved <- function(n) {
         joined <- paste(c(block, candidates[seq_len(n)]), collapse = " ")
         entries <- trimws(strsplit(joined, ",", fixed = TRUE)[[1]])
         entries <- entries[nzchar(entries)]
+        if (length(entries) == 0) {
+            return(0L)
+        }
+        # `fs::path()` rather than `fs::path_join()`: the latter joins a whole
+        # vector into one path, which would ask about a single nonexistent
+        # directory chain instead of about each entry
+        sum(fs::file_exists(fs::path(src_dir, entries)))
+    }
 
-        # `fs::path()` rather than `fs::path_join()`: the latter joins a
-        # whole vector into one path, which would ask about a single
-        # nonexistent directory chain instead of about each entry
-        complete <- length(entries) > 0 &&
-            all(fs::file_exists(fs::path(src_dir, entries)))
-        if (complete) {
+    kept <- 0L
+    best <- resolved(0L)
+
+    for (n in seq_along(candidates)) {
+        score <- resolved(n)
+        if (score > best) {
+            best <- score
             kept <- n
         }
     }
