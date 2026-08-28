@@ -36,29 +36,59 @@
     # harmless in HTML, and neither is what the encoding fix is about.
     lines <- readLines(html_file, warn = FALSE, encoding = "UTF-8")
 
+    # `/(blob|edit)/` follows `repo-url` immediately -- `repo-subdir:` lands
+    # after the branch, inside the repository path -- so anchoring on that
+    # boundary is exact, and it stops `.../pkg` from matching a page-level
+    # override of `.../pkg-docs`.
     pattern <- paste0(
         '(href="',
         .escape_regex(repo_url),
-        '[^"?#]*/(blob|edit)/[^"?#]*/)man/',
+        '/(blob|edit)/[^"?#]*/)man/',
         .escape_regex(topic),
         '\\.qmd("[^>]*\\sclass="([^"]*\\s)?toc-action(\\s[^"]*)?")'
     )
-    hit <- grepl(pattern, lines)
+
+    # Quarto serializes all three repo actions onto one line, so the
+    # `issue-url` cannot be excluded by dropping the line it appears on --
+    # that would take the source and edit links with it, on every page of any
+    # site that sets one. Mask it for the substitution and put it back after.
+    #
+    # An `issue-url` set to the source action's own URL is indistinguishable
+    # from it and stays masked, which loses that one link rather than
+    # corrupting the issue action.
+    original <- lines
+    sentinel <- "\u0001altdoc-issue-url\u0001"
     if (!is.null(issue_url)) {
-        # an `issue-url` under the repository itself would otherwise satisfy
-        # the prefix as well as any repo action does
-        hit <- hit &
-            !grepl(paste0('href="', .escape_regex(issue_url)), lines)
+        lines <- gsub(
+            paste0('href="', issue_url),
+            paste0('href="', sentinel),
+            lines,
+            fixed = TRUE
+        )
     }
-    if (!any(hit)) {
+
+    hit <- grepl(pattern, lines)
+    if (any(hit)) {
+        lines[hit] <- gsub(
+            pattern,
+            paste0("\\1", .url_encode_path(source_path), "\\3"),
+            lines[hit]
+        )
+    }
+
+    if (!is.null(issue_url)) {
+        lines <- gsub(
+            paste0('href="', sentinel),
+            paste0('href="', issue_url),
+            lines,
+            fixed = TRUE
+        )
+    }
+
+    if (identical(lines, original)) {
         return(invisible(FALSE))
     }
 
-    lines[hit] <- gsub(
-        pattern,
-        paste0("\\1", .url_encode_path(source_path), "\\3"),
-        lines[hit]
-    )
     writeLines(lines, html_file, useBytes = TRUE)
 
     invisible(TRUE)

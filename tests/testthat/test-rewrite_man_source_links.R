@@ -468,6 +468,80 @@ test_that("a backslash in the source path cannot become a backreference", {
     )
 })
 
+test_that("all three actions on one line: the issue link alone is left alone", {
+    ### Quarto serializes them onto a single physical line, so excluding the
+    ### issue link by dropping the line it appears on takes source and edit
+    ### with it
+    site <- local_man_site(
+        "oneline",
+        roxygen_rd("% Please edit documentation in R/oneline.R"),
+        r_files = "R/oneline.R"
+    )
+    issue <- "https://github.com/user/pkg/issues/new/choose"
+    writeLines(
+        c(
+            "website:",
+            "  repo-url: https://github.com/user/pkg",
+            paste0("  issue-url: ", issue)
+        ),
+        fs::path_join(c(site$root, "_quarto", "_quarto.yml"))
+    )
+    one_line <- paste0(
+        '<a href="https://github.com/user/pkg/edit/main/man/oneline.qmd"',
+        ' class="toc-action">Edit this page</a>',
+        '<a href="https://github.com/user/pkg/blob/main/man/oneline.qmd"',
+        ' class="toc-action">View source</a>',
+        '<a href="',
+        issue,
+        '" class="toc-action">Report an issue</a>'
+    )
+    writeLines(one_line, site$html)
+
+    .rewrite_man_source_links(
+        fs::path_join(c(site$root, "docs")),
+        site$root
+    )
+
+    out <- .readlines(site$html)
+    expect_true(grepl(
+        '/edit/main/R/oneline.R" class="toc-action">Edit this page',
+        out,
+        fixed = TRUE
+    ))
+    expect_true(grepl(
+        '/blob/main/R/oneline.R" class="toc-action">View source',
+        out,
+        fixed = TRUE
+    ))
+    expect_true(grepl(
+        paste0('href="', issue, '" class="toc-action">Report an issue'),
+        out,
+        fixed = TRUE
+    ))
+})
+
+test_that("a repository whose URL merely prefixes this one is left alone", {
+    site <- local_man_site(
+        "pref",
+        roxygen_rd("% Please edit documentation in R/pref.R"),
+        r_files = "R/pref.R"
+    )
+    other <- paste0(
+        '<a href="https://github.com/user/pkg-docs/blob/main/man/pref.qmd"',
+        ' class="toc-action">View source</a>'
+    )
+    writeLines(c(.readlines(site$html), other), site$html)
+
+    .rewrite_man_source_links(
+        fs::path_join(c(site$root, "docs")),
+        site$root
+    )
+
+    out <- .readlines(site$html)
+    expect_true(any(grepl("/blob/main/R/pref.R", out, fixed = TRUE)))
+    expect_true(any(grepl(other, out, fixed = TRUE)))
+})
+
 test_that("a site recording no repo-url is left alone", {
     ### nothing then separates a repo action from an issue link built out of an
     ### arbitrary issue-url, so guessing is the wrong move
