@@ -53,6 +53,10 @@
     # that would take the source and edit links with it, on every page of any
     # site that sets one. Mask it for the substitution and put it back after.
     #
+    # The whole href is masked, closing quote included: Quarto emits the issue
+    # action as exactly the configured URL, so a prefix match would hide every
+    # action on a site whose `issue-url` and `repo-url` are the same value.
+    #
     # An `issue-url` set to the source action's own URL is indistinguishable
     # from it and stays masked, which loses that one link rather than
     # corrupting the issue action.
@@ -60,8 +64,8 @@
     sentinel <- "\u0001altdoc-issue-url\u0001"
     if (!is.null(issue_url)) {
         lines <- gsub(
-            paste0('href="', issue_url),
-            paste0('href="', sentinel),
+            paste0('href="', issue_url, '"'),
+            paste0('href="', sentinel, '"'),
             lines,
             fixed = TRUE
         )
@@ -78,8 +82,8 @@
 
     if (!is.null(issue_url)) {
         lines <- gsub(
-            paste0('href="', sentinel),
-            paste0('href="', issue_url),
+            paste0('href="', sentinel, '"'),
+            paste0('href="', issue_url, '"'),
             lines,
             fixed = TRUE
         )

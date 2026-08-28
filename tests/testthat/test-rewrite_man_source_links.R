@@ -271,17 +271,16 @@ test_that("an issue link imitating the action shape is left alone when repo-url 
     )))
 })
 
-test_that("an issue link whose query embeds the same path is left alone", {
-    ### Quarto gives "Report an issue" the same toc-action class, and a site may
-    ### point `issue-url:` at a tracker taking this path as a parameter
+test_that("a query string stops the repo-action prefix from reaching the path", {
+    ### under the configured repository, so only the ?/# exclusion keeps this
+    ### from matching
     root <- withr::local_tempdir()
     html <- fs::path_join(c(root, "iss.html"))
-    issue_link <- paste0(
-        '<a href="https://tracker.example/new?return=',
-        'https://github.com/u/p/blob/main/man/iss.qmd"',
+    tracker <- paste0(
+        '<a href="https://github.com/user/pkg/blob/main/t?return=man/iss.qmd"',
         ' class="toc-action">Report an issue</a>'
     )
-    writeLines(issue_link, html)
+    writeLines(tracker, html)
 
     .rewrite_man_source_links_one(
         html,
@@ -290,7 +289,7 @@ test_that("an issue link whose query embeds the same path is left alone", {
         repo_url = "https://github.com/user/pkg"
     )
 
-    expect_equal(.readlines(html), issue_link)
+    expect_equal(.readlines(html), tracker)
 })
 
 test_that("a body link to the same forge path is left alone", {
@@ -515,6 +514,44 @@ test_that("all three actions on one line: the issue link alone is left alone", {
     ))
     expect_true(grepl(
         paste0('href="', issue, '" class="toc-action">Report an issue'),
+        out,
+        fixed = TRUE
+    ))
+})
+
+test_that("an issue-url equal to repo-url does not mask the other actions", {
+    ### Quarto emits the issue action as exactly the configured URL, so a
+    ### prefix mask would hide every action on such a site
+    site <- local_man_site(
+        "same",
+        roxygen_rd("% Please edit documentation in R/same.R"),
+        r_files = "R/same.R"
+    )
+    writeLines(
+        c(
+            "website:",
+            "  repo-url: https://github.com/user/pkg",
+            "  issue-url: https://github.com/user/pkg"
+        ),
+        fs::path_join(c(site$root, "_quarto", "_quarto.yml"))
+    )
+    one_line <- paste0(
+        '<a href="https://github.com/user/pkg/blob/main/man/same.qmd"',
+        ' class="toc-action">View source</a>',
+        '<a href="https://github.com/user/pkg" class="toc-action">',
+        "Report an issue</a>"
+    )
+    writeLines(one_line, site$html)
+
+    .rewrite_man_source_links(
+        fs::path_join(c(site$root, "docs")),
+        site$root
+    )
+
+    out <- .readlines(site$html)
+    expect_true(grepl("/blob/main/R/same.R", out, fixed = TRUE))
+    expect_true(grepl(
+        '<a href="https://github.com/user/pkg" class="toc-action">',
         out,
         fixed = TRUE
     ))
