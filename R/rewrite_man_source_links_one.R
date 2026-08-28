@@ -16,7 +16,13 @@
 # sets. "Report an issue" is built from the repository URL alone and never
 # matches.
 .rewrite_man_source_links_one <- function(html_file, topic, source_path) {
-    lines <- .readlines(html_file)
+    # Not `.readlines()`: Quarto writes UTF-8, and the default read leaves the
+    # strings flagged as native, so `writeLines()` would re-encode the whole
+    # document -- every line, not only the ones rewritten -- into whatever the
+    # session's locale happens to be. Marking the input UTF-8 and writing the
+    # bytes back unchanged keeps a page with non-ASCII text intact under any
+    # locale.
+    lines <- readLines(html_file, warn = FALSE, encoding = "UTF-8")
 
     pattern <- paste0(
         '(href="[^"]*/(blob|edit)/[^"]*/)man/',
@@ -33,7 +39,7 @@
         paste0("\\1", .url_encode_path(source_path), "\\3"),
         lines[hit]
     )
-    writeLines(lines, html_file)
+    writeLines(lines, html_file, useBytes = TRUE)
 
     invisible(TRUE)
 }

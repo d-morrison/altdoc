@@ -177,7 +177,10 @@ test_that("a topic whose name carries regex metacharacters is matched literally"
     )
     ### a second link on the same page, naming a topic that differs only where
     ### an unescaped `.` would match any character
-    decoy <- '<a href="https://github.com/user/pkg/blob/main/man/sub-Xfoo.qmd">elsewhere</a>'
+    decoy <- paste0(
+        '<a href="https://github.com/user/pkg/blob/main/man/sub-Xfoo.qmd"',
+        ' class="toc-action">elsewhere</a>'
+    )
     writeLines(c(.readlines(site$html), decoy), site$html)
 
     .rewrite_man_source_links(
@@ -291,6 +294,43 @@ test_that("the toc-action class is matched as a token, not as a substring", {
     expect_true(grepl("/blob/main/R/tok.R\"", out[1], fixed = TRUE))
     expect_true(grepl("/blob/main/man/tok.qmd\"", out[2], fixed = TRUE))
     expect_true(grepl("/blob/main/man/tok.qmd\"", out[3], fixed = TRUE))
+})
+
+test_that("non-ASCII text elsewhere on the page survives the rewrite", {
+    ### Quarto writes UTF-8; a re-encode would touch every line, not only the
+    ### rewritten one. The characters are built by code point so this file
+    ### stays ASCII, per the repo's own convention.
+    root <- withr::local_tempdir()
+    html <- fs::path_join(c(root, "utf8.html"))
+    accented <- paste0(
+        "<p>fonction ",
+        intToUtf8(c(233L, 99L, 114L, 105L, 116L, 101L)),
+        " en fran",
+        intToUtf8(c(231L, 97L, 105L, 115L)),
+        " ",
+        intToUtf8(8212L),
+        " r",
+        intToUtf8(c(233L, 115L, 117L, 109L, 233L)),
+        "</p>"
+    )
+    writeLines(
+        c(
+            paste0(
+                '<a href="https://github.com/user/pkg/blob/main/man/utf8.qmd"',
+                ' class="toc-action">src</a>'
+            ),
+            accented
+        ),
+        html,
+        useBytes = TRUE
+    )
+
+    .rewrite_man_source_links_one(html, "utf8", "R/utf8.R")
+
+    after <- readLines(html, warn = FALSE, encoding = "UTF-8")
+    expect_true(grepl("/blob/main/R/utf8.R", after[1], fixed = TRUE))
+    ### byte-identical to what was written, whatever the session locale is
+    expect_equal(charToRaw(after[2]), charToRaw(accented))
 })
 
 test_that("a source path is percent-encoded before it becomes an href", {
