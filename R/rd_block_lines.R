@@ -25,7 +25,9 @@
 #   * a wrap whose first fragment is itself an existing file, so both readings
 #     score alike and the tie keeps the shorter one;
 #   * a trailing comment that begins with a comma and names an existing file,
-#     which scores higher than not reading it.
+#     which scores higher than not reading it;
+#   * a filename holding two consecutive spaces, which `strwrap()` normalizes
+#     to one before the comment is ever written.
 #
 # The first two lose the source file and fall back to the .Rd, which is a link
 # that works. The last two link to a real file that is the wrong one. All four

@@ -107,8 +107,10 @@ test_that("a hand-written man page links at the .Rd file, which is its source", 
 })
 
 test_that("a topic documented in several R files links at the first of them", {
-    ### roxygen2 wraps this comment at 80 characters, so a long list arrives
-    ### as a block of `%` lines rather than as one line
+    ### a wrapped list, written in the shape roxygen2 produces once one is long
+    ### enough to break -- these names are short enough that roxygen2 would in
+    ### fact emit them on one line, so this exercises the continuation parsing
+    ### rather than the wrap boundary
     site <- local_man_site(
         "spread",
         c(
@@ -229,6 +231,23 @@ test_that("a link that is not a repo action is left alone", {
         out,
         fixed = TRUE
     ))
+})
+
+test_that("an issue link whose query embeds the same path is left alone", {
+    ### Quarto gives "Report an issue" the same toc-action class, and a site may
+    ### point `issue-url:` at a tracker taking this path as a parameter
+    root <- withr::local_tempdir()
+    html <- fs::path_join(c(root, "iss.html"))
+    issue_link <- paste0(
+        '<a href="https://tracker.example/new?return=',
+        'https://github.com/u/p/blob/main/man/iss.qmd"',
+        ' class="toc-action">Report an issue</a>'
+    )
+    writeLines(issue_link, html)
+
+    .rewrite_man_source_links_one(html, "iss", "R/iss.R")
+
+    expect_equal(.readlines(html), issue_link)
 })
 
 test_that("a body link to the same forge path is left alone", {

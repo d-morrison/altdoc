@@ -13,8 +13,10 @@
 #
 # Everything in front of the trailing `man/<topic>.qmd` is carried through
 # untouched -- the repository URL, the branch, and any `repo-subdir:` the site
-# sets. "Report an issue" is built from the repository URL alone and never
-# matches.
+# sets. That prefix may hold no `?` or `#`, since a repo action's URL is a
+# plain path: "Report an issue" carries the same class, and a site is free to
+# point `issue-url:` at a tracker that takes this very path as a query
+# parameter.
 .rewrite_man_source_links_one <- function(html_file, topic, source_path) {
     # Not `.readlines()`: Quarto writes UTF-8, and the default read leaves the
     # strings flagged as native, so `writeLines()` would re-encode the whole
@@ -28,7 +30,7 @@
     lines <- readLines(html_file, warn = FALSE, encoding = "UTF-8")
 
     pattern <- paste0(
-        '(href="[^"]*/(blob|edit)/[^"]*/)man/',
+        '(href="[^"?#]*/(blob|edit)/[^"?#]*/)man/',
         .escape_regex(topic),
         '\\.qmd("[^>]*\\sclass="([^"]*\\s)?toc-action(\\s[^"]*)?")'
     )

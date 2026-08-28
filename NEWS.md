@@ -4,7 +4,8 @@
 
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
-  under `R/`, and whatever else `@backref` names --- rather than at the
+  under `R/`, and a path elsewhere in the package where `@backref` names one
+  --- rather than at the
   `man/<topic>.qmd` that `render_docs()` generates and never commits, which
   404s.
   A hand-written man page records no such file --- roxygen2 writes that
