@@ -277,7 +277,7 @@ test_that("a query string stops the repo-action prefix from reaching the path", 
     root <- withr::local_tempdir()
     html <- fs::path_join(c(root, "iss.html"))
     tracker <- paste0(
-        '<a href="https://github.com/user/pkg/blob/main/t?return=man/iss.qmd"',
+        '<a href="https://github.com/user/pkg/blob/main/t?return=/man/iss.qmd"',
         ' class="toc-action">Report an issue</a>'
     )
     writeLines(tracker, html)
