@@ -19,9 +19,12 @@
     # Not `.readlines()`: Quarto writes UTF-8, and the default read leaves the
     # strings flagged as native, so `writeLines()` would re-encode the whole
     # document -- every line, not only the ones rewritten -- into whatever the
-    # session's locale happens to be. Marking the input UTF-8 and writing the
-    # bytes back unchanged keeps a page with non-ASCII text intact under any
-    # locale.
+    # session's locale happens to be. Marking the input UTF-8 and writing with
+    # `useBytes` keeps a page with non-ASCII text intact under any locale.
+    #
+    # That preserves each line's characters, not the file's byte stream: this
+    # pair still normalizes line endings and terminates the last line. Both are
+    # harmless in HTML, and neither is what the encoding fix is about.
     lines <- readLines(html_file, warn = FALSE, encoding = "UTF-8")
 
     pattern <- paste0(

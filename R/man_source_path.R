@@ -1,10 +1,11 @@
 # The path, relative to the package root, that a man page's "View source" and
 # "Edit this page" links should point at.
 #
-# The R file the topic was documented in when roxygen2 wrote the .Rd, and the
-# .Rd itself when it was written by hand. A topic documented across several R
-# files gets the first one roxygen2 recorded, since these links carry a single
-# target each.
+# The source file the topic was documented in when roxygen2 wrote the .Rd, and
+# the .Rd itself when it was written by hand. Usually that is a file under
+# `R/`, and `@backref` can name any path, so a topic documented beside its C++
+# implementation points there instead. A topic recorded against several files
+# gets the first, since these links carry a single target each.
 #
 # Returns NULL when the .Rd file is gone, which leaves the rendered links
 # alone rather than pointing them somewhere invented.

@@ -16,10 +16,21 @@
 # achieving the best score wins -- consuming a foreign comment is the harm to
 # avoid, so a tie does not buy another line.
 #
-# Two shapes stay ambiguous and no parser resolves them: a filename containing
-# a comma, which roxygen2's own comma-joined format cannot express, and a
-# trailing comment whose text happens to complete an existing filename. Both
-# lose the R source and fall back to the .Rd, which is a link that works.
+# Four shapes stay ambiguous, and scoring does not resolve them because the
+# text genuinely does not say which reading is meant:
+#
+#   * a filename containing a comma, which roxygen2's comma-joined format
+#     cannot express;
+#   * a trailing comment whose text happens to complete an existing filename;
+#   * a wrap whose first fragment is itself an existing file, so both readings
+#     score alike and the tie keeps the shorter one;
+#   * a trailing comment that begins with a comma and names an existing file,
+#     which scores higher than not reading it.
+#
+# The first two lose the source file and fall back to the .Rd, which is a link
+# that works. The last two link to a real file that is the wrong one. All four
+# need a package to hold a filename shaped to collide with the format, so they
+# are recorded rather than guarded.
 .rd_block_lines <- function(block, candidates, src_dir) {
     resolved <- function(n) {
         joined <- paste(c(block, candidates[seq_len(n)]), collapse = " ")
