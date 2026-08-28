@@ -7,7 +7,9 @@
 #     % Please edit documentation in R/foo.R, R/bar.R
 #
 # The list is wrapped at 80 characters with continuation lines prefixed by
-# "%", so it is read as a block rather than as a single line.
+# "%", so it is read as a block rather than as a single line. A single long
+# enough filename wraps whole, leaving nothing at all after "in" on the first
+# line, so neither the match nor the strip may require anything to follow it.
 #
 # Returns `character(0)` for a hand-written .Rd, which carries no such comment:
 # there the .Rd file is itself the source. Files the comment names but the
@@ -19,7 +21,7 @@
     }
 
     lines <- .readlines(rd_file)
-    start <- grep("^%\\s*Please edit documentation in\\s", lines)
+    start <- grep("^%\\s*Please edit documentation in", lines)
     if (length(start) == 0) {
         return(character(0))
     }
@@ -34,7 +36,7 @@
     }
 
     block <- paste(lines[start:end], collapse = " ")
-    block <- sub("^%\\s*Please edit documentation in\\s+", "", block)
+    block <- sub("^%\\s*Please edit documentation in\\s*", "", block)
     block <- gsub("%", " ", block, fixed = TRUE)
 
     files <- trimws(strsplit(block, ",", fixed = TRUE)[[1]])
