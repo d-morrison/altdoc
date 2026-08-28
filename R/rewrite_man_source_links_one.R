@@ -1,5 +1,5 @@
-# Rewrite one man page's repo-action links, from the generated .qmd Quarto
-# named to the source file `source_path` names.
+# Rewrite one man page's repo-action links so they name `source_path` instead
+# of the generated .qmd Quarto rendered the page from.
 #
 # Only the trailing `man/<topic>.qmd` is replaced, so whatever the site put in
 # front of it -- the repository URL, the branch, and any `repo-subdir:` -- is
