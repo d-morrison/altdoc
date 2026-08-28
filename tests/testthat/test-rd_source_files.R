@@ -212,6 +212,31 @@ test_that(".rd_source_files() stops at a comment that is not a continuation", {
     expect_equal(.rd_source_files(rd, src_dir = root), "R/foo.R")
 })
 
+test_that(".rd_source_files() ignores the sentence outside roxygen2's header", {
+    ### a hand-written .Rd is free to contain that sentence anywhere; only
+    ### roxygen2's banner on line 1 with the backref on line 2 means it wrote
+    ### the file
+    root <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(root, "man")))
+    fs::dir_create(fs::path_join(c(root, "R")))
+    writeLines("NULL", fs::path_join(c(root, "R", "foo.R")))
+
+    rd <- fs::path_join(c(root, "man", "topic.Rd"))
+    writeLines(
+        c(
+            "\\name{topic}",
+            "\\title{Topic}",
+            "\\details{",
+            "% Please edit documentation in R/foo.R",
+            "}"
+        ),
+        rd
+    )
+
+    expect_equal(.rd_source_files(rd, src_dir = root), character(0))
+    expect_equal(.man_source_path("topic", src_dir = root), "man/topic.Rd")
+})
+
 test_that(".rd_source_files() returns nothing for a hand-written .Rd", {
     root <- withr::local_tempdir()
     fs::dir_create(fs::path_join(c(root, "man")))
