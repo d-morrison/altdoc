@@ -6,33 +6,32 @@
 # Rd comment following the block is indented identically, and Rd allows one
 # there.
 #
-# Nothing in the text separates those, so the block is taken as the longest run
-# of candidate lines that leaves every entry naming a file the package has. A
-# comma-terminated block is still growing whatever the filesystem says, so that
-# case short-circuits.
+# Nothing in the text separates those, so the block is scored against the
+# filesystem instead. A comma-terminated block is still growing whatever the
+# filesystem says, so that case short-circuits before this is asked.
 #
 # A stale entry must not cost the rest, so the run is scored by how many
 # entries resolve rather than by whether all of them do, and the shortest run
 # achieving the best score wins -- consuming a foreign comment is the harm to
 # avoid, so a tie does not buy another line.
 #
-# Four shapes stay ambiguous, and scoring does not resolve them because the
+# Five shapes stay ambiguous, and scoring does not resolve them because the
 # text genuinely does not say which reading is meant:
 #
 #   * a filename containing a comma, which roxygen2's comma-joined format
 #     cannot express;
 #   * a trailing comment whose text happens to complete an existing filename;
+#   * a filename holding two consecutive spaces, which `strwrap()` normalizes
+#     to one before the comment is ever written;
 #   * a wrap whose first fragment is itself an existing file, so both readings
 #     score alike and the tie keeps the shorter one;
 #   * a trailing comment that begins with a comma and names an existing file,
-#     which scores higher than not reading it;
-#   * a filename holding two consecutive spaces, which `strwrap()` normalizes
-#     to one before the comment is ever written.
+#     which scores higher than not reading it.
 #
-# The first two lose the source file and fall back to the .Rd, which is a link
-# that works. The last two link to a real file that is the wrong one. All four
-# need a package to hold a filename shaped to collide with the format, so they
-# are recorded rather than guarded.
+# The first three lose the source file and fall back to the .Rd, which is a
+# link that works. The last two link to a real file that is the wrong one. All
+# five need a package to hold a filename shaped to collide with the format, so
+# they are recorded rather than guarded.
 .rd_block_lines <- function(block, candidates, src_dir) {
     resolved <- function(n) {
         joined <- paste(c(block, candidates[seq_len(n)]), collapse = " ")

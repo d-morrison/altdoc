@@ -22,6 +22,8 @@
         return(invisible())
     }
 
+    repo_url <- .site_repo_url(src_dir)
+
     html_files <- fs::dir_ls(man_dir, type = "file", glob = "*.html")
     for (html_file in html_files) {
         topic <- fs::path_ext_remove(basename(html_file))
@@ -29,7 +31,12 @@
         if (is.null(source_path)) {
             next
         }
-        .rewrite_man_source_links_one(html_file, topic, source_path)
+        .rewrite_man_source_links_one(
+            html_file,
+            topic,
+            source_path,
+            repo_url = repo_url
+        )
     }
 
     invisible()

@@ -233,6 +233,39 @@ test_that("a link that is not a repo action is left alone", {
     ))
 })
 
+test_that("an issue link imitating the action shape is left alone when repo-url is recorded", {
+    ### `issue-url` is arbitrary, so it can name a path indistinguishable from
+    ### a repo action; `repo-url` is what separates them
+    site <- local_man_site(
+        "iss",
+        roxygen_rd("% Please edit documentation in R/iss.R"),
+        r_files = "R/iss.R"
+    )
+    fs::dir_create(fs::path_join(c(site$root, "_quarto")))
+    writeLines(
+        c("website:", "  repo-url: https://github.com/user/pkg"),
+        fs::path_join(c(site$root, "_quarto", "_quarto.yml"))
+    )
+    imitation <- paste0(
+        '<a href="https://tracker.example/edit/new/man/iss.qmd"',
+        ' class="toc-action">Report an issue</a>'
+    )
+    writeLines(c(.readlines(site$html), imitation), site$html)
+
+    .rewrite_man_source_links(
+        fs::path_join(c(site$root, "docs")),
+        site$root
+    )
+
+    out <- .readlines(site$html)
+    expect_true(any(grepl("/blob/main/R/iss.R", out, fixed = TRUE)))
+    expect_true(any(grepl(
+        "https://tracker.example/edit/new/man/iss.qmd",
+        out,
+        fixed = TRUE
+    )))
+})
+
 test_that("an issue link whose query embeds the same path is left alone", {
     ### Quarto gives "Report an issue" the same toc-action class, and a site may
     ### point `issue-url:` at a tracker taking this path as a parameter
@@ -315,10 +348,15 @@ test_that("the toc-action class is matched as a token, not as a substring", {
     expect_true(grepl("/blob/main/man/tok.qmd\"", out[3], fixed = TRUE))
 })
 
-test_that("non-ASCII text elsewhere on the page survives the rewrite", {
+test_that("non-ASCII text survives the rewrite under a non-UTF-8 locale", {
     ### Quarto writes UTF-8; a re-encode would touch every line, not only the
     ### rewritten one. The characters are built by code point so this file
     ### stays ASCII, per the repo's own convention.
+    ###
+    ### The locale is forced, because that is the whole of the failure: under a
+    ### UTF-8 locale the previous implementation round-tripped these bytes
+    ### fine, so a test that does not set it passes either way.
+    withr::local_locale(c(LC_CTYPE = "C"))
     root <- withr::local_tempdir()
     html <- fs::path_join(c(root, "utf8.html"))
     accented <- paste0(
