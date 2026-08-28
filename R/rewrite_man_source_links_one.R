@@ -13,16 +13,17 @@
 #
 # Everything in front of the trailing `man/<topic>.qmd` is carried through
 # untouched -- the repository URL, the branch, and any `repo-subdir:` the site
-# sets. Where the site records `repo-url`, that prefix must be it, which is
-# what separates these from "Report an issue" -- it carries the same class, and
-# `issue-url` is arbitrary, so it can name any path at all. Where the site
-# records none, the prefix may at least hold no `?` or `#`, since a repo
-# action's URL is a plain path.
+# sets. That prefix must be the site's own `repo-url`, which is what separates
+# these from "Report an issue" -- it carries the same class, and `issue-url` is
+# arbitrary, so it can name any path at all. A line whose href starts with the
+# site's `issue-url` is skipped outright, for an `issue-url` that sits under
+# the repository and so satisfies the prefix too.
 .rewrite_man_source_links_one <- function(
     html_file,
     topic,
     source_path,
-    repo_url = NULL
+    repo_url,
+    issue_url = NULL
 ) {
     # Not `.readlines()`: Quarto writes UTF-8, and the default read leaves the
     # strings flagged as native, so `writeLines()` would re-encode the whole
@@ -35,23 +36,20 @@
     # harmless in HTML, and neither is what the encoding fix is about.
     lines <- readLines(html_file, warn = FALSE, encoding = "UTF-8")
 
-    # A site that records `repo-url` says exactly which prefix its repo actions
-    # carry, which is the only thing that tells one from a "Report an issue"
-    # link whose `issue-url` imitates the same shape.
-    prefix <- if (is.null(repo_url)) {
-        '[^"?#]*'
-    } else {
-        paste0(.escape_regex(repo_url), '[^"?#]*')
-    }
-
     pattern <- paste0(
         '(href="',
-        prefix,
-        '/(blob|edit)/[^"?#]*/)man/',
+        .escape_regex(repo_url),
+        '[^"?#]*/(blob|edit)/[^"?#]*/)man/',
         .escape_regex(topic),
         '\\.qmd("[^>]*\\sclass="([^"]*\\s)?toc-action(\\s[^"]*)?")'
     )
     hit <- grepl(pattern, lines)
+    if (!is.null(issue_url)) {
+        # an `issue-url` under the repository itself would otherwise satisfy
+        # the prefix as well as any repo action does
+        hit <- hit &
+            !grepl(paste0('href="', .escape_regex(issue_url)), lines)
+    }
     if (!any(hit)) {
         return(invisible(FALSE))
     }

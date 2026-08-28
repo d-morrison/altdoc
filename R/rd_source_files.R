@@ -41,9 +41,17 @@
         lines[start]
     )
 
+    # `%   ,` is not a shape roxygen2 can produce: it joins the list with ", "
+    # and `strwrap()` breaks at a space, so a comma is always carried on the
+    # end of the filename before it. A line starting with one is somebody
+    # else's comment, whatever the filesystem would say about it.
     candidates <- character(0)
     i <- start + 1
-    while (i <= length(lines) && grepl("^%\\s{2,}\\S", lines[i])) {
+    while (
+        i <= length(lines) &&
+            grepl("^%\\s{2,}\\S", lines[i]) &&
+            !grepl("^%\\s+,", lines[i])
+    ) {
         candidates <- c(candidates, sub("^%\\s+", "", lines[i]))
         i <- i + 1
     }

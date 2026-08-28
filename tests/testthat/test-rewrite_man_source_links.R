@@ -11,6 +11,11 @@ local_man_site <- function(
     fs::dir_create(fs::path_join(c(root, "man")))
     fs::dir_create(fs::path_join(c(root, "R")))
     fs::dir_create(fs::path_join(c(root, "docs", "man")))
+    fs::dir_create(fs::path_join(c(root, "_quarto")))
+    writeLines(
+        c("website:", "  repo-url: https://github.com/user/pkg"),
+        fs::path_join(c(root, "_quarto", "_quarto.yml"))
+    )
 
     if (length(rd_lines) > 0) {
         writeLines(
@@ -278,7 +283,12 @@ test_that("an issue link whose query embeds the same path is left alone", {
     )
     writeLines(issue_link, html)
 
-    .rewrite_man_source_links_one(html, "iss", "R/iss.R")
+    .rewrite_man_source_links_one(
+        html,
+        "iss",
+        "R/iss.R",
+        repo_url = "https://github.com/user/pkg"
+    )
 
     expect_equal(.readlines(html), issue_link)
 })
@@ -340,7 +350,12 @@ test_that("the toc-action class is matched as a token, not as a substring", {
         html
     )
 
-    .rewrite_man_source_links_one(html, "tok", "R/tok.R")
+    .rewrite_man_source_links_one(
+        html,
+        "tok",
+        "R/tok.R",
+        repo_url = "https://github.com/user/pkg"
+    )
 
     out <- .readlines(html)
     expect_true(grepl("/blob/main/R/tok.R\"", out[1], fixed = TRUE))
@@ -382,7 +397,12 @@ test_that("non-ASCII text survives the rewrite under a non-UTF-8 locale", {
         useBytes = TRUE
     )
 
-    .rewrite_man_source_links_one(html, "utf8", "R/utf8.R")
+    .rewrite_man_source_links_one(
+        html,
+        "utf8",
+        "R/utf8.R",
+        repo_url = "https://github.com/user/pkg"
+    )
 
     after <- readLines(html, warn = FALSE, encoding = "UTF-8")
     expect_true(grepl("/blob/main/R/utf8.R", after[1], fixed = TRUE))
@@ -403,7 +423,12 @@ test_that("a source path is percent-encoded before it becomes an href", {
         html
     )
 
-    .rewrite_man_source_links_one(html, "enc", "src/model#v2.cpp")
+    .rewrite_man_source_links_one(
+        html,
+        "enc",
+        "src/model#v2.cpp",
+        repo_url = "https://github.com/user/pkg"
+    )
 
     expect_equal(
         .readlines(html),
@@ -427,7 +452,12 @@ test_that("a backslash in the source path cannot become a backreference", {
         html
     )
 
-    .rewrite_man_source_links_one(html, "backref", "src/code\\1.cpp")
+    .rewrite_man_source_links_one(
+        html,
+        "backref",
+        "src/code\\1.cpp",
+        repo_url = "https://github.com/user/pkg"
+    )
 
     expect_equal(
         .readlines(html),
@@ -436,6 +466,55 @@ test_that("a backslash in the source path cannot become a backreference", {
             ' class="toc-action">src</a>'
         )
     )
+})
+
+test_that("a site recording no repo-url is left alone", {
+    ### nothing then separates a repo action from an issue link built out of an
+    ### arbitrary issue-url, so guessing is the wrong move
+    site <- local_man_site(
+        "norepo",
+        roxygen_rd("% Please edit documentation in R/norepo.R"),
+        r_files = "R/norepo.R"
+    )
+    fs::file_delete(fs::path_join(c(site$root, "_quarto", "_quarto.yml")))
+    before <- .readlines(site$html)
+
+    .rewrite_man_source_links(
+        fs::path_join(c(site$root, "docs")),
+        site$root
+    )
+
+    expect_equal(.readlines(site$html), before)
+})
+
+test_that("an issue-url under the repository itself is left alone", {
+    site <- local_man_site(
+        "under",
+        roxygen_rd("% Please edit documentation in R/under.R"),
+        r_files = "R/under.R"
+    )
+    writeLines(
+        c(
+            "website:",
+            "  repo-url: https://github.com/user/pkg",
+            "  issue-url: https://github.com/user/pkg/blob/main/man/under.qmd"
+        ),
+        fs::path_join(c(site$root, "_quarto", "_quarto.yml"))
+    )
+    issue_link <- paste0(
+        '<a href="https://github.com/user/pkg/blob/main/man/under.qmd"',
+        ' class="toc-action">Report an issue</a>'
+    )
+    writeLines(c(.readlines(site$html), issue_link), site$html)
+
+    .rewrite_man_source_links(
+        fs::path_join(c(site$root, "docs")),
+        site$root
+    )
+
+    out <- .readlines(site$html)
+    expect_true(any(grepl("/edit/main/R/under.R", out, fixed = TRUE)))
+    expect_true(any(grepl(issue_link, out, fixed = TRUE)))
 })
 
 test_that("a site with no repo-action links renders nothing to rewrite", {

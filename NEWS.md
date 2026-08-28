@@ -12,8 +12,11 @@
   mapping, and nothing else does --- so those pages link to their `.Rd`
   instead.
   Quarto builds these links from the file it rendered, so a site only carries
-  them when it sets `repo-actions:` in `altdoc/quarto_website.yml`; one that
-  does not is unaffected.
+  them when it sets `repo-actions:` in `altdoc/quarto_website.yml`.
+  A site is rewritten only where it also records `repo-url:`, since that is
+  what distinguishes a source or edit action from the "Report an issue" link
+  Quarto builds out of `issue-url:` and gives the same styling; a site
+  recording neither is untouched.
 
 * Added: `check_altdoc()` now reports a `sidebar_fold` setting that cannot take
   effect --- one set without a settings file pointing at
