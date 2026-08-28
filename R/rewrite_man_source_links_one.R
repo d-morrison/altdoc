@@ -6,6 +6,10 @@
 # puts on the anchor. A page-body link to the same path on the same forge
 # satisfies the first and not the second, so it is left alone.
 #
+# The class is matched as a whitespace-delimited token inside a `class`
+# attribute, so an anchor carrying other classes alongside it still matches and
+# a different attribute merely ending in `class` does not.
+#
 # Everything in front of the trailing `man/<topic>.qmd` is carried through
 # untouched -- the repository URL, the branch, and any `repo-subdir:` the site
 # sets. "Report an issue" is built from the repository URL alone and never
@@ -16,7 +20,7 @@
     pattern <- paste0(
         '(href="[^"]*/(blob|edit)/[^"]*/)man/',
         .escape_regex(topic),
-        '\\.qmd("[^>]*class="toc-action")'
+        '\\.qmd("[^>]*\\sclass="[^"]*\\btoc-action\\b[^"]*")'
     )
     hit <- grepl(pattern, lines)
     if (!any(hit)) {

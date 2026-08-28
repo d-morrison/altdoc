@@ -261,6 +261,32 @@ test_that("a body link to the same forge path is left alone", {
     ))
 })
 
+test_that("the toc-action class is matched as a token, not as a substring", {
+    root <- withr::local_tempdir()
+    html <- fs::path_join(c(root, "tok.html"))
+    writeLines(
+        c(
+            ### a genuine repo action carrying a second class
+            paste0(
+                '<a href="https://github.com/user/pkg/blob/main/man/tok.qmd"',
+                ' class="toc-action external">src</a>'
+            ),
+            ### a body link whose attribute merely ends in "class"
+            paste0(
+                '<a href="https://github.com/user/pkg/blob/main/man/tok.qmd"',
+                ' data-class="toc-action">elsewhere</a>'
+            )
+        ),
+        html
+    )
+
+    .rewrite_man_source_links_one(html, "tok", "R/tok.R")
+
+    out <- .readlines(html)
+    expect_true(grepl("/blob/main/R/tok.R\"", out[1], fixed = TRUE))
+    expect_true(grepl("/blob/main/man/tok.qmd\"", out[2], fixed = TRUE))
+})
+
 test_that("a source path is percent-encoded before it becomes an href", {
     ### `#` would otherwise start a fragment and the forge would receive
     ### `src/model` instead of the file

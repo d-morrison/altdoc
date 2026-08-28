@@ -6,8 +6,9 @@
   now point at the R file the topic was documented in, rather than at the
   `man/<topic>.qmd` that `render_docs()` generates and never commits, which
   404s.
-  A package whose man pages are written by hand has no such R file, so those
-  pages link to their `.Rd` instead.
+  A hand-written man page records no such file --- roxygen2 writes that
+  mapping, and nothing else does --- so those pages link to their `.Rd`
+  instead.
   Quarto builds these links from the file it rendered, so a site only carries
   them when it sets `repo-actions:` in `altdoc/quarto_website.yml`; one that
   does not is unaffected.
