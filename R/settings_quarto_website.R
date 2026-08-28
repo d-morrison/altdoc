@@ -180,7 +180,8 @@
 
     # Quarto builds each page's "View source" / "Edit this page" links from the
     # file it rendered, which for a man page is a generated .qmd that is never
-    # committed. Repoint them at the R file the topic was documented in.
+    # committed. Repoint them at the R file the topic was documented in, or at
+    # the .Rd itself where the package writes its man pages by hand.
     .rewrite_man_source_links(tar, path)
 }
 

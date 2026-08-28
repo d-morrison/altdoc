@@ -7,12 +7,14 @@
 #     % Please edit documentation in R/foo.R, R/bar.R
 #
 # The list is wrapped at 80 characters with `strwrap(prefix = "%   ")`, which
-# breaks it only at a space -- so a continuation line exists only where what
-# has been read so far ends in a comma, or where the first line ended at "in"
-# and carries no filename at all. Requiring that, rather than reading every
-# indented `%` line, is what keeps an unrelated Rd comment following the block
-# out of the file list: Rd allows one there, and roxygen2 is not the only thing
-# that writes .Rd files.
+# breaks at any space -- after a comma usually, and part-way through a filename
+# that contains one. An unrelated Rd comment following the block is indented
+# the same way and must not be read as more filenames; Rd allows one there, and
+# roxygen2 is not the only thing that writes .Rd files.
+#
+# Nothing in the text separates those cases, so a continuation is taken when
+# the block still ends in a comma, and otherwise only when joining the line
+# leaves a filename the package actually has -- see `.rd_block_extends()`.
 #
 # Each line's own prefix is stripped before the block is joined, so a `%` that
 # is part of a filename is left alone.
@@ -40,12 +42,14 @@
     )
 
     i <- start + 1
-    while (
-        i <= length(lines) &&
-            grepl(",$|^$", block) &&
-            grepl("^%\\s{2,}\\S", lines[i])
-    ) {
-        block <- paste(block, sub("^%\\s+", "", lines[i]))
+    while (i <= length(lines) && grepl("^%\\s{2,}\\S", lines[i])) {
+        joined <- paste(block, sub("^%\\s+", "", lines[i]))
+        extends <- grepl(",$|^$", block) ||
+            .rd_block_extends(joined, src_dir = src_dir)
+        if (!extends) {
+            break
+        }
+        block <- joined
         i <- i + 1
     }
 
