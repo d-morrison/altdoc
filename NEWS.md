@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+* Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
+  now point at the source file the topic was documented in --- usually a file
+  under `R/`, and a path elsewhere in the package where `@backref` names one
+  --- rather than at the
+  `man/<topic>.qmd` that `render_docs()` generates and never commits, which
+  404s.
+  A hand-written man page records no such file --- roxygen2 writes that
+  mapping, and nothing else does --- so those pages link to their `.Rd`
+  instead.
+  Quarto builds these links from the file it rendered, so a site only carries
+  them when it sets `repo-actions:` in `altdoc/quarto_website.yml`.
+  A site is rewritten only where it also records `repo-url:`, since that is
+  what distinguishes a source or edit action from the "Report an issue" link
+  Quarto builds out of `issue-url:` and gives the same styling; a site
+  recording neither is untouched.
+
 * Added: `check_altdoc()` now reports a `sidebar_fold` setting that cannot take
   effect --- one set without a settings file pointing at
   `$ALTDOC_SIDEBAR_FOLD`, or set for a generator other than `quarto_website`.

@@ -177,6 +177,12 @@
     # notably a PR preview deploy under its own subpath (altdoc#10). Rewrite
     # those self-links to be relative to each rendered page instead.
     .rewrite_self_links(tar, path)
+
+    # Quarto builds each page's "View source" / "Edit this page" links from the
+    # file it rendered, which for a man page is a generated .qmd that is never
+    # committed. Repoint them at the R file the topic was documented in, or at
+    # the .Rd itself where the package writes its man pages by hand.
+    .rewrite_man_source_links(tar, path)
 }
 
 .sidebar_man_quarto_website <- function(sidebar, path, ...) {
