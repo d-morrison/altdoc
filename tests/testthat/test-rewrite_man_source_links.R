@@ -228,13 +228,73 @@ test_that("a link that is not a repo action is left alone", {
     ))
 })
 
-test_that("a backslash in the source path is inserted literally", {
-    ### `@backref` takes any path, and a backslash in a gsub replacement would
-    ### otherwise read as a backreference
+test_that("a body link to the same forge path is left alone", {
+    ### it carries the `/blob/` segment, so only the missing `toc-action` class
+    ### separates it from a genuine repo action
+    site <- local_man_site(
+        "plain",
+        roxygen_rd("% Please edit documentation in R/plain.R"),
+        r_files = "R/plain.R"
+    )
+    body_link <- paste0(
+        '<a href="https://github.com/user/pkg/blob/main/man/plain.qmd">',
+        "upstream source</a>"
+    )
+    writeLines(c(.readlines(site$html), body_link), site$html)
+
+    .rewrite_man_source_links(
+        fs::path_join(c(site$root, "docs")),
+        site$root
+    )
+
+    out <- paste(.readlines(site$html), collapse = "\n")
+    expect_true(grepl(
+        '<a href="https://github.com/user/pkg/blob/main/man/plain.qmd">',
+        out,
+        fixed = TRUE
+    ))
+    ### the repo actions on the same page are still rewritten
+    expect_true(grepl(
+        'href="https://github.com/user/pkg/blob/main/R/plain.R"',
+        out,
+        fixed = TRUE
+    ))
+})
+
+test_that("a source path is percent-encoded before it becomes an href", {
+    ### `#` would otherwise start a fragment and the forge would receive
+    ### `src/model` instead of the file
+    root <- withr::local_tempdir()
+    html <- fs::path_join(c(root, "enc.html"))
+    writeLines(
+        paste0(
+            '<a href="https://github.com/user/pkg/blob/main/man/enc.qmd"',
+            ' class="toc-action">src</a>'
+        ),
+        html
+    )
+
+    .rewrite_man_source_links_one(html, "enc", "src/model#v2.cpp")
+
+    expect_equal(
+        .readlines(html),
+        paste0(
+            '<a href="https://github.com/user/pkg/blob/main/src/model%23v2.cpp"',
+            ' class="toc-action">src</a>'
+        )
+    )
+})
+
+test_that("a backslash in the source path cannot become a backreference", {
+    ### `@backref` takes any path; encoding it removes the backslash before it
+    ### can read as a backreference in the replacement
     root <- withr::local_tempdir()
     html <- fs::path_join(c(root, "backref.html"))
     writeLines(
-        '<a href="https://github.com/user/pkg/blob/main/man/backref.qmd">src</a>',
+        paste0(
+            '<a href="https://github.com/user/pkg/blob/main/man/backref.qmd"',
+            ' class="toc-action">src</a>'
+        ),
         html
     )
 
@@ -242,7 +302,10 @@ test_that("a backslash in the source path is inserted literally", {
 
     expect_equal(
         .readlines(html),
-        '<a href="https://github.com/user/pkg/blob/main/src/code\\1.cpp">src</a>'
+        paste0(
+            '<a href="https://github.com/user/pkg/blob/main/src/code%5C1.cpp"',
+            ' class="toc-action">src</a>'
+        )
     )
 })
 
