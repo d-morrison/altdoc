@@ -198,6 +198,54 @@ test_that("a topic whose name carries regex metacharacters is matched literally"
     ))
 })
 
+test_that("a link that is not a repo action is left alone", {
+    ### same trailing path, same topic, but no `/blob/` or `/edit/` segment --
+    ### so it is an ordinary link in the page body, not a repo action
+    site <- local_man_site(
+        "plain",
+        roxygen_rd("% Please edit documentation in R/plain.R"),
+        r_files = "R/plain.R"
+    )
+    body_link <- '<a href="https://example.org/man/plain.qmd">reference</a>'
+    writeLines(c(.readlines(site$html), body_link), site$html)
+
+    .rewrite_man_source_links(
+        fs::path_join(c(site$root, "docs")),
+        site$root
+    )
+
+    out <- paste(.readlines(site$html), collapse = "\n")
+    expect_true(grepl(
+        'href="https://example.org/man/plain.qmd"',
+        out,
+        fixed = TRUE
+    ))
+    ### the repo actions on the same page are still rewritten
+    expect_true(grepl(
+        'href="https://github.com/user/pkg/blob/main/R/plain.R"',
+        out,
+        fixed = TRUE
+    ))
+})
+
+test_that("a backslash in the source path is inserted literally", {
+    ### `@backref` takes any path, and a backslash in a gsub replacement would
+    ### otherwise read as a backreference
+    root <- withr::local_tempdir()
+    html <- fs::path_join(c(root, "backref.html"))
+    writeLines(
+        '<a href="https://github.com/user/pkg/blob/main/man/backref.qmd">src</a>',
+        html
+    )
+
+    .rewrite_man_source_links_one(html, "backref", "src/code\\1.cpp")
+
+    expect_equal(
+        .readlines(html),
+        '<a href="https://github.com/user/pkg/blob/main/src/code\\1.cpp">src</a>'
+    )
+})
+
 test_that("a site with no repo-action links renders nothing to rewrite", {
     site <- local_man_site(
         "plain",
