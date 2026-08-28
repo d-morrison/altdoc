@@ -282,6 +282,52 @@ test_that("quarto: no error for basic workflow", {
     expect_published_docs("quarto_website")
 })
 
+# Quarto builds the `repo-actions:` links from the file it rendered, and for a
+# man page that is a generated .qmd the repository never holds. The unit tests
+# in test-rewrite_man_source_links.R work from hand-written HTML, which cannot
+# say whether Quarto still writes the href in the shape they assume -- so this
+# renders a real site and reads the links Quarto actually produced.
+test_that("quarto: man page repo actions point at the R file, not the staged .qmd", {
+    skip_on_cran()
+    skip_if(.is_windows() && .on_ci(), "Windows on CI")
+    skip_if(!.quarto_is_installed())
+
+    setup_example_package("testpkg.altdoc")
+
+    install.packages(".", repos = NULL, type = "source")
+    setup_docs("quarto_website")
+
+    ### the default settings file declares no `repo-actions:`, so a site
+    ### rendered from it carries none of these links at all
+    settings <- .readlines("altdoc/quarto_website.yml")
+    settings <- sub(
+        '^  title: "\\$ALTDOC_PACKAGE_NAME"$',
+        paste(
+            '  title: "$ALTDOC_PACKAGE_NAME"',
+            "  repo-url: https://github.com/user/pkg",
+            "  repo-actions: [edit, source, issue]",
+            sep = "\n"
+        ),
+        settings
+    )
+    writeLines(settings, "altdoc/quarto_website.yml")
+
+    render_docs(verbose = .on_ci())
+
+    rendered <- paste(.readlines("docs/man/hello_base.html"), collapse = "\n")
+    expect_true(grepl(
+        'href="https://github.com/user/pkg/blob/main/R/hello_base.R"',
+        rendered,
+        fixed = TRUE
+    ))
+    expect_true(grepl(
+        'href="https://github.com/user/pkg/edit/main/R/hello_base.R"',
+        rendered,
+        fixed = TRUE
+    ))
+    expect_false(grepl("man/hello_base.qmd", rendered, fixed = TRUE))
+})
+
 # The description is built from `tool` rather than shared across the loop, so a
 # failure names the generator that produced it instead of leaving the reader to
 # guess which pass it came from.
