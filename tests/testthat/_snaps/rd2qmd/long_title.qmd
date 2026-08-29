@@ -12,4 +12,3 @@ two lines
 
 <pre><code class='language-R'>foo()
 </code></pre>
-

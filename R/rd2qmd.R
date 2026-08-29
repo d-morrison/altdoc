@@ -24,7 +24,11 @@
     # superfluous header and footer
     tmp <- .readlines(tmp_html)
     tmp <- tmp[(grep("</table>$", tmp)[1] + 1):length(tmp)]
-    tmp <- utils::head(tmp, -4)
+    while (length(tmp) > 0 &&
+           (tmp[length(tmp)] %in% c("", "</div>", "</body>", "</html>", "</body></html>") ||
+            grepl("^</?(body|html)", tmp[length(tmp)]))) {
+        tmp <- tmp[-length(tmp)]
+    }
 
     # first column (odd entries) of table in Arguments should not be wrapped
     idx <- grep("<td>", tmp, fixed = TRUE)
@@ -98,7 +102,7 @@
     # title
     # TODO: remove this dirty hack, which is necessary when the title tag in the
     # Rd file is split across several lines.
-    title <- tmp[grep("^<h2>", tmp)[1]:grep("</h2>", tmp)[1]]
+    title <- tmp[grep("^<h2", tmp)[1]:grep("</h2>", tmp)[1]]
     title <- paste(title, collapse = " ")
     title <- gsub("<h2[^>]*>(.*)</h2>", "## \\1 {.unnumbered}\n", title)
     tmp <- tmp[(grep("</h2>", tmp)[1] + 1):length(tmp)]
@@ -113,6 +117,11 @@
     # paragraph tags are unnecessary in markdown
     tmp <- gsub("<p>", "", tmp, fixed = TRUE)
     tmp <- gsub("</p>", "", tmp, fixed = TRUE)
+
+    # trim trailing empty lines
+    while (length(tmp) > 0 && tmp[length(tmp)] == "") {
+        tmp <- tmp[-length(tmp)]
+    }
 
     # write to file
     fn <- file.path(target_dir, sub("Rd$", "qmd", basename(source_file)))

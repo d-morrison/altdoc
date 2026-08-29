@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Added: `quarto_website` now supports `README.qmd`. When `README.qmd` is present
+  in the package root, `altdoc` copies it to the output directory and creates
+  `index.qmd` with `{{< include README.qmd >}}` (#368).
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
