@@ -30,10 +30,6 @@
     desc::desc_get_field("Package", default = NULL, file = path)
 }
 
-.pkg_version <- function(path) {
-    as.character(desc::desc_get_version(path))
-}
-
 .gh_url <- function(path) {
     .gh_urls <- c(
         desc::desc_get_urls(path),
