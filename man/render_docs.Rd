@@ -22,7 +22,7 @@ render_docs(
 
 \item{freeze}{Logical. If TRUE and a man page or vignette has not changed since the last call to \code{render_docs()}, that file is skipped. File hashes are stored in \code{altdoc/freeze.rds}. If that file is deleted, all man pages and vignettes will be rendered anew.}
 
-\item{output_dir}{Path to the output directory where rendered documentation will be saved. Defaults to \code{NULL}, which uses \code{docs/} (or \code{_quarto/} for Quarto websites before moving to \code{docs/}).}
+\item{output_dir}{Path to the output directory where rendered documentation will be saved. Defaults to \code{NULL}, which uses \verb{docs/} (or \verb{_quarto/} for Quarto websites before moving to \verb{docs/}).}
 
 \item{...}{Additional arguments are ignored.}
 }
