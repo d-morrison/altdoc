@@ -60,7 +60,7 @@
     }
     yaml::write_yaml(yml, fn, indent.mapping.sequence = TRUE)
 
-    fn <- fs::path_join(c(path, "docs", "index.html"))
+    fn <- fs::path_join(c(.doc_path(path), "index.html"))
     if (fs::file_exists(fn)) {
         fs::file_delete(fn)
     }
@@ -94,10 +94,11 @@
         )
     }
 
-    # move to docs/
+    # move to output dir
+    doc_dir_name <- basename(.doc_path(path))
     fs::file_move(fs::path_join(c(path, "mkdocs.yml")), .doc_path(path))
     src <- fs::dir_ls(fs::path_join(c(path, "site/")), recurse = TRUE)
-    tar <- sub("/site/", "/docs/", src, fixed = TRUE)
+    tar <- sub("/site/", paste0("/", doc_dir_name, "/"), src, fixed = TRUE)
 
     for (i in seq_along(src)) {
         fs::dir_create(fs::path_dir(tar[i]))

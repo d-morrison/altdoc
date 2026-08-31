@@ -20,7 +20,7 @@
         hashes <- .get_hashes(src_dir = src_dir, freeze = freeze)
         flag <- .is_frozen(
             input = basename(src_file),
-            output = fs::path_join(c(src_dir, "docs", "README.md")),
+            output = fs::path_join(c(.doc_path(src_dir), "README.md")),
             hashes = hashes
         )
         if (isTRUE(flag)) {
