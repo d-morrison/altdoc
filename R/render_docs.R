@@ -89,6 +89,11 @@ render_docs <- function(
         )
     }
 
+    if (!is.null(output_dir)) {
+        options(altdoc_output_dir = output_dir)
+        on.exit(options(altdoc_output_dir = NULL), add = TRUE)
+    }
+
     # build quarto in a separate folder to use the built-in freeze functionality
     # and to allow moving the _site folder to docs/
     if (tool == "quarto_website") {
@@ -105,10 +110,8 @@ render_docs <- function(
             }
             fs::file_delete(docs_files)
         }
-    } else if (!is.null(output_dir)) {
-        docs_dir <- fs::path_abs(output_dir, start = path)
     } else {
-        docs_dir <- fs::path_join(c(path, "docs"))
+        docs_dir <- .doc_path(path)
     }
 
     # create `docs_dir/`

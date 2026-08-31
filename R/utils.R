@@ -111,6 +111,10 @@
 
 # Get the path for files
 .doc_path <- function(path = ".") {
+    out <- getOption("altdoc_output_dir", NULL)
+    if (!is.null(out)) {
+        return(fs::path_abs(out, start = path))
+    }
     return(fs::path_abs("docs", start = path))
 }
 
