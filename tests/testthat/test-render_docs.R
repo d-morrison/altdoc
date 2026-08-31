@@ -654,6 +654,22 @@ urls:
 
 # Test failures ------------------------------
 
+test_that("render_docs: custom output_dir works", {
+    skip_on_cran()
+    skip_if(!.quarto_is_installed())
+
+    create_local_package()
+    cat("hello custom output_dir", file = "README.md")
+    setup_docs("docute")
+
+    out_dir <- "custom_docs"
+    render_docs(output_dir = out_dir, verbose = .on_ci())
+
+    expect_true(fs::dir_exists(out_dir))
+    expect_true(fs::file_exists(fs::path_join(c(out_dir, "index.html"))))
+    expect_true(fs::file_exists(fs::path_join(c(out_dir, "README.md"))))
+})
+
 test_that("render_docs errors if vignettes fail", {
     skip_on_cran()
     skip_if(!.quarto_is_installed())
