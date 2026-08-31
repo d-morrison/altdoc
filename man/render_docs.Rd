@@ -4,7 +4,14 @@
 \alias{render_docs}
 \title{Update documentation}
 \usage{
-render_docs(path = ".", verbose = FALSE, parallel = FALSE, freeze = FALSE, ...)
+render_docs(
+  path = ".",
+  verbose = FALSE,
+  parallel = FALSE,
+  freeze = FALSE,
+  output_dir = NULL,
+  ...
+)
 }
 \arguments{
 \item{path}{Path to the package root directory.}
@@ -14,6 +21,8 @@ render_docs(path = ".", verbose = FALSE, parallel = FALSE, freeze = FALSE, ...)
 \item{parallel}{Logical. Render man pages and vignettes in parallel using the \code{future} framework. In addition to setting this argument to TRUE, users must define the parallelism plan in \code{future}. See the examples section below.}
 
 \item{freeze}{Logical. If TRUE and a man page or vignette has not changed since the last call to \code{render_docs()}, that file is skipped. File hashes are stored in \code{altdoc/freeze.rds}. If that file is deleted, all man pages and vignettes will be rendered anew.}
+
+\item{output_dir}{Path to the output directory where rendered documentation will be saved. Defaults to \code{NULL}, which uses \verb{docs/} (or \verb{_quarto/} for Quarto websites before moving to \verb{docs/}).}
 
 \item{...}{Additional arguments are ignored.}
 }

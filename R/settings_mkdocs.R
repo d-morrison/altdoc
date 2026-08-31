@@ -60,7 +60,7 @@
     }
     yaml::write_yaml(yml, fn, indent.mapping.sequence = TRUE)
 
-    fn <- fs::path_join(c(path, "docs", "index.html"))
+    fn <- fs::path_join(c(.doc_path(path), "index.html"))
     if (fs::file_exists(fn)) {
         fs::file_delete(fn)
     }
@@ -94,19 +94,22 @@
         )
     }
 
-    # move to docs/
-    fs::file_move(fs::path_join(c(path, "mkdocs.yml")), .doc_path(path))
-    src <- fs::dir_ls(fs::path_join(c(path, "site/")), recurse = TRUE)
-    tar <- sub("/site/", "/docs/", src, fixed = TRUE)
+    # move to output dir
+    tar_dir <- .doc_path(path)
+    fs::file_move(fs::path_join(c(path, "mkdocs.yml")), tar_dir)
+    site_dir <- fs::path_join(c(path, "site"))
+    src <- fs::dir_ls(site_dir, recurse = TRUE)
 
-    for (i in seq_along(src)) {
-        fs::dir_create(fs::path_dir(tar[i]))
-        if (fs::is_file(src[i])) {
-            fs::file_copy(src[i], tar[i], overwrite = TRUE)
+    for (s in src) {
+        rel <- fs::path_rel(s, start = site_dir)
+        target <- fs::path_join(c(tar_dir, rel))
+        if (fs::is_file(s)) {
+            fs::dir_create(fs::path_dir(target))
+            fs::file_copy(s, target, overwrite = TRUE)
         }
     }
 
-    fs::dir_delete(fs::path_join(c(path, "site")))
+    fs::dir_delete(site_dir)
 
     # for some reason, the folder "docs/vignettes" gets a gitignore that
     # prevents HTML files to be committed so we remove it (happened several times

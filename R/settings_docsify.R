@@ -12,7 +12,7 @@
     writeLines(settings, fn)
 
     # relative links
-    dn <- fs::path_join(c(path, "docs", "vignettes"))
+    dn <- fs::path_join(c(.doc_path(path), "vignettes"))
     if (fs::dir_exists(dn)) {
         md_files <- fs::dir_ls(dn, regexp = "\\.md$")
         for (md in md_files) {
