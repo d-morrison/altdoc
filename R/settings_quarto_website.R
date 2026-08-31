@@ -92,8 +92,15 @@
     settings <- settings[!grepl("^\\w*$", settings)]
     out_dir <- getOption("altdoc_output_dir", NULL)
     if (!is.null(out_dir)) {
-        rel_out <- fs::path_rel(fs::path_abs(out_dir, start = path), start = fs::path_join(c(path, "_quarto")))
-        settings <- gsub("output-dir:.*$", paste0("output-dir: ", rel_out), settings)
+        rel_out <- fs::path_rel(
+            fs::path_abs(out_dir, start = path),
+            start = fs::path_join(c(path, "_quarto"))
+        )
+        settings <- gsub(
+            "output-dir:.*$",
+            paste0("output-dir: ", rel_out),
+            settings
+        )
     }
     settings <- yaml::as.yaml(
         settings,

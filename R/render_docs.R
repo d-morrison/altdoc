@@ -89,10 +89,11 @@ render_docs <- function(
         )
     }
 
+    old_opt <- getOption("altdoc_output_dir")
     if (!is.null(output_dir)) {
         options(altdoc_output_dir = output_dir)
-        on.exit(options(altdoc_output_dir = NULL), add = TRUE)
     }
+    on.exit(options(altdoc_output_dir = old_opt), add = TRUE)
 
     # build quarto in a separate folder to use the built-in freeze functionality
     # and to allow moving the _site folder to docs/

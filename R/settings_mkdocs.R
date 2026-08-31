@@ -95,19 +95,21 @@
     }
 
     # move to output dir
-    doc_dir_name <- basename(.doc_path(path))
-    fs::file_move(fs::path_join(c(path, "mkdocs.yml")), .doc_path(path))
-    src <- fs::dir_ls(fs::path_join(c(path, "site/")), recurse = TRUE)
-    tar <- sub("/site/", paste0("/", doc_dir_name, "/"), src, fixed = TRUE)
+    tar_dir <- .doc_path(path)
+    fs::file_move(fs::path_join(c(path, "mkdocs.yml")), tar_dir)
+    site_dir <- fs::path_join(c(path, "site"))
+    src <- fs::dir_ls(site_dir, recurse = TRUE)
 
-    for (i in seq_along(src)) {
-        fs::dir_create(fs::path_dir(tar[i]))
-        if (fs::is_file(src[i])) {
-            fs::file_copy(src[i], tar[i], overwrite = TRUE)
+    for (s in src) {
+        rel <- fs::path_rel(s, start = site_dir)
+        target <- fs::path_join(c(tar_dir, rel))
+        if (fs::is_file(s)) {
+            fs::dir_create(fs::path_dir(target))
+            fs::file_copy(s, target, overwrite = TRUE)
         }
     }
 
-    fs::dir_delete(fs::path_join(c(path, "site")))
+    fs::dir_delete(site_dir)
 
     # for some reason, the folder "docs/vignettes" gets a gitignore that
     # prevents HTML files to be committed so we remove it (happened several times
