@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-* Added: `render_docs()` now supports `README.qmd` when building `quarto_website` documentation sites. If `README.qmd` is present in the package root, `altdoc` copies `README.qmd` to the documentation folder and includes `README.qmd` directly in `index.qmd` so Quarto features in `README.qmd` are leveraged (#368).
+* Added: `render_docs()` now supports `README.qmd` when building `quarto_website` documentation sites. If `README.qmd` is present in the package root, `altdoc` copies `README.qmd` to the documentation folder and includes `README.qmd` directly in `index.qmd` so Quarto features in `README.qmd` are leveraged. Additionally, `altdoc` now accepts `README.qmd`, `README.Rmd`, or `README.md` when searching for a package README (#368).
 
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file

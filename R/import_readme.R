@@ -17,7 +17,18 @@
     if (tool == "quarto_website" && chosen_file == "README.qmd") {
         tar_file <- fs::path_join(c(tar_dir, "README.qmd"))
 
-        # Skip file when frozen
+        # Always maintain index files
+        idx_qmd <- fs::path_join(c(tar_dir, "index.qmd"))
+        idx_md <- fs::path_join(c(tar_dir, "index.md"))
+        if (fs::file_exists(idx_md)) {
+            fs::file_delete(idx_md)
+        }
+        writeLines(
+            enc2utf8("{{< include README.qmd >}}"),
+            idx_qmd
+        )
+
+        # Skip file copy when frozen
         if (isTRUE(freeze)) {
             hashes <- .get_hashes(src_dir = src_dir, freeze = freeze)
             flag <- .is_frozen(
@@ -34,17 +45,7 @@
         }
 
         fs::file_copy(src_file, tar_file, overwrite = TRUE)
-
-        # For Quarto website with README.qmd, write index.qmd
-        idx_qmd <- fs::path_join(c(tar_dir, "index.qmd"))
-        idx_md <- fs::path_join(c(tar_dir, "index.md"))
-        if (fs::file_exists(idx_md)) {
-            fs::file_delete(idx_md)
-        }
-        writeLines(
-            enc2utf8("{{< include README.qmd >}}"),
-            idx_qmd
-        )
+        .check_md_structure(tar_file)
     } else {
         # Fallback to README.md for non-Quarto generators or when source is README.md/README.Rmd.
         # If README.md exists, use it; otherwise copy chosen_file to README.md.
@@ -59,7 +60,19 @@
 
         tar_file <- fs::path_join(c(tar_dir, "README.md"))
 
-        # Skip file when frozen
+        if (tool == "quarto_website") {
+            idx_qmd <- fs::path_join(c(tar_dir, "index.qmd"))
+            idx_md <- fs::path_join(c(tar_dir, "index.md"))
+            if (fs::file_exists(idx_qmd)) {
+                fs::file_delete(idx_qmd)
+            }
+            writeLines(
+                enc2utf8("{{< include README.md >}}"),
+                idx_md
+            )
+        }
+
+        # Skip file copy when frozen
         if (isTRUE(freeze)) {
             hashes <- .get_hashes(src_dir = src_dir, freeze = freeze)
             flag <- .is_frozen(
@@ -76,22 +89,7 @@
         }
 
         fs::file_copy(src_file_to_copy, tar_file, overwrite = TRUE)
-
-        if (fs::path_ext(tar_file) == "md") {
-            .check_md_structure(tar_file)
-        }
-
-        if (tool == "quarto_website") {
-            idx_qmd <- fs::path_join(c(tar_dir, "index.qmd"))
-            idx_md <- fs::path_join(c(tar_dir, "index.md"))
-            if (fs::file_exists(idx_qmd)) {
-                fs::file_delete(idx_qmd)
-            }
-            writeLines(
-                enc2utf8("{{< include README.md >}}"),
-                idx_md
-            )
-        }
+        .check_md_structure(tar_file)
     }
 
     tmp <- fs::path_join(c(src_dir, "README.markdown_strict_files"))
@@ -120,13 +118,17 @@
     cli::cli_alert_success("{.file README} imported.")
 
     if (
-        "README.qmd" %in%
-            readme_files &&
+        ("README.qmd" %in% readme_files || "README.Rmd" %in% readme_files) &&
             "README.md" %in% readme_files &&
             tool != "quarto_website"
     ) {
+        other <- if ("README.qmd" %in% readme_files) {
+            "README.qmd"
+        } else {
+            "README.Rmd"
+        }
         cli::cli_alert(
-            "Altdoc does not render README.qmd automatically to markdown. Please ensure that your README.md file is in sync with README.qmd."
+            "Altdoc does not render {.file {other}} automatically to markdown. Please ensure that your README.md file is in sync."
         )
     }
 }
