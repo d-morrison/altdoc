@@ -29,10 +29,9 @@ This function searches for specific filenames, then renders, converts, or copies
 
 The base names searched for, and the file each produces:
 \itemize{
-\item \code{docs/README.md}
+\item \code{docs/README.md} (or \code{docs/README.qmd} / \code{docs/index.qmd} for Quarto websites with \code{README.qmd})
 \itemize{
-\item README.md
-\item Note: \code{README.md} is required, and is always the file copied. \code{README.qmd} and \code{README.Rmd} are not rendered for you, so keep \code{README.md} in step with whichever of them you write in. When more than one is present, the first of \code{README.qmd}, \code{README.Rmd}, \code{README.md} is the one the \code{freeze} check watches for changes.
+\item Looked for in the order of \code{README.qmd}, \code{README.Rmd}, \code{README.md}.
 }
 \item \code{docs/NEWS.md}
 \itemize{

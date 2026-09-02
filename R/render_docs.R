@@ -19,9 +19,8 @@
 #'
 #' The base names searched for, and the file each produces:
 #'
-#' * `docs/README.md`
-#'   - README.md
-#'   - Note: `README.md` is required, and is always the file copied. `README.qmd` and `README.Rmd` are not rendered for you, so keep `README.md` in step with whichever of them you write in. When more than one is present, the first of `README.qmd`, `README.Rmd`, `README.md` is the one the `freeze` check watches for changes.
+#' * `docs/README.md` (or `docs/README.qmd` / `docs/index.qmd` for Quarto websites with `README.qmd`)
+#'   - Looked for in the order of `README.qmd`, `README.Rmd`, `README.md`.
 #' * `docs/NEWS.md`
 #'   - NEWS
 #'   - Note: Where possible, Github contributors and issues are linked automatically.
