@@ -20,7 +20,7 @@
 #' The base names searched for, and the file each produces:
 #'
 #' * `docs/README.md` (or `docs/README.qmd` / `docs/index.qmd` for Quarto websites with `README.qmd`)
-#'   - Looked for in the order of `README.qmd`, `README.Rmd`, `README.md`.
+#'   - Looked for among `README.qmd`, `README.Rmd`, `README.md`. `quarto_website` uses `README.qmd` if present; non-Quarto generators prefer `README.md`.
 #' * `docs/NEWS.md`
 #'   - NEWS
 #'   - Note: Where possible, Github contributors and issues are linked automatically.

@@ -8,7 +8,9 @@
         cli::cli_abort("README file is mandatory (.qmd, .Rmd, or .md).")
     }
 
-    # Priority order: README.qmd, README.Rmd, README.md
+    # Selection preference:
+    # For quarto_website, README.qmd is used if present.
+    # Otherwise (or for non-Quarto tools), README.md is preferred if present, falling back to README.qmd or README.Rmd.
     chosen_file <- found[1]
     src_file <- fs::path_join(c(src_dir, chosen_file))
 
@@ -45,7 +47,7 @@
         )
     } else {
         # Fallback to README.md for non-Quarto generators or when source is README.md/README.Rmd.
-        # If README.md exists, use it; otherwise copy chosen_file to README.md if possible.
+        # If README.md exists, use it; otherwise copy chosen_file to README.md.
         src_md <- fs::path_join(c(src_dir, "README.md"))
         if (fs::file_exists(src_md)) {
             src_file_to_copy <- src_md
@@ -117,9 +119,14 @@
     )
     cli::cli_alert_success("{.file README} imported.")
 
-    if ("README.qmd" %in% readme_files && tool != "quarto_website") {
+    if (
+        "README.qmd" %in%
+            readme_files &&
+            "README.md" %in% readme_files &&
+            tool != "quarto_website"
+    ) {
         cli::cli_alert(
-            "Altdoc does not render README.qmd automatically to markdown. Please ensure that your README.md file is in sync."
+            "Altdoc does not render README.qmd automatically to markdown. Please ensure that your README.md file is in sync with README.qmd."
         )
     }
 }

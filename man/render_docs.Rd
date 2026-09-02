@@ -31,7 +31,7 @@ The base names searched for, and the file each produces:
 \itemize{
 \item \code{docs/README.md} (or \code{docs/README.qmd} / \code{docs/index.qmd} for Quarto websites with \code{README.qmd})
 \itemize{
-\item Looked for in the order of \code{README.qmd}, \code{README.Rmd}, \code{README.md}.
+\item Looked for among \code{README.qmd}, \code{README.Rmd}, \code{README.md}. \code{quarto_website} uses \code{README.qmd} if present; non-Quarto generators prefer \code{README.md}.
 }
 \item \code{docs/NEWS.md}
 \itemize{

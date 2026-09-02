@@ -55,6 +55,21 @@ test_that(".import_readme works when only README.qmd is present", {
     )
 })
 
+test_that(".import_readme works when only README.Rmd is present", {
+    dir <- local_readme_package("README.Rmd" = "# only rmd")
+    withr::local_dir(dir)
+
+    expect_message(
+        .import_readme(dir, fs::path_join(c(dir, "docs")), "docute", FALSE),
+        "imported"
+    )
+
+    expect_identical(
+        .readlines(fs::path_join(c(dir, "docs", "README.md"))),
+        "# only rmd"
+    )
+})
+
 test_that("quarto_website uses README.qmd and creates index.qmd when README.qmd is present", {
     dir <- local_readme_package(
         "README.md" = "# readme",
