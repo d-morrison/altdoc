@@ -36,7 +36,9 @@
         # For Quarto website with README.qmd, write index.qmd
         idx_qmd <- fs::path_join(c(tar_dir, "index.qmd"))
         idx_md <- fs::path_join(c(tar_dir, "index.md"))
-        if (fs::file_exists(idx_md)) fs::file_delete(idx_md)
+        if (fs::file_exists(idx_md)) {
+            fs::file_delete(idx_md)
+        }
         writeLines(
             enc2utf8("{{< include README.qmd >}}"),
             idx_qmd
@@ -80,7 +82,9 @@
         if (tool == "quarto_website") {
             idx_qmd <- fs::path_join(c(tar_dir, "index.qmd"))
             idx_md <- fs::path_join(c(tar_dir, "index.md"))
-            if (fs::file_exists(idx_qmd)) fs::file_delete(idx_qmd)
+            if (fs::file_exists(idx_qmd)) {
+                fs::file_delete(idx_qmd)
+            }
             writeLines(
                 enc2utf8("{{< include README.md >}}"),
                 idx_md
@@ -95,7 +99,15 @@
         )
     }
 
-    freeze_record <- if (tool == "quarto_website" && chosen_file == "README.qmd") "README.qmd" else if (fs::file_exists(fs::path_join(c(src_dir, "README.md")))) "README.md" else chosen_file
+    freeze_record <- if (
+        tool == "quarto_website" && chosen_file == "README.qmd"
+    ) {
+        "README.qmd"
+    } else if (fs::file_exists(fs::path_join(c(src_dir, "README.md")))) {
+        "README.md"
+    } else {
+        chosen_file
+    }
     .update_freeze(
         src_dir,
         freeze_record,
