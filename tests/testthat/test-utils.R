@@ -65,3 +65,10 @@ test_that(".find_head_branch respects path parameter", {
 
     expect_identical(.find_head_branch(pkg_dir), "main")
 })
+
+test_that(".find_github_source respects path parameter", {
+    pkg_dir <- create_local_package()
+    desc::desc_set_urls("https://github.com/etiennebacher/altdoc", file = pkg_dir)
+    # no git repo created in pkg_dir, so .find_github_source returns NULL via .find_head_branch(pkg_dir)
+    expect_null(.find_github_source("dummy_fn", path = pkg_dir))
+})

@@ -215,8 +215,12 @@
         return(NULL)
     }
     # find file and row location
+    pkg <- .pkg_name(path)
+    if (is.null(pkg)) {
+        return(NULL)
+    }
     fn <- try(
-        eval(parse(text = paste0(.pkg_name("."), ":::", fn))),
+        eval(parse(text = paste0(pkg, ":::", fn))),
         silent = TRUE
     )
     if (inherits(fn, "try-error")) {
@@ -226,7 +230,7 @@
     file <- paste0("R/", utils::getSrcFilename(fn))
 
     # build URL
-    gh_link <- .gh_url(".")
+    gh_link <- .gh_url(path)
     if (is.null(gh_link) || is.na(gh_link)) {
         return(NULL)
     }
