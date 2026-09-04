@@ -56,3 +56,12 @@ test_that(".find_head_branch works if no git", {
     create_local_package()
     expect_null(.find_head_branch())
 })
+
+test_that(".find_head_branch respects path parameter", {
+    pkg_dir <- create_local_package()
+    git_dir <- fs::path_join(c(pkg_dir, ".git"))
+    fs::dir_create(git_dir)
+    writeLines("ref: refs/heads/main", fs::path_join(c(git_dir, "HEAD")))
+
+    expect_identical(.find_head_branch(pkg_dir), "main")
+})
