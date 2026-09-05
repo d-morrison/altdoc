@@ -556,19 +556,19 @@ theme:
     )))
 })
 
-test_that("quarto_website: ensure that README.md is preferred over README.qmd", {
+test_that("quarto_website: uses README.qmd when present", {
     skip_on_cran()
     skip_if(.is_windows() && .on_ci(), "Windows on CI")
     skip_if(!.quarto_is_installed())
 
     create_local_package()
 
-    cat("hello there", file = "README.md")
-    cat("---hello there\nhello again", file = "README.qmd")
+    cat("hello from md", file = "README.md")
+    cat("hello from qmd", file = "README.qmd")
     setup_docs("quarto_website")
     render_docs(verbose = .on_ci())
-    expect_false(any(grepl(
-        "hello again",
+    expect_true(any(grepl(
+        "hello from qmd",
         .readlines("docs/index.html"),
         fixed = TRUE
     )))
