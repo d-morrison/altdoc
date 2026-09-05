@@ -3,24 +3,22 @@
 
     # setup_docs() already created README.md if there is none, so if we don't find
     # any, it means the user has deleted it and we error
-    if (!"README.md" %in% readme_files) {
+    if (!"README.md" %in% readme_files && !"README.qmd" %in% readme_files) {
+        cli::cli_abort("README.md or README.qmd is mandatory.")
+    } else if (!"README.md" %in% readme_files && tool != "quarto_website") {
         cli::cli_abort("README.md is mandatory.")
     }
 
-    # `README.md` is the only README this function reads: `docs/README.md` is
-    # always a copy of it, and altdoc does not render a `README.qmd` or
-    # `README.Rmd` down to it (hence the sync reminder at the end of this
-    # function). So the freeze check below has to hash `README.md` too --
-    # hashing whichever variant the author edits would let an edit made
-    # directly to `README.md` go undetected, leaving `docs/README.md` stale.
-    src_file <- fs::path_join(c(src_dir, "README.md"))
+    use_qmd <- tool == "quarto_website" && "README.qmd" %in% readme_files
+    readme_filename <- if (use_qmd) "README.qmd" else "README.md"
+    src_file <- fs::path_join(c(src_dir, readme_filename))
 
     # Skip file when frozen
     if (isTRUE(freeze)) {
         hashes <- .get_hashes(src_dir = src_dir, freeze = freeze)
         flag <- .is_frozen(
             input = basename(src_file),
-            output = fs::path_join(c(src_dir, "docs", "README.md")),
+            output = fs::path_join(c(src_dir, "docs", readme_filename)),
             hashes = hashes
         )
         if (isTRUE(flag)) {
@@ -31,18 +29,33 @@
         }
     }
 
-    tar_file <- fs::path_join(c(tar_dir, "README.md"))
+    tar_file <- fs::path_join(c(tar_dir, readme_filename))
     fs::file_copy(src_file, tar_file, overwrite = TRUE)
-    .check_md_structure(tar_file)
+    if (!use_qmd) {
+        .check_md_structure(tar_file)
+    }
 
-    # Add the index page which includes README.md. This is unconditional: the
-    # mandatory-README.md check above guarantees `README.md` is present, so an
-    # `index.qmd` copied from `README.qmd` instead was never reachable (#69).
+    # Add the index page which includes README.md or README.qmd.
     if (tool == "quarto_website") {
-        writeLines(
-            enc2utf8("{{< include README.md >}}"),
-            fs::path_join(c(tar_dir, "index.md"))
-        )
+        if (use_qmd) {
+            writeLines(
+                enc2utf8("{{< include README.qmd >}}"),
+                fs::path_join(c(tar_dir, "index.qmd"))
+            )
+            stale_idx <- fs::path_join(c(tar_dir, "index.md"))
+            if (fs::file_exists(stale_idx)) {
+                fs::file_delete(stale_idx)
+            }
+        } else {
+            writeLines(
+                enc2utf8("{{< include README.md >}}"),
+                fs::path_join(c(tar_dir, "index.md"))
+            )
+            stale_idx <- fs::path_join(c(tar_dir, "index.qmd"))
+            if (fs::file_exists(stale_idx)) {
+                fs::file_delete(stale_idx)
+            }
+        }
     }
 
     tmp <- fs::path_join(c(src_dir, "README.markdown_strict_files"))
@@ -59,7 +72,7 @@
         type = "README"
     )
     cli::cli_alert_success("{.file README} imported.")
-    if ("README.qmd" %in% readme_files) {
+    if ("README.qmd" %in% readme_files && !use_qmd) {
         cli::cli_alert(
             "Altdoc does not render README.qmd automatically to markdown. Please ensure that your README.md file is in sync."
         )
