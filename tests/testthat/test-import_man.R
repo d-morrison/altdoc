@@ -89,3 +89,42 @@ test_that("rendering skipped because unchanged and freeze = TRUE", {
         "skipped_unchanged"
     )
 })
+
+test_that("rendering skipped because unchanged and freeze = TRUE for quarto_website", {
+    # writing freeze.rds is disabled in CI
+    skip_on_ci()
+    skip_if(!.quarto_is_installed())
+    source <- test_path("examples/examples-man/between.Rd")
+    dest <- tempfile(fileext = ".Rd")
+    fs::file_copy(source, dest)
+
+    create_local_package()
+    setup_docs("quarto_website")
+    fs::dir_create("man")
+    fs::file_copy(dest, "man")
+    src <- fs::path_ext_remove(list.files("man"))
+
+    # first rendering to store the hash and create .qmd in _quarto/man/
+    .render_one_man(
+        src,
+        tool = "quarto_website",
+        src_dir = ".",
+        tar_dir = "_quarto",
+        freeze = FALSE,
+        hashes = NULL
+    )
+    .update_freeze(".", src, successes = 1, fails = NULL, type = "man")
+    hashes <- .get_hashes(".", freeze = TRUE)
+
+    expect_identical(
+        .render_one_man(
+            src,
+            tool = "quarto_website",
+            src_dir = ".",
+            tar_dir = "_quarto",
+            freeze = TRUE,
+            hashes = hashes
+        ),
+        "skipped_unchanged"
+    )
+})

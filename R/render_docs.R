@@ -92,12 +92,12 @@ render_docs <- function(
     if (tool == "quarto_website") {
         docs_dir <- fs::path_join(c(path, "_quarto"))
 
-        # Delete everything in `_quarto/` besides `_freeze/`
+        # Delete everything in `_quarto/` besides `_freeze/` (and `man/` when frozen)
         if (fs::dir_exists(docs_dir)) {
             docs_files <- fs::dir_ls(docs_dir)
             if (isTRUE(freeze)) {
                 docs_files <- Filter(
-                    function(f) basename(f) != "_freeze",
+                    function(f) !basename(f) %in% c("_freeze", "man"),
                     docs_files
                 )
             }

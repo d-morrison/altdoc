@@ -146,9 +146,14 @@
 
     # Skip file when frozen
     if (isTRUE(freeze)) {
+        destination_target <- if (tool == "quarto_website") {
+            destination_qmd
+        } else {
+            destination_md
+        }
         flag <- .is_frozen(
             input = origin_Rd,
-            output = destination_md,
+            output = destination_target,
             hashes = hashes
         )
         if (isTRUE(flag)) {
