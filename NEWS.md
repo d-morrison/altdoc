@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Fixed: `render_docs(freeze = TRUE)` now correctly skips converting unchanged
+  `.Rd` man pages when `tool = "quarto_website"`. Previously, the freeze check
+  looked for `.md` output files instead of `.qmd` files, and `_quarto/man/` was
+  cleared before the check could run (#360).
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
