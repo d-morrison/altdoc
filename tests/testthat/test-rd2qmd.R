@@ -85,17 +85,15 @@ test_that(".rd2qmd: title with attributes on h2", {
     fs::file_copy(rd_file, ".")
     fs::dir_create("docs")
 
+    orig_readlines <- base::readLines
     testthat::with_mocked_bindings(
-        Rd2HTML = function(rd, out, toc) {
-            tools::Rd2HTML(rd, out = out, toc = toc)
-            html <- readLines(out)
-            html <- sub("<h2>", "<h2 id=\"test-id\">", html, fixed = TRUE)
-            writeLines(html, out)
+        .readlines = function(con) {
+            lines <- orig_readlines(con)
+            sub("<h2>", "<h2 id=\"test-id\">", lines, fixed = TRUE)
         },
         code = {
             .rd2qmd(rd_file, "docs", path = ".")
-        },
-        .package = "tools"
+        }
     )
 
     qmd_file <- fs::path_join(c("docs", "between.qmd"))
