@@ -75,3 +75,34 @@ test_that(".rd2qmd: title across several lines", {
     .rd2qmd(rd_file, "docs", path = ".")
     expect_snapshot_file("docs/long_title.qmd")
 })
+
+test_that(".rd2qmd: title with attributes on h2", {
+    rd_file <- fs::path_abs(
+        testthat::test_path("examples/examples-man/between.Rd")
+    )
+    create_local_package()
+    setup_docs("docute")
+    fs::file_copy(rd_file, ".")
+    fs::dir_create("docs")
+
+    orig_readlines <- base::readLines
+    testthat::with_mocked_bindings(
+        .readlines = function(con) {
+            lines <- orig_readlines(con)
+            sub("<h2>", "<h2 id=\"test-id\">", lines, fixed = TRUE)
+        },
+        code = {
+            .rd2qmd(rd_file, "docs", path = ".")
+        }
+    )
+
+    qmd_file <- fs::path_join(c("docs", "between.qmd"))
+    expect_true(fs::file_exists(qmd_file))
+
+    content <- .readlines(qmd_file)
+    h2 <- grep("^## ", content, value = TRUE)
+    expect_identical(
+        h2,
+        "## Do values in a numeric vector fall in specified range? {.unnumbered}"
+    )
+})
