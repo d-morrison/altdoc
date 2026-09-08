@@ -40,10 +40,11 @@
     if (tool == "quarto_website") {
         idx_md <- fs::path_join(c(tar_dir, "index.md"))
         idx_qmd <- fs::path_join(c(tar_dir, "index.qmd"))
+        tar_qmd <- fs::path_join(c(tar_dir, "README.qmd"))
         if ("README.qmd" %in% readme_files) {
             fs::file_copy(
                 fs::path_join(c(src_dir, "README.qmd")),
-                fs::path_join(c(tar_dir, "README.qmd")),
+                tar_qmd,
                 overwrite = TRUE
             )
             writeLines(
@@ -60,6 +61,9 @@
             )
             if (fs::file_exists(idx_qmd)) {
                 fs::file_delete(idx_qmd)
+            }
+            if (fs::file_exists(tar_qmd)) {
+                fs::file_delete(tar_qmd)
             }
         }
     }

@@ -53,7 +53,7 @@ test_that("quarto_website uses index.qmd when README.qmd is present (#368)", {
     # Verify no warning message about README.qmd sync is printed for quarto_website
     expect_no_message(
         .import_readme(dir, tar_dir, "quarto_website", FALSE),
-        message = "does not render README.qmd automatically"
+        regexp = "does not render README\\.qmd automatically"
     )
 
     expect_true(fs::file_exists(fs::path_join(c(tar_dir, "index.qmd"))))
