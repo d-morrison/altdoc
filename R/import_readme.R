@@ -35,14 +35,37 @@
     fs::file_copy(src_file, tar_file, overwrite = TRUE)
     .check_md_structure(tar_file)
 
-    # Add the index page which includes README.md. This is unconditional: the
-    # mandatory-README.md check above guarantees `README.md` is present, so an
-    # `index.qmd` copied from `README.qmd` instead was never reachable (#69).
+    # Add the index page for Quarto websites. If `README.qmd` is present,
+    # include it via `index.qmd`; otherwise include `README.md` via `index.md`.
     if (tool == "quarto_website") {
-        writeLines(
-            enc2utf8("{{< include README.md >}}"),
-            fs::path_join(c(tar_dir, "index.md"))
-        )
+        idx_md <- fs::path_join(c(tar_dir, "index.md"))
+        idx_qmd <- fs::path_join(c(tar_dir, "index.qmd"))
+        tar_qmd <- fs::path_join(c(tar_dir, "README.qmd"))
+        if ("README.qmd" %in% readme_files) {
+            fs::file_copy(
+                fs::path_join(c(src_dir, "README.qmd")),
+                tar_qmd,
+                overwrite = TRUE
+            )
+            writeLines(
+                enc2utf8("{{< include README.qmd >}}"),
+                idx_qmd
+            )
+            if (fs::file_exists(idx_md)) {
+                fs::file_delete(idx_md)
+            }
+        } else {
+            writeLines(
+                enc2utf8("{{< include README.md >}}"),
+                idx_md
+            )
+            if (fs::file_exists(idx_qmd)) {
+                fs::file_delete(idx_qmd)
+            }
+            if (fs::file_exists(tar_qmd)) {
+                fs::file_delete(tar_qmd)
+            }
+        }
     }
 
     tmp <- fs::path_join(c(src_dir, "README.markdown_strict_files"))
@@ -59,7 +82,7 @@
         type = "README"
     )
     cli::cli_alert_success("{.file README} imported.")
-    if ("README.qmd" %in% readme_files) {
+    if ("README.qmd" %in% readme_files && tool != "quarto_website") {
         cli::cli_alert(
             "Altdoc does not render README.qmd automatically to markdown. Please ensure that your README.md file is in sync."
         )
