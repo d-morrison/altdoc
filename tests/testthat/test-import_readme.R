@@ -51,10 +51,11 @@ test_that("quarto_website uses index.qmd when README.qmd is present (#368)", {
     tar_dir <- fs::path_join(c(dir, "docs"))
 
     # Verify no warning message about README.qmd sync is printed for quarto_website
-    expect_no_message(
-        .import_readme(dir, tar_dir, "quarto_website", FALSE),
-        regexp = "does not render README\\.qmd automatically"
+    msgs <- capture_messages(
+        .import_readme(dir, tar_dir, "quarto_website", FALSE)
     )
+    expect_false(any(grepl("does not render README", msgs)))
+    expect_true(any(grepl("imported", msgs)))
 
     expect_true(fs::file_exists(fs::path_join(c(tar_dir, "index.qmd"))))
     expect_false(fs::file_exists(fs::path_join(c(tar_dir, "index.md"))))
