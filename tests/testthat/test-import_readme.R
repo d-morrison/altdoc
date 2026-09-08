@@ -42,13 +42,32 @@ test_that(".import_readme errors when README.md is absent", {
     )
 })
 
-test_that("quarto_website always gets an index.md including README.md", {
-    # Before #69 this was guarded on `README.md` being absent, which the
-    # mandatory-README.md check above makes impossible, so `index.qmd` was
-    # never written and `index.md` always was.
+test_that("quarto_website uses index.qmd when README.qmd is present (#368)", {
     dir <- local_readme_package(
         "README.md" = "# readme",
         "README.qmd" = "# readme qmd"
+    )
+    withr::local_dir(dir)
+    tar_dir <- fs::path_join(c(dir, "docs"))
+
+    # Verify no warning message about README.qmd sync is printed for quarto_website
+    expect_no_message(
+        .import_readme(dir, tar_dir, "quarto_website", FALSE),
+        message = "does not render README.qmd automatically"
+    )
+
+    expect_true(fs::file_exists(fs::path_join(c(tar_dir, "index.qmd"))))
+    expect_false(fs::file_exists(fs::path_join(c(tar_dir, "index.md"))))
+    expect_true(fs::file_exists(fs::path_join(c(tar_dir, "README.qmd"))))
+    expect_identical(
+        .readlines(fs::path_join(c(tar_dir, "index.qmd"))),
+        "{{< include README.qmd >}}"
+    )
+})
+
+test_that("quarto_website uses index.md when README.qmd is absent", {
+    dir <- local_readme_package(
+        "README.md" = "# readme"
     )
     withr::local_dir(dir)
     tar_dir <- fs::path_join(c(dir, "docs"))
