@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Fixed: `.rd2qmd()` now matches `<h2>` title headers carrying HTML attributes
+  (such as `<h2 id="...">` emitted by `tools::Rd2HTML()` in R 4.3+),
+  preventing title parsing errors.
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
