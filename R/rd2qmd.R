@@ -23,7 +23,10 @@
 
     # superfluous header and footer
     tmp <- .readlines(tmp_html)
-    tmp <- tmp[(grep("</table>$", tmp)[1] + 1):length(tmp)]
+    tbl_end <- grep("</table>$", tmp)[1]
+    if (!is.na(tbl_end)) {
+        tmp <- utils::tail(tmp, -tbl_end)
+    }
     tmp <- utils::head(tmp, -4)
 
     # first column (odd entries) of table in Arguments should not be wrapped
@@ -105,7 +108,7 @@
         title <- paste(title, collapse = " ")
         title <- gsub("<h2[^>]*>(.*)</h2>", "## \\1 {.unnumbered}\n", title)
         title <- gsub("\u201c|\u201d", "\"", title)
-        tmp <- tmp[(h2_end + 1):length(tmp)]
+        tmp <- utils::tail(tmp, -h2_end)
         tmp <- c(title, tmp)
     }
 
