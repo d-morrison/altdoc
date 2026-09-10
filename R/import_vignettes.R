@@ -239,7 +239,14 @@
 
 # Get a filename with a vignette and try to extract its title
 
-.get_vignettes_titles <- function(fn, path = ".") {
+.get_vignettes_titles <- function(
+    fn,
+    path = ".",
+    vig_root = NULL
+) {
+    if (is.null(vig_root)) {
+        vig_root <- fs::path_join(c(.doc_path(path), "vignettes"))
+    }
     if (!fs::file_exists(fn)) {
         return(invisible())
     }
@@ -250,17 +257,11 @@
 
     # title from the vignette's own source
     #
-    # Addressed by path rather than by searching for the name. `fn` is a
-    # published page under some `.../vignettes/`, so the part after that
-    # segment is exactly the source's path relative to the package's own
-    # `vignettes/`, extension aside. Constructing the candidate directly is
-    # both simpler than a search and immune to two ways a search goes wrong
-    # once nested vignettes exist: `articles/intro.qmd` and
-    # `tutorials/intro.qmd` share a basename, and a name that is a substring
-    # of another vignette's name matches it too. Either returns more than one
-    # hit, and the old `length(p) == 1` guard then silently fell through to
-    # the weaker branches below.
-    vig_rel <- fs::path_ext_remove(sub(".*/vignettes/", "", fn))
+    # Addressed by path relative to `vig_root`. `fn` is a published page under
+    # `vig_root`, so calculating the relative path to `vig_root` gives the exact
+    # source path relative to the package's `vignettes/` directory without
+    # regex pattern matching.
+    vig_rel <- fs::path_ext_remove(fs::path_rel(fn, vig_root))
     candidates <- file.path(
         path,
         "vignettes",

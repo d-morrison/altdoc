@@ -49,7 +49,12 @@
         recursive = TRUE
     )
     # before gsub on files
-    titles <- sapply(fn_vignettes, .get_vignettes_titles)
+    titles <- sapply(
+        fn_vignettes,
+        .get_vignettes_titles,
+        path = path,
+        vig_root = dn
+    )
     # `path_rel()` rather than `basename()`, so a nested page keeps the
     # subdirectory it was published into and the link resolves.
     fn_vignettes <- sapply(fn_vignettes, function(x) {
