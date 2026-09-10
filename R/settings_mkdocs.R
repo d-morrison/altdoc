@@ -5,7 +5,8 @@
     # Fix vignette relative links before calling `mkdocs`
     vignettes <- list.files(
         fs::path_join(c(.doc_path(path), "vignettes")),
-        pattern = "\\.md"
+        pattern = "\\.md$",
+        recursive = TRUE
     )
     for (v in vignettes) {
         fn <- fs::path_join(c(.doc_path(path), "vignettes", v))
@@ -16,11 +17,36 @@
             txt,
             fixed = TRUE
         )
-        txt <- gsub(
-            sprintf('src=\\"%s.markdown_strict_files', v),
-            sprintf('src=\\"\\.\\.\\/%s.markdown_strict_files', v),
-            txt
-        )
+        stem <- fs::path_ext_remove(v)
+        base_name <- fs::path_file(stem)
+        dir_part <- fs::path_dir(v)
+        depth <- if (identical(dir_part, ".")) {
+            0L
+        } else {
+            length(fs::path_split(dir_part)[[1]])
+        }
+        prefix <- paste(rep("../", depth + 1), collapse = "")
+
+        for (suffix in c(".markdown_strict_files", "_files")) {
+            txt <- gsub(
+                sprintf('src="%s%s', base_name, suffix),
+                sprintf('src="%s%s%s', prefix, stem, suffix),
+                txt,
+                fixed = TRUE
+            )
+            txt <- gsub(
+                sprintf('src=\\"%s%s', base_name, suffix),
+                sprintf('src=\\"%s%s%s', prefix, stem, suffix),
+                txt,
+                fixed = TRUE
+            )
+            txt <- gsub(
+                sprintf('src=\\"%s%s', v, suffix),
+                sprintf('src=\\"%s%s%s', prefix, stem, suffix),
+                txt,
+                fixed = TRUE
+            )
+        }
         writeLines(txt, fn)
     }
 
