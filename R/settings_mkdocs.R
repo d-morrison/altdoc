@@ -5,10 +5,12 @@
     # Fix vignette relative links before calling `mkdocs`
     vignettes <- list.files(
         fs::path_join(c(.doc_path(path), "vignettes")),
-        pattern = "\\.md"
+        pattern = "\\.md$",
+        recursive = TRUE
     )
     for (v in vignettes) {
         fn <- fs::path_join(c(.doc_path(path), "vignettes", v))
+        v_name <- fs::path_ext_remove(basename(v))
         txt <- .readlines(fn)
         txt <- gsub(
             paste0("![](", .doc_path(path), "/vignettes/"),
@@ -17,8 +19,14 @@
             fixed = TRUE
         )
         txt <- gsub(
-            sprintf('src=\\"%s.markdown_strict_files', v),
-            sprintf('src=\\"\\.\\.\\/%s.markdown_strict_files', v),
+            sprintf('src="%s.markdown_strict_files', v_name),
+            sprintf('src="../%s.markdown_strict_files', v_name),
+            txt,
+            fixed = TRUE
+        )
+        txt <- gsub(
+            sprintf('src=\\"%s.markdown_strict_files', v_name),
+            sprintf('src=\\"\\.\\.\\/%s.markdown_strict_files', v_name),
             txt
         )
         writeLines(txt, fn)
