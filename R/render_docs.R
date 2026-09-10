@@ -23,19 +23,19 @@
 #'   - README.md
 #'   - Note: `README.md` is required, and is always the file copied. `README.qmd` and `README.Rmd` are not rendered for you, so keep `README.md` in step with whichever of them you write in. When more than one is present, the first of `README.qmd`, `README.Rmd`, `README.md` is the one the `freeze` check watches for changes.
 #' * `docs/NEWS.md`
-#'   - NEWS
+#'   - NEWS (searched with `.md`, `.txt`, no extension, `.Rd` in root and `inst/`)
 #'   - Note: Where possible, Github contributors and issues are linked automatically.
 #' * `docs/CHANGELOG.md`
-#'   - CHANGELOG, ChangeLog
+#'   - CHANGELOG, ChangeLog (searched with `.md`, `.txt`, no extension, `.Rd` in root and `inst/`)
 #'   - Note: These are two separate searches writing to the same file, so on a case-sensitive file system holding both, `ChangeLog` is the one used.
 #' * `docs/CODE_OF_CONDUCT.md`
-#'   - CODE_OF_CONDUCT
+#'   - CODE_OF_CONDUCT (searched with `.md`, `.txt`, no extension, `.Rd` in root and `inst/`)
 #' * `docs/CONTRIBUTING.md`
-#'   - CONTRIBUTING
+#'   - CONTRIBUTING (searched with `.md`, `.txt`, no extension, `.Rd` in root and `inst/`)
 #' * `docs/LICENSE.md`
-#'   - LICENSE
+#'   - LICENSE (searched with `.md`, `.txt`, no extension, `.Rd` in root and `inst/`)
 #' * `docs/LICENCE.md`
-#'   - LICENCE
+#'   - LICENCE (searched with `.md`, `.txt`, no extension, `.Rd` in root and `inst/`)
 #'
 #' @return NULL
 #' @template altdoc_variables
