@@ -14,22 +14,22 @@ Public methods
 <ul>
 <li>
 
-<a href="#method-Conductor-new"><code>hello_r6$new()</code></a>
+<a href="#method-Conductor-new">`hello_r6$new()`</a>
 
 </li>
 <li>
 
-<a href="#method-Conductor-init"><code>hello_r6$init()</code></a>
+<a href="#method-Conductor-init">`hello_r6$init()`</a>
 
 </li>
 <li>
 
-<a href="#method-Conductor-step"><code>hello_r6$step()</code></a>
+<a href="#method-Conductor-step">`hello_r6$step()`</a>
 
 </li>
 <li>
 
-<a href="#method-Conductor-clone"><code>hello_r6$clone()</code></a>
+<a href="#method-Conductor-clone">`hello_r6$clone()`</a>
 
 </li>
 </ul>
@@ -38,7 +38,7 @@ Public methods
 <a id="method-Conductor-new"></a>
 
 <h4>
-Method <code>new()</code>
+Method `new()`
 </h4>
 <h5>
 Usage
@@ -50,14 +50,14 @@ Usage
 Details
 </h5>
 
-Initialise <code>Conductor</code>.
+Initialise `Conductor`.
 
 <hr>
 
 <a id="method-Conductor-init"></a>
 
 <h4>
-Method <code>init()</code>
+Method `init()`
 </h4>
 <h5>
 Usage
@@ -71,12 +71,12 @@ Arguments
 
 <dl>
 <dt>
-<code>session</code>
+`session`
 </dt>
 <dd>
-A valid Shiny session. If <code>NULL</code> (default), the function
+A valid Shiny session. If `NULL` (default), the function
 attempts to get the session with
-<code>shiny::getDefaultReactiveDomain()</code>.
+`shiny::getDefaultReactiveDomain()`.
 </dd>
 </dl>
 
@@ -84,14 +84,14 @@ attempts to get the session with
 Details
 </h5>
 
-Initialise <code>Conductor</code>.
+Initialise `Conductor`.
 
 <hr>
 
 <a id="method-Conductor-step"></a>
 
 <h4>
-Method <code>step()</code>
+Method `step()`
 </h4>
 <h5>
 Usage
@@ -105,7 +105,7 @@ Arguments
 
 <dl>
 <dt>
-<code>title</code>
+`title`
 </dt>
 <dd>
 Title of the popover.
@@ -116,14 +116,14 @@ Title of the popover.
 Details
 </h5>
 
-Add a step in a <code>Conductor</code> tour.
+Add a step in a `Conductor` tour.
 
 <hr>
 
 <a id="method-Conductor-clone"></a>
 
 <h4>
-Method <code>clone()</code>
+Method `clone()`
 </h4>
 
 The objects of this class are cloneable with this method.
@@ -140,7 +140,7 @@ Arguments
 
 <dl>
 <dt>
-<code>deep</code>
+`deep`
 </dt>
 <dd>
 Whether to make a deep clone.
