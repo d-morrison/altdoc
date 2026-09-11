@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* Fixed: plain `<code>` tags in temporary `.qmd` files generated from `.Rd`
+  documentation are now replaced with Markdown backtick code spans. This
+  prevents Quarto's smart typography from converting straight quotes into
+  curly/smart quotes inside code elements (#290).
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
