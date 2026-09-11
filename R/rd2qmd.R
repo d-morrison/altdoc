@@ -123,11 +123,18 @@
 .replace_code_tags <- function(tmp) {
     m <- gregexpr("<code>([^<>]*)</code>", tmp)
     regmatches(tmp, m) <- lapply(regmatches(tmp, m), function(matches) {
-        if (length(matches) == 0) return(matches)
-        vapply(matches, function(code_tag) {
-            inner <- sub("^<code>(.*)</code>$", "\\1", code_tag)
-            .rd_code_span(inner)
-        }, character(1), USE.NAMES = FALSE)
+        if (length(matches) == 0) {
+            return(matches)
+        }
+        vapply(
+            matches,
+            function(code_tag) {
+                inner <- sub("^<code>(.*)</code>$", "\\1", code_tag)
+                .rd_code_span(inner)
+            },
+            character(1),
+            USE.NAMES = FALSE
+        )
     })
     tmp
 }
