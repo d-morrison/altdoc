@@ -121,8 +121,9 @@
 }
 
 # Replace plain <code>...</code> tags with Markdown backtick code spans.
-# Unescapes HTML entities (&lt;, &gt;, &quot;, &#39;, &amp;) because inside
-# Markdown backticks Pandoc expects literal characters rather than HTML entities.
+# Unescapes HTML entities (&lt;, &gt;, &quot;, &#39;, &amp;) and escaped dollars
+# (\\$) because inside Markdown backticks Pandoc expects literal characters
+# rather than HTML entities or escaped math symbols.
 .replace_code_tags <- function(tmp) {
     m <- gregexpr("<code>([^<>]*)</code>", tmp)
     regmatches(tmp, m) <- lapply(regmatches(tmp, m), function(matches) {
@@ -139,6 +140,7 @@
                 inner <- gsub("&apos;", "'", inner, fixed = TRUE)
                 inner <- gsub("&#39;", "'", inner, fixed = TRUE)
                 inner <- gsub("&amp;", "&", inner, fixed = TRUE)
+                inner <- gsub("\\$", "$", inner, fixed = TRUE)
                 .rd_code_span(inner)
             },
             character(1),

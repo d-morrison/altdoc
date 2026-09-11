@@ -26,8 +26,8 @@ A parameter
 
 ## Details
 
-Some code with weird symbols: `pl$when(condition)` and
-`pl$then(output)`
+Some code with weird symbols: <code>pl$when(condition)</code> and
+<code>pl$then(output)</code>
 
 Some equations: ∂*Y*/∂*X* = *a* + *ε*/2
 
@@ -44,7 +44,7 @@ Graphics. <em>Journal of Computational and Graphical Statistics</em>.
 
 ## See Also
 
-`print`, `hello_r6`
+<code>print</code>, <code>hello_r6</code>
 
 ## Examples
 
