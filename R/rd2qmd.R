@@ -94,6 +94,7 @@
 
     # cleanup code
     tmp <- gsub("&#8288;", "", tmp, fixed = TRUE)
+    tmp <- .replace_code_tags(tmp)
 
     # title
     # TODO: remove this dirty hack, which is necessary when the title tag in the
@@ -117,4 +118,34 @@
     # write to file
     fn <- file.path(target_dir, sub("Rd$", "qmd", basename(source_file)))
     writeLines(tmp, con = fn)
+}
+
+# Replace plain <code>...</code> tags with Markdown backtick code spans.
+# Unescapes HTML entities (&lt;, &gt;, &quot;, &#39;, &amp;) and escaped dollars
+# (\\$) because inside Markdown backticks Pandoc expects literal characters
+# rather than HTML entities or escaped math symbols.
+.replace_code_tags <- function(tmp) {
+    m <- gregexpr("<code>([^<>]*)</code>", tmp)
+    regmatches(tmp, m) <- lapply(regmatches(tmp, m), function(matches) {
+        if (length(matches) == 0) {
+            return(matches)
+        }
+        vapply(
+            matches,
+            function(code_tag) {
+                inner <- substr(code_tag, 7, nchar(code_tag) - 7)
+                inner <- gsub("&lt;", "<", inner, fixed = TRUE)
+                inner <- gsub("&gt;", ">", inner, fixed = TRUE)
+                inner <- gsub("&quot;", "\"", inner, fixed = TRUE)
+                inner <- gsub("&apos;", "'", inner, fixed = TRUE)
+                inner <- gsub("&#39;", "'", inner, fixed = TRUE)
+                inner <- gsub("&amp;", "&", inner, fixed = TRUE)
+                inner <- gsub("\\$", "$", inner, fixed = TRUE)
+                .rd_code_span(inner)
+            },
+            character(1),
+            USE.NAMES = FALSE
+        )
+    })
+    tmp
 }

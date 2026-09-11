@@ -75,3 +75,21 @@ test_that(".rd2qmd: title across several lines", {
     .rd2qmd(rd_file, "docs", path = ".")
     expect_snapshot_file("docs/long_title.qmd")
 })
+
+test_that(".replace_code_tags converts plain code tags to backticks", {
+    input <- c(
+        'Some <code>"code"</code> here.',
+        '<code id="x">x</code>',
+        '<pre><code class=\'language-R\'>foo()</code></pre>',
+        '<code>pl$when(condition)</code> and <code>pl$then(output)</code>',
+        '<code>x &gt;= left &amp; x &lt;= right</code>'
+    )
+    expected <- c(
+        'Some `"code"` here.',
+        '<code id="x">x</code>',
+        '<pre><code class=\'language-R\'>foo()</code></pre>',
+        '`pl$when(condition)` and `pl$then(output)`',
+        '`x >= left & x <= right`'
+    )
+    expect_identical(.replace_code_tags(input), expected)
+})
