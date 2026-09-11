@@ -94,6 +94,7 @@
 
     # cleanup code
     tmp <- gsub("&#8288;", "", tmp, fixed = TRUE)
+    tmp <- .replace_code_tags(tmp)
 
     # title
     # TODO: remove this dirty hack, which is necessary when the title tag in the
@@ -117,4 +118,16 @@
     # write to file
     fn <- file.path(target_dir, sub("Rd$", "qmd", basename(source_file)))
     writeLines(tmp, con = fn)
+}
+
+.replace_code_tags <- function(tmp) {
+    m <- gregexpr("<code>([^<>]*)</code>", tmp)
+    regmatches(tmp, m) <- lapply(regmatches(tmp, m), function(matches) {
+        if (length(matches) == 0) return(matches)
+        vapply(matches, function(code_tag) {
+            inner <- sub("^<code>(.*)</code>$", "\\1", code_tag)
+            .rd_code_span(inner)
+        }, character(1), USE.NAMES = FALSE)
+    })
+    tmp
 }
