@@ -226,6 +226,23 @@ test_that(".front_matter_paths() ignores keys that are not path-valued", {
     expect_equal(.front_matter_paths(lines), "../a.lua")
 })
 
+test_that(".sidebar_vignettes_quarto_website updates index.md to index.qmd if index.qmd exists", {
+    root <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(root, "_quarto")))
+    writeLines("content", fs::path_join(c(root, "_quarto", "index.qmd")))
+
+    sidebar <- c(
+        "website:",
+        "  sidebar:",
+        "    contents:",
+        "      - text: Home",
+        "        file: index.md"
+    )
+
+    res <- .sidebar_vignettes_quarto_website(sidebar, root)
+    expect_equal(res$website$sidebar$contents[[1]]$file, "index.qmd")
+})
+
 test_that(".front_matter_paths() tolerates malformed front matter", {
     # Quarto reports the YAML error with better diagnostics than this pass
     # could, so staging simply finds nothing.
