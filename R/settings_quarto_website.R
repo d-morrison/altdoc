@@ -19,10 +19,19 @@
     yml <- yaml::yaml.load(yml, handlers = list(seq = function(x) as.list(x)))
 
     # Automatically map Home sidebar entry index.md -> index.qmd if index.qmd exists in _quarto
-    index_qmd_exists <- fs::file_exists(fs::path_join(c(path, "_quarto", "index.qmd")))
+    index_qmd_exists <- fs::file_exists(fs::path_join(c(
+        path,
+        "_quarto",
+        "index.qmd"
+    )))
     for (i in seq_along(yml$website$sidebar$contents)) {
         item <- yml$website$sidebar$contents[[i]]
-        if ("file" %in% names(item) && item$file == "index.md" && index_qmd_exists) {
+        if (
+            "file" %in%
+                names(item) &&
+                item$file == "index.md" &&
+                index_qmd_exists
+        ) {
             yml$website$sidebar$contents[[i]]$file <- "index.qmd"
         }
     }
