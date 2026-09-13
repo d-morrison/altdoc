@@ -9,36 +9,60 @@
 
     use_qmd <- tool == "quarto_website" && "README.qmd" %in% readme_files
 
-    if (use_qmd) {
-        src_file <- fs::path_join(c(src_dir, "README.qmd"))
-    } else {
-        src_file <- fs::path_join(c(src_dir, "README.md"))
-    }
+    # `README.md` is mandatory and always checked/copied.
+    src_file_md <- fs::path_join(c(src_dir, "README.md"))
+    tar_file_md <- fs::path_join(c(tar_dir, "README.md"))
 
     # Skip file when frozen
     if (isTRUE(freeze)) {
         hashes <- .get_hashes(src_dir = src_dir, freeze = freeze)
-        flag <- .is_frozen(
-            input = basename(src_file),
-            output = fs::path_join(c(tar_dir, basename(src_file))),
+        flag_md <- .is_frozen(
+            input = "README.md",
+            output = tar_file_md,
             hashes = hashes
         )
-        if (isTRUE(flag)) {
+        flag_qmd <- if (use_qmd) {
+            .is_frozen(
+                input = "README.qmd",
+                output = fs::path_join(c(tar_dir, "README.qmd")),
+                hashes = hashes
+            )
+        } else {
+            TRUE
+        }
+        if (isTRUE(flag_md) && isTRUE(flag_qmd)) {
             cli::cli_alert(
-                "Skipped {.file {basename(src_file)}} rendering because it didn't change."
+                "Skipped {.file README} rendering because it didn't change."
             )
             return(invisible())
         }
     }
 
-    tar_file_md <- fs::path_join(c(tar_dir, "README.md"))
-    src_file_md <- fs::path_join(c(src_dir, "README.md"))
     fs::file_copy(src_file_md, tar_file_md, overwrite = TRUE)
     .check_md_structure(tar_file_md)
+    .update_freeze(
+        src_dir,
+        "README.md",
+        successes = 1,
+        fails = NULL,
+        type = "README"
+    )
 
+    tar_file_qmd <- fs::path_join(c(tar_dir, "README.qmd"))
     if (use_qmd) {
-        tar_file_qmd <- fs::path_join(c(tar_dir, "README.qmd"))
-        fs::file_copy(src_file, tar_file_qmd, overwrite = TRUE)
+        src_file_qmd <- fs::path_join(c(src_dir, "README.qmd"))
+        fs::file_copy(src_file_qmd, tar_file_qmd, overwrite = TRUE)
+        .update_freeze(
+            src_dir,
+            "README.qmd",
+            successes = 1,
+            fails = NULL,
+            type = "README"
+        )
+    } else {
+        if (fs::file_exists(tar_file_qmd)) {
+            fs::file_delete(tar_file_qmd)
+        }
     }
 
     if (tool == "quarto_website") {
@@ -69,13 +93,6 @@
             "We recommend using a `knitr` option to set the path of your images to `man/figures/README-`. This would ensure that images are properly stored and displayed on multiple platforms like CRAN, Github, and on your `altdoc` website."
         )
     }
-    .update_freeze(
-        src_dir,
-        basename(src_file),
-        successes = 1,
-        fails = NULL,
-        type = "README"
-    )
     cli::cli_alert_success("{.file README} imported.")
     if ("README.qmd" %in% readme_files && tool != "quarto_website") {
         cli::cli_alert(
