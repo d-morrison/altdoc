@@ -74,3 +74,76 @@ test_that(".substitute_altdoc_variables does not mangle the GitHub URL variable"
     expect_identical(out, "* [Home](/)")
     expect_false(any(grepl("_GITHUB", out)))
 })
+
+test_that(".substitute_altdoc_variables substitutes package authors and contributors from DESCRIPTION", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "docs")))
+    desc_content <- c(
+        "Package: testpkg",
+        "Version: 0.1.0",
+        "Authors@R: c(",
+        "  person('Alice', 'Smith', role = c('aut', 'cre')),",
+        "  person('Bob', 'Jones', role = 'ctb')",
+        "  )"
+    )
+    writeLines(desc_content, fs::path_join(c(dir, "DESCRIPTION")))
+
+    out <- .substitute_altdoc_variables(
+        c(
+            "authors: $ALTDOC_PACKAGE_AUTHORS",
+            "author: $ALTDOC_PACKAGE_AUTHOR",
+            "contributors: $ALTDOC_PACKAGE_CONTRIBUTORS"
+        ),
+        path = dir,
+        tool = "docsify"
+    )
+
+    expect_identical(
+        out,
+        c(
+            "authors: Alice Smith [aut, cre]",
+            "author: Alice Smith [aut, cre]",
+            "contributors: Bob Jones [ctb]"
+        )
+    )
+})
+
+test_that(".substitute_altdoc_variables falls back to Author field in DESCRIPTION", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "docs")))
+    desc_content <- c(
+        "Package: testpkg",
+        "Version: 0.1.0",
+        "Author: Charlie Brown"
+    )
+    writeLines(desc_content, fs::path_join(c(dir, "DESCRIPTION")))
+
+    out <- .substitute_altdoc_variables(
+        c(
+            "authors: $ALTDOC_PACKAGE_AUTHORS",
+            "contributors: $ALTDOC_PACKAGE_CONTRIBUTORS"
+        ),
+        path = dir,
+        tool = "docsify"
+    )
+
+    expect_identical(out, "authors: Charlie Brown")
+})
+
+test_that(".substitute_altdoc_variables drops author and contributor lines when missing", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "docs")))
+
+    out <- .substitute_altdoc_variables(
+        c(
+            "home: /",
+            "authors: $ALTDOC_PACKAGE_AUTHORS",
+            "author: $ALTDOC_PACKAGE_AUTHOR",
+            "contributors: $ALTDOC_PACKAGE_CONTRIBUTORS"
+        ),
+        path = dir,
+        tool = "docsify"
+    )
+
+    expect_identical(out, "home: /")
+})
