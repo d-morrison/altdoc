@@ -4,8 +4,9 @@
 
 * Added: `$ALTDOC_PACKAGE_AUTHORS`, `$ALTDOC_PACKAGE_AUTHOR`, and
   `$ALTDOC_PACKAGE_CONTRIBUTORS` variables, allowing documentation settings
-  files to include package authors and contributors extracted from `DESCRIPTION`
-  (#83).
+  files to include package authors and contributors extracted from `DESCRIPTION`.
+
+* Fixed: `.rd2qmd()` now parses `<h2>` title headings with attributes.
 
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
