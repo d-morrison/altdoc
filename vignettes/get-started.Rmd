@@ -135,6 +135,9 @@ The settings files can include `$ALTDOC` variables which are replaced automatica
 
 * `$ALTDOC_PACKAGE_NAME`: Name of the package from `DESCRIPTION`.
 * `$ALTDOC_PACKAGE_VERSION`: Version number of the package from `DESCRIPTION`
+* `$ALTDOC_PACKAGE_AUTHORS`: Package authors extracted from `DESCRIPTION` (roles `aut` or `cre`, or fallback to `Author` field).
+* `$ALTDOC_PACKAGE_AUTHOR`: Alias for `$ALTDOC_PACKAGE_AUTHORS`.
+* `$ALTDOC_PACKAGE_CONTRIBUTORS`: Package contributors with `ctb` role extracted from `DESCRIPTION`.
 * `$ALTDOC_PACKAGE_URL`: First URL listed in the DESCRIPTION file of the package.
 * `$ALTDOC_PACKAGE_URL_GITHUB`: First URL that contains "github.com" from the URLs listed in the DESCRIPTION file of the package. If no such URL is found, lines containing this variable are removed from the settings file.
 * `$ALTDOC_MAN_BLOCK`: Nested list of links to the individual help pages for each exported function of the package. The format of this block depends on the documentation generator.

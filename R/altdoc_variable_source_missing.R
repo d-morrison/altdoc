@@ -36,5 +36,19 @@
         )
     }
 
+    if (variable %in% c("ALTDOC_PACKAGE_AUTHORS", "ALTDOC_PACKAGE_AUTHOR")) {
+        if (length(.package_authors(path)) == 0) {
+            return("no author is specified in `DESCRIPTION`")
+        }
+    }
+
+    if (variable == "ALTDOC_PACKAGE_CONTRIBUTORS") {
+        if (length(.package_contributors(path)) == 0) {
+            return(
+                "no contributor with 'ctb' role is specified in `DESCRIPTION`"
+            )
+        }
+    }
+
     return(NULL)
 }

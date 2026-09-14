@@ -322,6 +322,21 @@ test_that("check_altdoc reports success on a clean project", {
     )
 })
 
+test_that(".check_altdoc_variables reports missing author/contributor in DESCRIPTION", {
+    # Test that check_altdoc reports when ALTDOC_PACKAGE_AUTHORS or ALTDOC_PACKAGE_CONTRIBUTORS
+    # are used but the DESCRIPTION file lacks author or contributor information.
+    dir <- local_check_package(c(
+        "a: $ALTDOC_PACKAGE_AUTHORS",
+        "b: $ALTDOC_PACKAGE_CONTRIBUTORS"
+    ))
+
+    out <- .check_altdoc_variables(dir, "docute")
+
+    expect_length(out, 2L)
+    expect_true(any(grepl("ALTDOC_PACKAGE_AUTHORS", out, fixed = TRUE)))
+    expect_true(any(grepl("ALTDOC_PACKAGE_CONTRIBUTORS", out, fixed = TRUE)))
+})
+
 test_that(".check_altdoc_variables quotes the reason for the spelling used", {
     # Resolution is judged across the alternatives group, but the advice has to
     # name the file that would fix the variable in front of the reader. Quoting
