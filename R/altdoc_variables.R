@@ -176,10 +176,16 @@
     }
     authors <- tryCatch(desc::desc_get_authors(path), error = function(e) NULL)
     if (!is.null(authors) && length(authors) > 0) {
-        auts <- authors[vapply(authors, function(p) {
-            roles <- p$role
-            is.null(roles) || length(roles) == 0 || any(c("aut", "cre") %in% roles)
-        }, logical(1))]
+        auts <- authors[vapply(
+            authors,
+            function(p) {
+                roles <- p$role
+                is.null(roles) ||
+                    length(roles) == 0 ||
+                    any(c("aut", "cre") %in% roles)
+            },
+            logical(1)
+        )]
         if (length(auts) > 0) {
             return(paste(format(auts), collapse = ", "))
         }
@@ -201,9 +207,13 @@
     }
     authors <- tryCatch(desc::desc_get_authors(path), error = function(e) NULL)
     if (!is.null(authors) && length(authors) > 0) {
-        ctbs <- authors[vapply(authors, function(p) {
-            "ctb" %in% p$role
-        }, logical(1))]
+        ctbs <- authors[vapply(
+            authors,
+            function(p) {
+                "ctb" %in% p$role
+            },
+            logical(1)
+        )]
         if (length(ctbs) > 0) {
             return(paste(format(ctbs), collapse = ", "))
         }
