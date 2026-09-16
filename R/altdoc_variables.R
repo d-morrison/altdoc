@@ -174,7 +174,10 @@
     if (!fs::file_exists(fn)) {
         return(character(0))
     }
-    authors <- tryCatch(desc::desc_get_authors(file = fn), error = function(e) NULL)
+    authors <- tryCatch(
+        desc::desc_get_authors(file = fn),
+        error = function(e) NULL
+    )
     if (!is.null(authors) && length(authors) > 0) {
         auts <- authors[vapply(
             authors,
@@ -205,7 +208,10 @@
     if (!fs::file_exists(fn)) {
         return(character(0))
     }
-    authors <- tryCatch(desc::desc_get_authors(file = fn), error = function(e) NULL)
+    authors <- tryCatch(
+        desc::desc_get_authors(file = fn),
+        error = function(e) NULL
+    )
     if (!is.null(authors) && length(authors) > 0) {
         ctbs <- authors[vapply(
             authors,
