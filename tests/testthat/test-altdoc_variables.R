@@ -91,8 +91,11 @@ test_that(".package_authors and .package_contributors extract from DESCRIPTION",
     )
     writeLines(desc_content, fs::path_join(c(dir, "DESCRIPTION")))
 
-    expect_identical(.package_authors(dir), "Alice Smith, Charlie Brown")
-    expect_identical(.package_contributors(dir), "Bob Jones")
+    expect_identical(
+        .package_authors(dir),
+        "Alice Smith [aut, cre], Charlie Brown [aut]"
+    )
+    expect_identical(.package_contributors(dir), "Bob Jones [ctb]")
 
     out <- .substitute_altdoc_variables(
         c(
@@ -107,9 +110,9 @@ test_that(".package_authors and .package_contributors extract from DESCRIPTION",
     expect_identical(
         out,
         c(
-            "authors: Alice Smith, Charlie Brown",
-            "author: Alice Smith, Charlie Brown",
-            "contributors: Bob Jones"
+            "authors: Alice Smith [aut, cre], Charlie Brown [aut]",
+            "author: Alice Smith [aut, cre], Charlie Brown [aut]",
+            "contributors: Bob Jones [ctb]"
         )
     )
 })
