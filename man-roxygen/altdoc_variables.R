@@ -4,6 +4,8 @@
 #'
 #' * `$ALTDOC_PACKAGE_NAME`: Name of the package from `DESCRIPTION`.
 #' * `$ALTDOC_PACKAGE_VERSION`: Version number of the package from `DESCRIPTION`
+#' * `$ALTDOC_PACKAGE_AUTHORS` or `$ALTDOC_PACKAGE_AUTHOR`: Authors of the package extracted from `DESCRIPTION` (roles "aut" and "cre", or fallback to the `Author` field). If no authors are found, lines containing this variable are removed from the settings file.
+#' * `$ALTDOC_PACKAGE_CONTRIBUTORS`: Contributors to the package extracted from `DESCRIPTION` (role "ctb"). If no contributors are found, lines containing this variable are removed from the settings file.
 #' * `$ALTDOC_PACKAGE_URL`: First URL listed in the DESCRIPTION file of the package.
 #' * `$ALTDOC_PACKAGE_URL_GITHUB`: First URL that contains "github.com" from the URLs listed in the DESCRIPTION file of the package. If no such URL is found, lines containing this variable are removed from the settings file.
 #' * `$ALTDOC_LOGO`: File name of the package logo, which `render_docs()` copies into the website root. The first of `logo.svg`, `man/figures/logo.svg`, `logo.png`, or `man/figures/logo.png` to exist is used. If the package has no logo, lines containing this variable are removed from the settings file. Of the settings files created by `setup_docs()`, only `quarto_website.yml` refers to this variable; add it yourself to use a logo with another documentation generator, or to a settings file created before this variable existed.

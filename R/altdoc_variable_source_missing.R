@@ -36,5 +36,21 @@
         )
     }
 
+    if (name %in% c("PACKAGE_AUTHORS", "PACKAGE_AUTHOR")) {
+        if (length(.package_authors(path)) == 0) {
+            return(
+                "no package authors were found in DESCRIPTION"
+            )
+        }
+    }
+
+    if (identical(name, "PACKAGE_CONTRIBUTORS")) {
+        if (length(.package_contributors(path)) == 0) {
+            return(
+                "no package contributors (role 'ctb') were found in DESCRIPTION"
+            )
+        }
+    }
+
     return(NULL)
 }
