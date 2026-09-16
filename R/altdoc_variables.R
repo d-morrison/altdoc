@@ -190,7 +190,10 @@
             logical(1)
         )]
         if (length(auts) > 0) {
-            return(paste(format(auts), collapse = ", "))
+            return(paste(
+                format(auts, include = c("given", "family")),
+                collapse = ", "
+            ))
         }
     }
     author_field <- tryCatch(
@@ -221,7 +224,10 @@
             logical(1)
         )]
         if (length(ctbs) > 0) {
-            return(paste(format(ctbs), collapse = ", "))
+            return(paste(
+                format(ctbs, include = c("given", "family")),
+                collapse = ", "
+            ))
         }
     }
     character(0)
