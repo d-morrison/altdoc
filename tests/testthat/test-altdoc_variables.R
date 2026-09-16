@@ -84,10 +84,10 @@ test_that(".package_authors and .package_contributors extract from DESCRIPTION",
         "Title: Test Package",
         "Version: 0.1.0",
         "Authors@R: c(",
-        "  person('Alice', 'Smith', role = c('aut', 'cre')),",
-        "  person('Bob', 'Jones', role = 'ctb'),",
-        "  person('Charlie', 'Brown', role = 'aut')",
-        ")"
+        "    person('Alice', 'Smith', role = c('aut', 'cre')),",
+        "    person('Bob', 'Jones', role = 'ctb'),",
+        "    person('Charlie', 'Brown', role = 'aut')",
+        "  )"
     )
     writeLines(desc_content, fs::path_join(c(dir, "DESCRIPTION")))
 
