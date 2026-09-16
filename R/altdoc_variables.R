@@ -133,6 +133,22 @@
             desc::desc_get("Version", path),
             x
         )
+
+        authors <- .package_authors(path)
+        if (length(authors) > 0 && nchar(authors) > 0) {
+            x <- gsub("\\$ALTDOC_PACKAGE_AUTHORS", authors, x)
+            x <- gsub("\\$ALTDOC_PACKAGE_AUTHOR", authors, x)
+        } else {
+            x <- x[!grepl("\\$ALTDOC_PACKAGE_AUTHORS", x)]
+            x <- x[!grepl("\\$ALTDOC_PACKAGE_AUTHOR", x)]
+        }
+
+        contributors <- .package_contributors(path)
+        if (length(contributors) > 0 && nchar(contributors) > 0) {
+            x <- gsub("\\$ALTDOC_PACKAGE_CONTRIBUTORS", contributors, x)
+        } else {
+            x <- x[!grepl("\\$ALTDOC_PACKAGE_CONTRIBUTORS", x)]
+        }
     } else {
         x <- gsub("\\$ALTDOC_PACKAGE_NAME", "", x)
         x <- gsub("\\$ALTDOC_PACKAGE_VERSION", "", x)
@@ -143,9 +159,64 @@
         # trailing "_GITHUB" behind on any line mentioning the GitHub URL.
         x <- x[!grepl("\\$ALTDOC_PACKAGE_URL_GITHUB", x)]
         x <- gsub("\\$ALTDOC_PACKAGE_URL", "", x)
+        x <- x[!grepl("\\$ALTDOC_PACKAGE_AUTHORS", x)]
+        x <- x[!grepl("\\$ALTDOC_PACKAGE_AUTHOR", x)]
+        x <- x[!grepl("\\$ALTDOC_PACKAGE_CONTRIBUTORS", x)]
     }
 
     # some commands expand the full path
     x <- gsub(.doc_path(path), "", x, fixed = TRUE)
     x
+}
+
+.package_authors <- function(path = ".") {
+    fn <- fs::path_join(c(path, "DESCRIPTION"))
+    if (!fs::file_exists(fn)) {
+        return(character(0))
+    }
+    authors <- tryCatch(desc::desc_get_authors(file = fn), error = function(e) NULL)
+    if (!is.null(authors) && length(authors) > 0) {
+        auts <- authors[vapply(
+            authors,
+            function(p) {
+                roles <- p$role
+                is.null(roles) ||
+                    length(roles) == 0 ||
+                    any(c("aut", "cre") %in% roles)
+            },
+            logical(1)
+        )]
+        if (length(auts) > 0) {
+            return(paste(format(auts), collapse = ", "))
+        }
+    }
+    author_field <- tryCatch(
+        desc::desc_get_field("Author", file = fn, default = NULL),
+        error = function(e) NULL
+    )
+    if (!is.null(author_field) && nchar(trimws(author_field)) > 0) {
+        return(trimws(author_field))
+    }
+    character(0)
+}
+
+.package_contributors <- function(path = ".") {
+    fn <- fs::path_join(c(path, "DESCRIPTION"))
+    if (!fs::file_exists(fn)) {
+        return(character(0))
+    }
+    authors <- tryCatch(desc::desc_get_authors(file = fn), error = function(e) NULL)
+    if (!is.null(authors) && length(authors) > 0) {
+        ctbs <- authors[vapply(
+            authors,
+            function(p) {
+                "ctb" %in% p$role
+            },
+            logical(1)
+        )]
+        if (length(ctbs) > 0) {
+            return(paste(format(ctbs), collapse = ", "))
+        }
+    }
+    character(0)
 }

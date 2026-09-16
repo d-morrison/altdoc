@@ -74,3 +74,69 @@ test_that(".substitute_altdoc_variables does not mangle the GitHub URL variable"
     expect_identical(out, "* [Home](/)")
     expect_false(any(grepl("_GITHUB", out)))
 })
+
+test_that(".package_authors and .package_contributors extract from DESCRIPTION", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "docs")))
+
+    desc_content <- c(
+        "Package: testpkg",
+        "Title: Test Package",
+        "Version: 0.1.0",
+        "Authors@R: c(",
+        "  person('Alice', 'Smith', role = c('aut', 'cre')),",
+        "  person('Bob', 'Jones', role = 'ctb'),",
+        "  person('Charlie', 'Brown', role = 'aut')",
+        ")"
+    )
+    writeLines(desc_content, fs::path_join(c(dir, "DESCRIPTION")))
+
+    expect_identical(.package_authors(dir), "Alice Smith, Charlie Brown")
+    expect_identical(.package_contributors(dir), "Bob Jones")
+
+    out <- .substitute_altdoc_variables(
+        c(
+            "authors: $ALTDOC_PACKAGE_AUTHORS",
+            "author: $ALTDOC_PACKAGE_AUTHOR",
+            "contributors: $ALTDOC_PACKAGE_CONTRIBUTORS"
+        ),
+        path = dir,
+        tool = "docsify"
+    )
+
+    expect_identical(
+        out,
+        c(
+            "authors: Alice Smith, Charlie Brown",
+            "author: Alice Smith, Charlie Brown",
+            "contributors: Bob Jones"
+        )
+    )
+})
+
+test_that(".package_authors falls back to Author field", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "docs")))
+
+    desc_content <- c(
+        "Package: testpkg",
+        "Title: Test Package",
+        "Version: 0.1.0",
+        "Author: Jane Doe and John Doe"
+    )
+    writeLines(desc_content, fs::path_join(c(dir, "DESCRIPTION")))
+
+    expect_identical(.package_authors(dir), "Jane Doe and John Doe")
+    expect_identical(.package_contributors(dir), character(0))
+
+    out <- .substitute_altdoc_variables(
+        c(
+            "authors: $ALTDOC_PACKAGE_AUTHORS",
+            "contributors: $ALTDOC_PACKAGE_CONTRIBUTORS"
+        ),
+        path = dir,
+        tool = "docsify"
+    )
+
+    expect_identical(out, "authors: Jane Doe and John Doe")
+})
