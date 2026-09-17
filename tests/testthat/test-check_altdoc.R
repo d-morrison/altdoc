@@ -64,6 +64,46 @@ test_that(".check_altdoc_variables says nothing about a variable that resolves",
     expect_identical(.check_altdoc_variables(dir, "docute"), character(0))
 })
 
+test_that(".check_altdoc_variables flags ALTDOC_PACKAGE_AUTHORS when DESCRIPTION lists no author", {
+    dir <- local_check_package("authors: $ALTDOC_PACKAGE_AUTHORS")
+    desc::desc_del("Author", file = dir)
+    desc::desc_del("Authors@R", file = dir)
+
+    out <- .check_altdoc_variables(dir, "docute")
+
+    expect_length(out, 1L)
+    expect_match(out, "ALTDOC_PACKAGE_AUTHORS", fixed = TRUE)
+    expect_match(out, "no author", fixed = TRUE)
+})
+
+test_that(".check_altdoc_variables flags ALTDOC_PACKAGE_CONTRIBUTORS when DESCRIPTION lists no contributor", {
+    dir <- local_check_package("contribs: $ALTDOC_PACKAGE_CONTRIBUTORS")
+
+    out <- .check_altdoc_variables(dir, "docute")
+
+    expect_length(out, 1L)
+    expect_match(out, "ALTDOC_PACKAGE_CONTRIBUTORS", fixed = TRUE)
+    expect_match(out, "no contributor", fixed = TRUE)
+})
+
+test_that(".check_altdoc_variables accepts ALTDOC_PACKAGE_CONTRIBUTORS when contributor exists", {
+    dir <- local_check_package("contribs: $ALTDOC_PACKAGE_CONTRIBUTORS")
+    desc_content <- c(
+        "Package: checktest",
+        "Version: 0.0.1",
+        "Title: T",
+        "Description: D.",
+        "License: MIT",
+        "Authors@R: c(",
+        "    person('Jane', 'Doe', role = c('aut', 'cre')),",
+        "    person('Alice', 'Bob', role = 'ctb')",
+        "  )"
+    )
+    writeLines(desc_content, fs::path_join(c(dir, "DESCRIPTION")))
+
+    expect_identical(.check_altdoc_variables(dir, "docute"), character(0))
+})
+
 test_that(".check_altdoc_variables accepts an `inst/` source", {
     # The `inst/` and `.Rd` candidates are the ones #58 found even altdoc's own
     # docs had omitted, so a check that only knew `NEWS.md` would wrongly

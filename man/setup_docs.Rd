@@ -41,6 +41,8 @@ The settings files in the \verb{altdoc/} directory can include \verb{$ALTDOC} va
 \itemize{
 \item \verb{$ALTDOC_PACKAGE_NAME}: Name of the package from \code{DESCRIPTION}.
 \item \verb{$ALTDOC_PACKAGE_VERSION}: Version number of the package from \code{DESCRIPTION}
+\item \verb{$ALTDOC_PACKAGE_AUTHORS} (or \verb{$ALTDOC_PACKAGE_AUTHOR}): Author(s) of the package from \code{DESCRIPTION}.
+\item \verb{$ALTDOC_PACKAGE_CONTRIBUTORS}: Contributor(s) of the package from \code{DESCRIPTION}.
 \item \verb{$ALTDOC_PACKAGE_URL}: First URL listed in the DESCRIPTION file of the package.
 \item \verb{$ALTDOC_PACKAGE_URL_GITHUB}: First URL that contains "github.com" from the URLs listed in the DESCRIPTION file of the package. If no such URL is found, lines containing this variable are removed from the settings file.
 \item \verb{$ALTDOC_LOGO}: File name of the package logo, which \code{render_docs()} copies into the website root. The first of \code{logo.svg}, \code{man/figures/logo.svg}, \code{logo.png}, or \code{man/figures/logo.png} to exist is used. If the package has no logo, lines containing this variable are removed from the settings file. Of the settings files created by \code{setup_docs()}, only \code{quarto_website.yml} refers to this variable; add it yourself to use a logo with another documentation generator, or to a settings file created before this variable existed.
