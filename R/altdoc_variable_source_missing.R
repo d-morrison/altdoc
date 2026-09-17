@@ -36,19 +36,5 @@
         )
     }
 
-    if (
-        name %in% c("PACKAGE_AUTHORS", "PACKAGE_AUTHOR") &&
-            length(.package_authors(path)) == 0
-    ) {
-        return("the package DESCRIPTION lists no author")
-    }
-
-    if (
-        identical(name, "PACKAGE_CONTRIBUTORS") &&
-            length(.package_contributors(path)) == 0
-    ) {
-        return("the package DESCRIPTION lists no contributor")
-    }
-
     return(NULL)
 }

@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-* Added: Support for `$ALTDOC_PACKAGE_AUTHORS` (or `$ALTDOC_PACKAGE_AUTHOR`) and `$ALTDOC_PACKAGE_CONTRIBUTORS` variables in documentation settings files, extracted from the package `DESCRIPTION` file (#83).
-
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
