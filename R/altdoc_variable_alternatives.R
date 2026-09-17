@@ -17,6 +17,7 @@
 .altdoc_variable_alternatives <- function() {
     return(list(
         c("ALTDOC_NEWS", "ALTDOC_CHANGELOG"),
-        c("ALTDOC_LICENSE", "ALTDOC_LICENCE")
+        c("ALTDOC_LICENSE", "ALTDOC_LICENCE"),
+        c("ALTDOC_PACKAGE_AUTHORS", "ALTDOC_PACKAGE_AUTHOR")
     ))
 }
