@@ -592,7 +592,7 @@ test_that(".add_pkgdown() works", {
         transform = function(x) {
             first_timestamp <<- regmatches(x, gregexpr(timestamp_regex, x)) |>
                 unlist()
-            x <- gsub("\\d+\\.\\d+\\.\\d+(\\.\\d+|)", "0.0.0", x)
+            x <- gsub("'?\\d+\\.\\d+(\\.\\d+)*'?", "0.0.0", x)
             x <- gsub(
                 timestamp_regex,
                 "2020-01-01T00:00:00+0000",
@@ -641,7 +641,7 @@ urls:
     expect_snapshot(
         cat(.readlines("altdoc/pkgdown.yml"), sep = "\n"),
         transform = function(x) {
-            x <- gsub("\\d+\\.\\d+\\.\\d+(\\.\\d+|)", "0.0.0", x)
+            x <- gsub("'?\\d+\\.\\d+(\\.\\d+)*'?", "0.0.0", x)
             x <- gsub(
                 "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+\\d{4}",
                 "2020-01-01T00:00:00+0000",
