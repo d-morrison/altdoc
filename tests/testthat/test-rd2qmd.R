@@ -75,3 +75,29 @@ test_that(".rd2qmd: title across several lines", {
     .rd2qmd(rd_file, "docs", path = ".")
     expect_snapshot_file("docs/long_title.qmd")
 })
+
+test_that(".rd2qmd: handles titles cleanly and replaces smart quotes", {
+    create_local_package()
+    setup_docs("docute")
+    fs::dir_create("docs")
+
+    rd_content <- c(
+        "\\name{smart_quote_test}",
+        "\\alias{smart_quote_test}",
+        "\\title{A \\u201csmart quoted\\u201d title}",
+        "\\description{Description text}"
+    )
+    rd_file <- "smart_quote_test.Rd"
+    writeLines(rd_content, rd_file)
+
+    .rd2qmd(rd_file, "docs", path = ".")
+    qmd_file <- fs::path_join(c("docs", "smart_quote_test.qmd"))
+    expect_true(fs::file_exists(qmd_file))
+
+    content <- .readlines(qmd_file)
+    h2 <- grep("^## ", content, value = TRUE)
+    expect_identical(
+        h2,
+        "## A \"smart quoted\" title {.unnumbered}"
+    )
+})
