@@ -84,7 +84,7 @@ test_that(".rd2qmd: handles titles cleanly and replaces smart quotes", {
     rd_content <- c(
         "\\name{smart_quote_test}",
         "\\alias{smart_quote_test}",
-        "\\title{A \\u201csmart quoted\\u201d title}",
+        "\\title{A \u201csmart quoted\u201d title}",
         "\\description{Description text}"
     )
     rd_file <- "smart_quote_test.Rd"
