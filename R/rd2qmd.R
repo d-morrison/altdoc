@@ -24,7 +24,13 @@
     # superfluous header and footer
     tmp <- .readlines(tmp_html)
     tmp <- tmp[(grep("</table>$", tmp)[1] + 1):length(tmp)]
-    while (length(tmp) > 0 && grepl("^$|^\\s*</div>|^\\s*</body>|^\\s*</html>", tmp[length(tmp)])) {
+    while (
+        length(tmp) > 0 &&
+            grepl(
+                "^$|^\\s*</?main[^>]*>|^\\s*</?div[^>]*>|^\\s*</body>|^\\s*</html>",
+                tmp[length(tmp)]
+            )
+    ) {
         tmp <- tmp[-length(tmp)]
     }
 
