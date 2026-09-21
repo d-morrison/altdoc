@@ -55,7 +55,7 @@
     # examples: evaluate code blocks (assume examples are always last)
     pkg <- .pkg_name(path)
     pkg_load <- paste0("library(\"", pkg, "\")")
-    idx <- which(grepl("<h3[^>]*>Examples</h3>", tmp))
+    idx <- grep("<h3[^>]*>Examples</h3>", tmp)
 
     if (length(idx) == 1) {
         # Read the examples from the parsed Rd tree rather than the rendered
