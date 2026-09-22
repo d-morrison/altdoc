@@ -89,9 +89,9 @@
 # the returned title still equals the file's own basename. A real title never
 # does, and a `.md` vignette's own fallback already has its extension removed,
 # so this only fires where it should.
-.llms_txt_title <- function(fn, src_dir) {
+.llms_txt_title <- function(fn, src_dir, vig_root = NULL) {
     name <- fs::path_ext_remove(basename(fn))
-    title <- .get_vignettes_titles(fn, path = src_dir)
+    title <- .get_vignettes_titles(fn, path = src_dir, vig_root = vig_root)
 
     if (length(title) == 0 || is.na(title[[1]])) {
         return(.llms_txt_doc_title(fn, name))
@@ -302,6 +302,7 @@
         .llms_txt_title,
         character(1),
         src_dir = src_dir,
+        vig_root = dir,
         USE.NAMES = FALSE
     )
 
