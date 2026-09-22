@@ -236,6 +236,43 @@ test_that(".front_matter_paths() tolerates malformed front matter", {
     expect_equal(.front_matter_paths(c("no front matter here")), character(0))
 })
 
+test_that(".sidebar_vignettes_quarto_website() substitutes section blocks in sidebar", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "_quarto", "vignettes")))
+    fs::dir_create(fs::path_join(c(dir, "_quarto", "man")))
+
+    writeLines(
+        "vignette",
+        fs::path_join(c(dir, "_quarto", "vignettes", "intro.qmd"))
+    )
+    writeLines("man", fs::path_join(c(dir, "_quarto", "man", "foo.qmd")))
+
+    yaml_input <- c(
+        "website:",
+        "  title: mypkg",
+        "  sidebar:",
+        "    contents:",
+        "      - href: index.qmd",
+        "        text: Home",
+        "      - section: $ALTDOC_VIGNETTE_BLOCK",
+        "      - section: $ALTDOC_MAN_BLOCK"
+    )
+
+    out <- .sidebar_vignettes_quarto_website(yaml_input, path = dir)
+
+    expect_equal(out$website$sidebar$contents[[2]]$section, "Articles")
+    expect_equal(
+        out$website$sidebar$contents[[2]]$contents,
+        list("vignettes/intro.qmd")
+    )
+    expect_equal(out$website$sidebar$contents[[3]]$section, "Reference")
+    expect_equal(out$website$sidebar$contents[[3]]$contents[[1]]$text, "foo")
+    expect_equal(
+        out$website$sidebar$contents[[3]]$contents[[1]]$file,
+        "man/foo.qmd"
+    )
+})
+
 test_that(".sidebar_vignettes_quarto_website() substitutes blocks in navbar", {
     dir <- withr::local_tempdir()
     fs::dir_create(fs::path_join(c(dir, "_quarto", "vignettes")))

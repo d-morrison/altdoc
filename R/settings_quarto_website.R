@@ -49,6 +49,16 @@
         man_contents <- list()
     }
 
+    .resolve_quarto_block <- function(marker) {
+        if (identical(marker, "$ALTDOC_VIGNETTE_BLOCK")) {
+            if (length(fn_vignettes) > 0) fn_vignettes_formatted else NULL
+        } else if (identical(marker, "$ALTDOC_MAN_BLOCK")) {
+            if (length(fn_man) > 0) man_contents else NULL
+        } else {
+            FALSE
+        }
+    }
+
     .substitute_quarto_blocks <- function(node) {
         if (!is.list(node)) {
             return(node)
@@ -61,75 +71,36 @@
                     is.character(node$section) &&
                     length(node$section) > 0
             ) {
-                if (identical(node$section[[1]], "$ALTDOC_VIGNETTE_BLOCK")) {
-                    if (length(fn_vignettes) > 0) {
-                        return(list(
-                            section = "Articles",
-                            contents = fn_vignettes_formatted
-                        ))
-                    } else {
+                res <- .resolve_quarto_block(node$section[[1]])
+                if (!is.logical(res)) {
+                    if (is.null(res)) {
                         return(NULL)
                     }
-                } else if (identical(node$section[[1]], "$ALTDOC_MAN_BLOCK")) {
-                    if (length(fn_man) > 0) {
-                        return(list(
-                            section = "Reference",
-                            contents = man_contents
-                        ))
+                    sec_title <- if (
+                        identical(node$section[[1]], "$ALTDOC_VIGNETTE_BLOCK")
+                    ) {
+                        "Articles"
                     } else {
-                        return(NULL)
+                        "Reference"
                     }
+                    return(list(section = sec_title, contents = res))
                 }
             }
 
-            if ("menu" %in% names(node)) {
+            for (field in c("menu", "contents")) {
                 if (
-                    is.character(node$menu) &&
-                        length(node$menu) > 0 &&
-                        identical(node$menu[[1]], "$ALTDOC_VIGNETTE_BLOCK")
+                    field %in%
+                        names(node) &&
+                        is.character(node[[field]]) &&
+                        length(node[[field]]) > 0
                 ) {
-                    if (length(fn_vignettes) > 0) {
-                        node$menu <- fn_vignettes_formatted
+                    res <- .resolve_quarto_block(node[[field]][[1]])
+                    if (!is.logical(res)) {
+                        if (is.null(res)) {
+                            return(NULL)
+                        }
+                        node[[field]] <- res
                         return(node)
-                    } else {
-                        return(NULL)
-                    }
-                } else if (
-                    is.character(node$menu) &&
-                        length(node$menu) > 0 &&
-                        identical(node$menu[[1]], "$ALTDOC_MAN_BLOCK")
-                ) {
-                    if (length(fn_man) > 0) {
-                        node$menu <- man_contents
-                        return(node)
-                    } else {
-                        return(NULL)
-                    }
-                }
-            }
-
-            if ("contents" %in% names(node)) {
-                if (
-                    is.character(node$contents) &&
-                        length(node$contents) > 0 &&
-                        identical(node$contents[[1]], "$ALTDOC_VIGNETTE_BLOCK")
-                ) {
-                    if (length(fn_vignettes) > 0) {
-                        node$contents <- fn_vignettes_formatted
-                        return(node)
-                    } else {
-                        return(NULL)
-                    }
-                } else if (
-                    is.character(node$contents) &&
-                        length(node$contents) > 0 &&
-                        identical(node$contents[[1]], "$ALTDOC_MAN_BLOCK")
-                ) {
-                    if (length(fn_man) > 0) {
-                        node$contents <- man_contents
-                        return(node)
-                    } else {
-                        return(NULL)
                     }
                 }
             }
@@ -140,22 +111,20 @@
                     is.character(node$text) &&
                     length(node$text) > 0
             ) {
-                if (identical(node$text[[1]], "$ALTDOC_VIGNETTE_BLOCK")) {
-                    if (length(fn_vignettes) > 0) {
-                        node$text <- "Articles"
-                        node$contents <- fn_vignettes_formatted
-                        return(node)
-                    } else {
+                res <- .resolve_quarto_block(node$text[[1]])
+                if (!is.logical(res)) {
+                    if (is.null(res)) {
                         return(NULL)
                     }
-                } else if (identical(node$text[[1]], "$ALTDOC_MAN_BLOCK")) {
-                    if (length(fn_man) > 0) {
-                        node$text <- "Reference"
-                        node$contents <- man_contents
-                        return(node)
+                    node$text <- if (
+                        identical(node$text[[1]], "$ALTDOC_VIGNETTE_BLOCK")
+                    ) {
+                        "Articles"
                     } else {
-                        return(NULL)
+                        "Reference"
                     }
+                    node$contents <- res
+                    return(node)
                 }
             }
 
@@ -168,27 +137,18 @@
             new_list <- list()
             for (i in seq_along(node)) {
                 item <- node[[i]]
-                if (
-                    is.character(item) &&
-                        length(item) > 0 &&
-                        identical(item[[1]], "$ALTDOC_VIGNETTE_BLOCK")
-                ) {
-                    if (length(fn_vignettes) > 0) {
-                        new_list <- c(new_list, fn_vignettes_formatted)
+                if (is.character(item) && length(item) > 0) {
+                    res <- .resolve_quarto_block(item[[1]])
+                    if (!is.logical(res)) {
+                        if (!is.null(res)) {
+                            new_list <- c(new_list, res)
+                        }
+                        next
                     }
-                } else if (
-                    is.character(item) &&
-                        length(item) > 0 &&
-                        identical(item[[1]], "$ALTDOC_MAN_BLOCK")
-                ) {
-                    if (length(fn_man) > 0) {
-                        new_list <- c(new_list, man_contents)
-                    }
-                } else {
-                    res <- .substitute_quarto_blocks(item)
-                    if (!is.null(res)) {
-                        new_list <- c(new_list, list(res))
-                    }
+                }
+                res <- .substitute_quarto_blocks(item)
+                if (!is.null(res)) {
+                    new_list <- c(new_list, list(res))
                 }
             }
             return(new_list)
