@@ -66,3 +66,60 @@ test_that(".get_vignettes_titles still resolves a top-level vignette", {
         "Getting Started"
     )
 })
+
+test_that(".get_vignettes_titles handles paths where an ancestor directory is named 'vignettes'", {
+    base_dir <- withr::local_tempdir()
+    dir <- fs::path_join(c(base_dir, "vignettes", "pkg"))
+    fs::dir_create(fs::path_join(c(dir, "vignettes")), recurse = TRUE)
+    fs::dir_create(fs::path_join(c(dir, "docs", "vignettes")), recurse = TRUE)
+
+    writeLines(
+        c("---", "out: Ancestor Test", "---"),
+        fs::path_join(c(dir, "vignettes", "start.Rmd"))
+    )
+    writeLines(
+        "some body text",
+        fs::path_join(c(dir, "docs", "vignettes", "start.md"))
+    )
+
+    vig_root <- fs::path_join(c(dir, "docs", "vignettes"))
+    expect_equal(
+        .get_vignettes_titles(
+            fs::path_join(c(dir, "docs", "vignettes", "start.md")),
+            path = dir,
+            vig_root = vig_root
+        ),
+        "Ancestor Test"
+    )
+})
+
+test_that(".get_vignettes_titles handles nested subdirectories named 'vignettes'", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(
+        fs::path_join(c(dir, "vignettes", "vignettes")),
+        recurse = TRUE
+    )
+    fs::dir_create(
+        fs::path_join(c(dir, "docs", "vignettes", "vignettes")),
+        recurse = TRUE
+    )
+
+    writeLines(
+        c("---", "out: Nested Vignettes Folder", "---"),
+        fs::path_join(c(dir, "vignettes", "vignettes", "intro.qmd"))
+    )
+    writeLines(
+        "some body text",
+        fs::path_join(c(dir, "docs", "vignettes", "vignettes", "intro.md"))
+    )
+
+    vig_root <- fs::path_join(c(dir, "docs", "vignettes"))
+    expect_equal(
+        .get_vignettes_titles(
+            fs::path_join(c(dir, "docs", "vignettes", "vignettes", "intro.md")),
+            path = dir,
+            vig_root = vig_root
+        ),
+        "Nested Vignettes Folder"
+    )
+})
