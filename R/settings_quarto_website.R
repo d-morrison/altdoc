@@ -55,16 +55,27 @@
         }
 
         if (!is.null(names(node))) {
-            if ("section" %in% names(node) && is.character(node$section) && length(node$section) > 0) {
+            if (
+                "section" %in%
+                    names(node) &&
+                    is.character(node$section) &&
+                    length(node$section) > 0
+            ) {
                 if (identical(node$section[[1]], "$ALTDOC_VIGNETTE_BLOCK")) {
                     if (length(fn_vignettes) > 0) {
-                        return(list(section = "Articles", contents = fn_vignettes_formatted))
+                        return(list(
+                            section = "Articles",
+                            contents = fn_vignettes_formatted
+                        ))
                     } else {
                         return(NULL)
                     }
                 } else if (identical(node$section[[1]], "$ALTDOC_MAN_BLOCK")) {
                     if (length(fn_man) > 0) {
-                        return(list(section = "Reference", contents = man_contents))
+                        return(list(
+                            section = "Reference",
+                            contents = man_contents
+                        ))
                     } else {
                         return(NULL)
                     }
@@ -72,14 +83,22 @@
             }
 
             if ("menu" %in% names(node)) {
-                if (is.character(node$menu) && length(node$menu) > 0 && identical(node$menu[[1]], "$ALTDOC_VIGNETTE_BLOCK")) {
+                if (
+                    is.character(node$menu) &&
+                        length(node$menu) > 0 &&
+                        identical(node$menu[[1]], "$ALTDOC_VIGNETTE_BLOCK")
+                ) {
                     if (length(fn_vignettes) > 0) {
                         node$menu <- fn_vignettes_formatted
                         return(node)
                     } else {
                         return(NULL)
                     }
-                } else if (is.character(node$menu) && length(node$menu) > 0 && identical(node$menu[[1]], "$ALTDOC_MAN_BLOCK")) {
+                } else if (
+                    is.character(node$menu) &&
+                        length(node$menu) > 0 &&
+                        identical(node$menu[[1]], "$ALTDOC_MAN_BLOCK")
+                ) {
                     if (length(fn_man) > 0) {
                         node$menu <- man_contents
                         return(node)
@@ -90,14 +109,22 @@
             }
 
             if ("contents" %in% names(node)) {
-                if (is.character(node$contents) && length(node$contents) > 0 && identical(node$contents[[1]], "$ALTDOC_VIGNETTE_BLOCK")) {
+                if (
+                    is.character(node$contents) &&
+                        length(node$contents) > 0 &&
+                        identical(node$contents[[1]], "$ALTDOC_VIGNETTE_BLOCK")
+                ) {
                     if (length(fn_vignettes) > 0) {
                         node$contents <- fn_vignettes_formatted
                         return(node)
                     } else {
                         return(NULL)
                     }
-                } else if (is.character(node$contents) && length(node$contents) > 0 && identical(node$contents[[1]], "$ALTDOC_MAN_BLOCK")) {
+                } else if (
+                    is.character(node$contents) &&
+                        length(node$contents) > 0 &&
+                        identical(node$contents[[1]], "$ALTDOC_MAN_BLOCK")
+                ) {
                     if (length(fn_man) > 0) {
                         node$contents <- man_contents
                         return(node)
@@ -107,7 +134,12 @@
                 }
             }
 
-            if ("text" %in% names(node) && is.character(node$text) && length(node$text) > 0) {
+            if (
+                "text" %in%
+                    names(node) &&
+                    is.character(node$text) &&
+                    length(node$text) > 0
+            ) {
                 if (identical(node$text[[1]], "$ALTDOC_VIGNETTE_BLOCK")) {
                     if (length(fn_vignettes) > 0) {
                         node$text <- "Articles"
@@ -136,11 +168,19 @@
             new_list <- list()
             for (i in seq_along(node)) {
                 item <- node[[i]]
-                if (is.character(item) && length(item) > 0 && identical(item[[1]], "$ALTDOC_VIGNETTE_BLOCK")) {
+                if (
+                    is.character(item) &&
+                        length(item) > 0 &&
+                        identical(item[[1]], "$ALTDOC_VIGNETTE_BLOCK")
+                ) {
                     if (length(fn_vignettes) > 0) {
                         new_list <- c(new_list, fn_vignettes_formatted)
                     }
-                } else if (is.character(item) && length(item) > 0 && identical(item[[1]], "$ALTDOC_MAN_BLOCK")) {
+                } else if (
+                    is.character(item) &&
+                        length(item) > 0 &&
+                        identical(item[[1]], "$ALTDOC_MAN_BLOCK")
+                ) {
                     if (length(fn_man) > 0) {
                         new_list <- c(new_list, man_contents)
                     }
@@ -275,7 +315,8 @@
         }
         if (!is.null(names(node))) {
             if (
-                "text" %in% names(node) &&
+                "text" %in%
+                    names(node) &&
                     !"file" %in% names(node) &&
                     !"href" %in% names(node) &&
                     !"contents" %in% names(node) &&
