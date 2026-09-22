@@ -42,10 +42,11 @@ test_that(".import_readme errors when README.md is absent", {
     )
 })
 
-test_that("quarto_website always gets an index.md including README.md", {
+test_that("quarto_website always gets an index.qmd including README.md", {
     # Before #69 this was guarded on `README.md` being absent, which the
     # mandatory-README.md check above makes impossible, so `index.qmd` was
-    # never written and `index.md` always was.
+    # never written and `index.md` always was. But we want `index.qmd` so
+    # Quarto compiles it correctly and renders to index.html (issue #317).
     dir <- local_readme_package(
         "README.md" = "# readme",
         "README.qmd" = "# readme qmd"
@@ -55,11 +56,28 @@ test_that("quarto_website always gets an index.md including README.md", {
 
     suppressMessages(.import_readme(dir, tar_dir, "quarto_website", FALSE))
 
-    expect_true(fs::file_exists(fs::path_join(c(tar_dir, "index.md"))))
-    expect_false(fs::file_exists(fs::path_join(c(tar_dir, "index.qmd"))))
+    expect_true(fs::file_exists(fs::path_join(c(tar_dir, "index.qmd"))))
+    expect_false(fs::file_exists(fs::path_join(c(tar_dir, "index.md"))))
     expect_identical(
-        .readlines(fs::path_join(c(tar_dir, "index.md"))),
+        .readlines(fs::path_join(c(tar_dir, "index.qmd"))),
         "{{< include README.md >}}"
+    )
+})
+
+test_that("quarto_website warns if README.md or README.qmd has YAML front matter", {
+    dir <- local_readme_package(
+        "README.md" = c("---", "title: foo", "---", "# readme"),
+        "README.qmd" = c("---", "title: bar", "---", "# readme qmd")
+    )
+    withr::local_dir(dir)
+    tar_dir <- fs::path_join(c(dir, "docs"))
+
+    expect_message(
+        expect_message(
+            .import_readme(dir, tar_dir, "quarto_website", FALSE),
+            "README\\.md.*contains a YAML front matter"
+        ),
+        "README\\.qmd.*contains a YAML front matter"
     )
 })
 
