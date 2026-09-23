@@ -60,6 +60,9 @@ test_that(".find_head_branch works if no git", {
 test_that(".find_head_branch respects path argument", {
     tmp_dir <- withr::local_tempdir()
     fs::dir_create(fs::path_join(c(tmp_dir, ".git")))
-    writeLines("ref: refs/heads/main", fs::path_join(c(tmp_dir, ".git", "HEAD")))
+    writeLines(
+        "ref: refs/heads/main",
+        fs::path_join(c(tmp_dir, ".git", "HEAD"))
+    )
     expect_identical(.find_head_branch(tmp_dir), "main")
 })
