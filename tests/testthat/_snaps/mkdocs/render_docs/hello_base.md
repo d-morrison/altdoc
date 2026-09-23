@@ -13,10 +13,10 @@ Base function
 
 ## Arguments
 
-<table role="presentation">
+<table>
 <tr>
 <td style="white-space: nowrap; font-family: monospace; vertical-align: top">
-<code id="x">x</code>
+<code id="hello_base_:_x">x</code>
 </td>
 <td>
 A parameter
