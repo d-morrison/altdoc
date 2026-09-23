@@ -102,7 +102,7 @@
     end_h2 <- grep("</h2>", tmp)[1]
     title <- tmp[start_h2:end_h2]
     title <- paste(title, collapse = " ")
-    title <- gsub("<h2[^>]*>(.*)</h2>", "## \\1 {.unnumbered}\n", title)
+    title <- gsub("<h2[^>]*>(.*)</h2>", "## \\1 {.unnumbered}", title)
     tmp <- utils::tail(tmp, -end_h2)
     tmp <- c(title, tmp)
 
@@ -115,6 +115,10 @@
     # paragraph tags are unnecessary in markdown
     tmp <- gsub("<p>", "", tmp, fixed = TRUE)
     tmp <- gsub("</p>", "", tmp, fixed = TRUE)
+
+    while (length(tmp) > 0 && tmp[length(tmp)] == "") {
+        tmp <- tmp[-length(tmp)]
+    }
 
     # write to file
     fn <- file.path(target_dir, sub("Rd$", "qmd", basename(source_file)))
