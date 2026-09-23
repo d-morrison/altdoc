@@ -177,11 +177,11 @@
         worked <- TRUE
     }
 
-    github_source <- .find_github_source(fn)
-    if (!is.null(github_source)) {
-        to_insert <- paste0("[**Source code**](", github_source, ")")
-        rendered_man <- gsub("\\.qmd$", ".md", destination_qmd)
-        if (fs::file_exists(rendered_man)) {
+    rendered_man <- gsub("\\.qmd$", ".md", destination_qmd)
+    if (fs::file_exists(rendered_man)) {
+        github_source <- .find_github_source(fn, path = src_dir)
+        if (!is.null(github_source)) {
+            to_insert <- paste0("[**Source code**](", github_source, ")")
             temp <- .readlines(rendered_man)
             header_idx <- grep("^## ", temp)[1]
             new <- c(
@@ -207,14 +207,14 @@
     return(ifelse(worked, "success", "failure"))
 }
 
-.find_github_source <- function(fn) {
-    head_branch <- .find_head_branch(path = ".")
+.find_github_source <- function(fn, path = ".") {
+    head_branch <- .find_head_branch(path = path)
     if (is.null(head_branch)) {
         return(NULL)
     }
     # find file and row location
     fn <- try(
-        eval(parse(text = paste0(.pkg_name("."), ":::", fn))),
+        eval(parse(text = paste0(.pkg_name(path), ":::", fn))),
         silent = TRUE
     )
     if (inherits(fn, "try-error")) {
@@ -224,7 +224,7 @@
     file <- paste0("R/", utils::getSrcFilename(fn))
 
     # build URL
-    gh_link <- .gh_url(".")
+    gh_link <- .gh_url(path)
     if (is.null(gh_link) || is.na(gh_link)) {
         return(NULL)
     }

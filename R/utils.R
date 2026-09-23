@@ -282,10 +282,11 @@
 
 # find the head branch of git repository
 .find_head_branch <- function(path = ".") {
-    if (!fs::file_exists(".git/HEAD")) {
+    head_file <- fs::path_join(c(path, ".git", "HEAD"))
+    if (!fs::file_exists(head_file)) {
         return(NULL)
     }
-    branch <- .readlines(".git/HEAD")
+    branch <- .readlines(head_file)
     gsub("^ref: refs/heads/", "", branch)
 }
 

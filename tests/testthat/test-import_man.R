@@ -89,3 +89,35 @@ test_that("rendering skipped because unchanged and freeze = TRUE", {
         "skipped_unchanged"
     )
 })
+
+test_that(".find_github_source is skipped when rendered .md is absent (quarto_website)", {
+    skip_if(!.quarto_is_installed())
+    source <- test_path("examples/examples-man/is-internal.Rd")
+    dest <- tempfile(fileext = ".Rd")
+    fs::file_copy(source, dest)
+
+    create_local_package()
+    setup_docs("quarto_website")
+    fs::dir_create("man")
+    fs::file_copy(dest, "man")
+    src <- fs::path_ext_remove(list.files("man"))
+
+    called <- FALSE
+    testthat::with_mocked_bindings(
+        .find_github_source = function(...) {
+            called <<- TRUE
+            NULL
+        },
+        code = {
+            .render_one_man(
+                src,
+                tool = "quarto_website",
+                src_dir = ".",
+                tar_dir = ".",
+                freeze = FALSE,
+                hashes = NULL
+            )
+        }
+    )
+    expect_false(called)
+})
