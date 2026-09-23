@@ -13,10 +13,10 @@ Examples If TRUE
 
 ## Arguments
 
-<table>
+<table role="presentation">
 <tr>
 <td style="white-space: collapse; font-family: monospace; vertical-align: top">
-<code id="examplesIf_true_:_x">x</code>
+<code id="x">x</code>
 </td>
 <td>
 A parameter
