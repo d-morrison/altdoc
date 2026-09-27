@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Internal: `.rd2qmd()` now uses `.rd_title()` to extract document titles directly
+  from parsed Rd objects instead of line-slicing HTML output.
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
