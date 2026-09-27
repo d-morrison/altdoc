@@ -190,7 +190,7 @@
     Output
         [1] ""                                                                     
         [2] ""                                                                     
-        [3] "# Create a \"conductor\" tour"                                        
+        [3] "# Create a “conductor” tour"
         [4] ""                                                                     
         [5] "## Description"                                                       
         [6] ""                                                                     
