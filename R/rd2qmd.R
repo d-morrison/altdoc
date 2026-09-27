@@ -106,7 +106,7 @@
     }
     title_text <- .rd_title(rd)
     if (!is.na(title_text)) {
-        title_header <- paste0("## ", title_text, " {.unnumbered}\n")
+        title_header <- paste0("## ", title_text, " {.unnumbered}")
         tmp <- c(title_header, tmp)
     }
     tmp <- gsub("<h3>", "### ", tmp, fixed = TRUE)
