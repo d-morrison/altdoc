@@ -1,4 +1,5 @@
 ---
+from: markdown-smart
 format:
   md:
     prefer-html: true
