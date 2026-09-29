@@ -102,7 +102,7 @@ test_that("mkdocs: venv path can be set with ALTDOC_VENV", {
         list(ALTDOC_VENV = fs::path(dir, "my_custom_venv")),
         {
             expect_no_error({
-                setup_docs("mkdocs")
+                setup_docs("mkdocs", overwrite = TRUE)
                 render_docs()
             })
         }
