@@ -1,4 +1,25 @@
 .finalize_mkdocs <- function(settings, path, ...) {
+    if (!.venv_exists(path)) {
+        cli::cli_abort(
+            c(
+                "x" = "`altdoc` needs `mkdocs` to be installed in a Python virtual environment. The best way to create the required {.code .venv_altdoc} directory depends on your development environment. It usually involves executing commands like the following from the root directory of your R package.",
+                " " = "",
+                " " = "On Linux or MacOS:",
+                " " = "",
+                " " = "python -m venv .venv_altdoc",
+                " " = ".venv_altdoc/bin/pip install mkdocs mkdocs-material",
+                " " = "",
+                " " = "On Windows:",
+                " " = "",
+                " " = "python -m venv .venv_altdoc",
+                " " = ".venv_altdoc\\Scripts\\pip.exe install mkdocs mkdocs-material",
+                " " = "",
+                "i" = " If these commands do not work or you want learn more, visit this link: {.url https://docs.python.org/3/library/venv.html#how-venvs-work}",
+                "i" = "You can also set the envvar `ALTDOC_VENV` to be the path of the virtual environment to use."
+            )
+        )
+    }
+
     # fix links
     settings <- gsub(": \\/", ": ", settings)
 
