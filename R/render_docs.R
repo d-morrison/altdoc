@@ -79,6 +79,9 @@ render_docs <- function(
 
     path <- .convert_path(path)
     tool <- .doc_type(path)
+    if (tool == "mkdocs") {
+        .check_venv_exists(path)
+    }
     dir_altdoc <- fs::path_join(c(path, "altdoc"))
 
     if (!fs::dir_exists(dir_altdoc) || length(fs::dir_ls(dir_altdoc)) == 0) {
