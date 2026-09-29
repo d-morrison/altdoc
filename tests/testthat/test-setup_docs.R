@@ -46,7 +46,6 @@ test_that("overwrite=TRUE works: docsify", {
 })
 
 test_that("overwrite=TRUE works: mkdocs", {
-    skip_if_not(.venv_exists())
     create_local_package()
     setup_docs(tool = "mkdocs", path = getwd())
     cat("Cruft", file = "altdoc/mkdocs.yml", append = TRUE)
@@ -79,10 +78,13 @@ test_that("mkdocs: venv path can be set with ALTDOC_VENV", {
     # to run in.
     withr::with_envvar(
         list(ALTDOC_VENV = NA),
-        expect_error(
-            setup_docs("mkdocs"),
-            "needs `mkdocs` to be installed in a Python virtual environment"
-        )
+        {
+            expect_no_error(setup_docs("mkdocs"))
+            expect_error(
+                render_docs(),
+                "needs `mkdocs` to be installed in a Python virtual environment"
+            )
+        }
     )
 
     if (.is_windows()) {
@@ -100,7 +102,7 @@ test_that("mkdocs: venv path can be set with ALTDOC_VENV", {
         list(ALTDOC_VENV = fs::path(dir, "my_custom_venv")),
         {
             expect_no_error({
-                setup_docs("mkdocs")
+                setup_docs("mkdocs", overwrite = TRUE)
                 render_docs()
             })
         }

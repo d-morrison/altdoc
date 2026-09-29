@@ -1,4 +1,6 @@
 .finalize_mkdocs <- function(settings, path, ...) {
+    .check_venv_exists(path)
+
     # fix links
     settings <- gsub(": \\/", ": ", settings)
 
