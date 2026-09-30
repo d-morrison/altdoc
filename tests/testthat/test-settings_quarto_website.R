@@ -241,10 +241,16 @@ test_that(".sidebar_vignettes_quarto_website() substitutes blocks in navbar and 
     fs::dir_create(fs::path_join(c(dir, "_quarto", "vignettes")))
     fs::dir_create(fs::path_join(c(dir, "_quarto", "man")))
     fs::dir_create(fs::path_join(c(dir, "man")))
-    writeLines("vignette", fs::path_join(c(dir, "_quarto", "vignettes", "intro.qmd")))
+    writeLines(
+        "vignette",
+        fs::path_join(c(dir, "_quarto", "vignettes", "intro.qmd"))
+    )
     writeLines("man", fs::path_join(c(dir, "_quarto", "man", "foo.qmd")))
     writeLines("Title: Foo", fs::path_join(c(dir, "man", "foo.Rd")))
-    writeLines("Package: testpkg\nVersion: 0.1.0", fs::path_join(c(dir, "DESCRIPTION")))
+    writeLines(
+        "Package: testpkg\nVersion: 0.1.0",
+        fs::path_join(c(dir, "DESCRIPTION"))
+    )
 
     yml_text <- c(
         "website:",
@@ -270,13 +276,19 @@ test_that(".sidebar_vignettes_quarto_website() substitutes blocks in navbar and 
 
     # Sidebar section substitution
     expect_equal(out$website$sidebar$contents[[1]]$section, "Articles")
-    expect_equal(out$website$sidebar$contents[[1]]$contents, list("vignettes/intro.qmd"))
+    expect_equal(
+        out$website$sidebar$contents[[1]]$contents,
+        list("vignettes/intro.qmd")
+    )
 })
 
 test_that(".sidebar_vignettes_quarto_website() and .sidebar_man_quarto_website() handle missing blocks and unlinked entries", {
     dir <- withr::local_tempdir()
     fs::dir_create(fs::path_join(c(dir, "_quarto")))
-    writeLines("Package: testpkg\nVersion: 0.1.0", fs::path_join(c(dir, "DESCRIPTION")))
+    writeLines(
+        "Package: testpkg\nVersion: 0.1.0",
+        fs::path_join(c(dir, "DESCRIPTION"))
+    )
 
     yml_text <- c(
         "website:",

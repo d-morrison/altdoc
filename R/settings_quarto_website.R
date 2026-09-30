@@ -268,7 +268,8 @@
             tmp <- node[[i]]
             if (is.list(tmp)) {
                 if (
-                    "text" %in% names(tmp) &&
+                    "text" %in%
+                        names(tmp) &&
                         !any(
                             c(
                                 "file",
@@ -276,7 +277,8 @@
                                 "contents",
                                 "menu",
                                 "section"
-                            ) %in% names(tmp)
+                            ) %in%
+                                names(tmp)
                         )
                 ) {
                     node[[i]] <- NULL
