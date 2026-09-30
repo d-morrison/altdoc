@@ -18,62 +18,136 @@
     yml <- paste(sidebar, collapse = "\n")
     yml <- yaml::yaml.load(yml, handlers = list(seq = function(x) as.list(x)))
 
-    # reverse order because we delete elements
-    for (i in rev(seq_along(yml$website$sidebar$contents))) {
-        if (!"section" %in% names(yml$website$sidebar$contents[[i]])) {
-            next
-        }
-        if (
-            isTRUE(
-                yml$website$sidebar$contents[[i]]$section[[1]] ==
-                    "$ALTDOC_VIGNETTE_BLOCK"
-            )
-        ) {
-            if (length(fn_vignettes) > 0) {
-                fn_vignettes <- lapply(fn_vignettes, function(x) {
-                    # Quarto cannot retrieve titles from .pdf, so we use the file name
-                    if (tools::file_ext(x) == "pdf") {
-                        list(
-                            text = sub("\\.pdf$", "", basename(x)),
-                            file = x
-                        )
-                        # Quarto retrieves the title from .qmd files automatically, so we only supply the file path
-                    } else {
-                        x
-                    }
-                })
-                yml$website$sidebar$contents[[i]] <- list(
-                    section = "Articles",
-                    contents = fn_vignettes
+    if (length(fn_vignettes) > 0) {
+        fn_vignettes <- lapply(fn_vignettes, function(x) {
+            # Quarto cannot retrieve titles from .pdf, so we use the file name
+            if (tools::file_ext(x) == "pdf") {
+                list(
+                    text = sub("\\.pdf$", "", basename(x)),
+                    file = x
                 )
+                # Quarto retrieves the title from .qmd files automatically, so we only supply the file path
             } else {
-                yml$website$sidebar$contents[[i]] <- NULL
+                x
             }
-        } else if (
-            isTRUE(
-                yml$website$sidebar$contents[[i]]$section[[1]] ==
-                    "$ALTDOC_MAN_BLOCK"
-            )
-        ) {
-            if (length(fn_man) > 0) {
-                man_labels <- .sidebar_labels(
-                    sub("\\.qmd$", "", basename(fn_man)),
-                    src_dir = path
-                )
-                yml$website$sidebar$contents[[i]] <- list(
-                    section = "Reference",
-                    contents = .sidebar_man_contents(
-                        fn_man,
-                        man_labels,
-                        src_dir = path
-                    )
-                )
-            } else {
-                yml$website$sidebar$contents[[i]] <- NULL
-            }
-        }
+        })
+    } else {
+        fn_vignettes <- NULL
     }
 
+    if (length(fn_man) > 0) {
+        man_labels <- .sidebar_labels(
+            sub("\\.qmd$", "", basename(fn_man)),
+            src_dir = path
+        )
+        man_contents <- .sidebar_man_contents(
+            fn_man,
+            man_labels,
+            src_dir = path
+        )
+    } else {
+        man_contents <- NULL
+    }
+
+    .is_block <- function(x, target) {
+        is.character(x) && length(x) == 1 && x == target
+    }
+
+    .substitute_quarto_blocks <- function(node) {
+        if (!is.list(node)) {
+            return(node)
+        }
+        for (i in rev(seq_along(node))) {
+            item <- node[[i]]
+
+            if (.is_block(item, "$ALTDOC_VIGNETTE_BLOCK")) {
+                if (!is.null(fn_vignettes)) {
+                    node[[i]] <- list(
+                        section = "Articles",
+                        contents = fn_vignettes
+                    )
+                } else {
+                    node[[i]] <- NULL
+                }
+                next
+            }
+
+            if (.is_block(item, "$ALTDOC_MAN_BLOCK")) {
+                if (!is.null(man_contents)) {
+                    node[[i]] <- list(
+                        section = "Reference",
+                        contents = man_contents
+                    )
+                } else {
+                    node[[i]] <- NULL
+                }
+                next
+            }
+
+            if (is.list(item)) {
+                if (.is_block(item$section, "$ALTDOC_VIGNETTE_BLOCK")) {
+                    if (!is.null(fn_vignettes)) {
+                        node[[i]] <- list(
+                            section = "Articles",
+                            contents = fn_vignettes
+                        )
+                    } else {
+                        node[[i]] <- NULL
+                    }
+                    next
+                }
+                if (.is_block(item$menu, "$ALTDOC_VIGNETTE_BLOCK")) {
+                    if (!is.null(fn_vignettes)) {
+                        node[[i]]$menu <- fn_vignettes
+                    } else {
+                        node[[i]] <- NULL
+                    }
+                    next
+                }
+                if (.is_block(item$contents, "$ALTDOC_VIGNETTE_BLOCK")) {
+                    if (!is.null(fn_vignettes)) {
+                        node[[i]]$contents <- fn_vignettes
+                    } else {
+                        node[[i]] <- NULL
+                    }
+                    next
+                }
+
+                if (.is_block(item$section, "$ALTDOC_MAN_BLOCK")) {
+                    if (!is.null(man_contents)) {
+                        node[[i]] <- list(
+                            section = "Reference",
+                            contents = man_contents
+                        )
+                    } else {
+                        node[[i]] <- NULL
+                    }
+                    next
+                }
+                if (.is_block(item$menu, "$ALTDOC_MAN_BLOCK")) {
+                    if (!is.null(man_contents)) {
+                        node[[i]]$menu <- man_contents
+                    } else {
+                        node[[i]] <- NULL
+                    }
+                    next
+                }
+                if (.is_block(item$contents, "$ALTDOC_MAN_BLOCK")) {
+                    if (!is.null(man_contents)) {
+                        node[[i]]$contents <- man_contents
+                    } else {
+                        node[[i]] <- NULL
+                    }
+                    next
+                }
+
+                node[[i]] <- .substitute_quarto_blocks(node[[i]])
+            }
+        }
+        return(node)
+    }
+
+    yml <- .substitute_quarto_blocks(yml)
     return(yml)
 }
 
@@ -186,13 +260,35 @@
 }
 
 .sidebar_man_quarto_website <- function(sidebar, path, ...) {
-    # the sidebar should not include text entries with no associated link
-    # delete backwards to preserve order
-    for (i in rev(seq_along(sidebar$website$sidebar$contents))) {
-        tmp <- sidebar$website$sidebar$contents[[i]]
-        if ("text" %in% names(tmp) && !"file" %in% names(tmp)) {
-            sidebar$website$sidebar$contents[[i]] <- NULL
+    .prune_empty_links_quarto <- function(node) {
+        if (!is.list(node)) {
+            return(node)
         }
+        for (i in rev(seq_along(node))) {
+            tmp <- node[[i]]
+            if (is.list(tmp)) {
+                if (
+                    "text" %in% names(tmp) &&
+                        !any(
+                            c(
+                                "file",
+                                "href",
+                                "contents",
+                                "menu",
+                                "section"
+                            ) %in% names(tmp)
+                        )
+                ) {
+                    node[[i]] <- NULL
+                } else {
+                    node[[i]] <- .prune_empty_links_quarto(node[[i]])
+                    if (is.list(node[[i]]) && length(node[[i]]) == 0) {
+                        node[[i]] <- NULL
+                    }
+                }
+            }
+        }
+        return(node)
     }
-    return(sidebar)
+    return(.prune_empty_links_quarto(sidebar))
 }
