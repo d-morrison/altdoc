@@ -235,3 +235,77 @@ test_that(".front_matter_paths() tolerates malformed front matter", {
     )
     expect_equal(.front_matter_paths(c("no front matter here")), character(0))
 })
+
+test_that(".sidebar_vignettes_quarto_website() substitutes blocks in navbar and sidebar", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "_quarto", "vignettes")))
+    fs::dir_create(fs::path_join(c(dir, "_quarto", "man")))
+    fs::dir_create(fs::path_join(c(dir, "man")))
+    writeLines(
+        "vignette",
+        fs::path_join(c(dir, "_quarto", "vignettes", "intro.qmd"))
+    )
+    writeLines("man", fs::path_join(c(dir, "_quarto", "man", "foo.qmd")))
+    writeLines("Title: Foo", fs::path_join(c(dir, "man", "foo.Rd")))
+    writeLines(
+        "Package: testpkg\nVersion: 0.1.0",
+        fs::path_join(c(dir, "DESCRIPTION"))
+    )
+
+    yml_text <- c(
+        "website:",
+        "  navbar:",
+        "    left:",
+        "      - text: Articles",
+        "        menu: $ALTDOC_VIGNETTE_BLOCK",
+        "      - section: $ALTDOC_MAN_BLOCK",
+        "  sidebar:",
+        "    contents:",
+        "      - section: $ALTDOC_VIGNETTE_BLOCK"
+    )
+
+    out <- .sidebar_vignettes_quarto_website(yml_text, path = dir)
+
+    # Navbar menu substitution
+    expect_equal(out$website$navbar$left[[1]]$text, "Articles")
+    expect_equal(out$website$navbar$left[[1]]$menu, list("vignettes/intro.qmd"))
+
+    # Navbar section substitution
+    expect_equal(out$website$navbar$left[[2]]$section, "Reference")
+    expect_equal(out$website$navbar$left[[2]]$contents[[1]]$file, "man/foo.qmd")
+
+    # Sidebar section substitution
+    expect_equal(out$website$sidebar$contents[[1]]$section, "Articles")
+    expect_equal(
+        out$website$sidebar$contents[[1]]$contents,
+        list("vignettes/intro.qmd")
+    )
+})
+
+test_that(".sidebar_vignettes_quarto_website() and .sidebar_man_quarto_website() handle missing blocks and unlinked entries", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "_quarto")))
+    writeLines(
+        "Package: testpkg\nVersion: 0.1.0",
+        fs::path_join(c(dir, "DESCRIPTION"))
+    )
+
+    yml_text <- c(
+        "website:",
+        "  navbar:",
+        "    left:",
+        "      - text: Articles",
+        "        menu: $ALTDOC_VIGNETTE_BLOCK",
+        "      - text: News",
+        "  sidebar:",
+        "    contents:",
+        "      - section: $ALTDOC_MAN_BLOCK"
+    )
+
+    out <- .sidebar_vignettes_quarto_website(yml_text, path = dir)
+    out <- .sidebar_man_quarto_website(out, path = dir)
+
+    # Empty blocks and unlinked text entries pruned
+    expect_null(out$website$navbar$left)
+    expect_null(out$website$sidebar$contents)
+})
