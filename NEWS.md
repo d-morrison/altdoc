@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Fixed: `.rd2qmd()` now handles `<h2>` tags with HTML attributes (e.g. `<h2 id="...">`) when converting Rd output to Markdown headings.
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
