@@ -98,7 +98,7 @@
     # title
     # TODO: remove this dirty hack, which is necessary when the title tag in the
     # Rd file is split across several lines.
-    title <- tmp[grep("^<h2>", tmp)[1]:grep("</h2>", tmp)[1]]
+    title <- tmp[grep("^<h2", tmp)[1]:grep("</h2>", tmp)[1]]
     title <- paste(title, collapse = " ")
     title <- gsub("<h2[^>]*>(.*)</h2>", "## \\1 {.unnumbered}\n", title)
     tmp <- tmp[(grep("</h2>", tmp)[1] + 1):length(tmp)]
@@ -113,6 +113,10 @@
     # paragraph tags are unnecessary in markdown
     tmp <- gsub("<p>", "", tmp, fixed = TRUE)
     tmp <- gsub("</p>", "", tmp, fixed = TRUE)
+
+    while (length(tmp) > 0 && trimws(tmp[length(tmp)]) == "") {
+        tmp <- tmp[-length(tmp)]
+    }
 
     # write to file
     fn <- file.path(target_dir, sub("Rd$", "qmd", basename(source_file)))
