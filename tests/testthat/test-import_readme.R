@@ -42,10 +42,7 @@ test_that(".import_readme errors when README.md is absent", {
     )
 })
 
-test_that("quarto_website always gets an index.md including README.md", {
-    # Before #69 this was guarded on `README.md` being absent, which the
-    # mandatory-README.md check above makes impossible, so `index.qmd` was
-    # never written and `index.md` always was.
+test_that("quarto_website uses index.qmd including README.qmd when README.qmd is present", {
     dir <- local_readme_package(
         "README.md" = "# readme",
         "README.qmd" = "# readme qmd"
@@ -55,12 +52,54 @@ test_that("quarto_website always gets an index.md including README.md", {
 
     suppressMessages(.import_readme(dir, tar_dir, "quarto_website", FALSE))
 
+    expect_true(fs::file_exists(fs::path_join(c(tar_dir, "index.qmd"))))
+    expect_false(fs::file_exists(fs::path_join(c(tar_dir, "index.md"))))
+    expect_true(fs::file_exists(fs::path_join(c(tar_dir, "README.qmd"))))
+    expect_identical(
+        .readlines(fs::path_join(c(tar_dir, "index.qmd"))),
+        "{{< include README.qmd >}}"
+    )
+    expect_identical(
+        .readlines(fs::path_join(c(tar_dir, "README.qmd"))),
+        "# readme qmd"
+    )
+})
+
+test_that("quarto_website uses index.md including README.md when README.qmd is absent", {
+    dir <- local_readme_package(
+        "README.md" = "# readme"
+    )
+    withr::local_dir(dir)
+    tar_dir <- fs::path_join(c(dir, "docs"))
+
+    suppressMessages(.import_readme(dir, tar_dir, "quarto_website", FALSE))
+
     expect_true(fs::file_exists(fs::path_join(c(tar_dir, "index.md"))))
     expect_false(fs::file_exists(fs::path_join(c(tar_dir, "index.qmd"))))
+    expect_false(fs::file_exists(fs::path_join(c(tar_dir, "README.qmd"))))
     expect_identical(
         .readlines(fs::path_join(c(tar_dir, "index.md"))),
         "{{< include README.md >}}"
     )
+})
+
+test_that("sync warning for README.qmd is shown for non-quarto generators but not quarto_website", {
+    dir <- local_readme_package(
+        "README.md" = "# readme",
+        "README.qmd" = "# readme qmd"
+    )
+    withr::local_dir(dir)
+    tar_dir <- fs::path_join(c(dir, "docs"))
+
+    expect_message(
+        .import_readme(dir, tar_dir, "docute", FALSE),
+        "Altdoc does not render README.qmd automatically to markdown"
+    )
+
+    messages <- capture_messages(
+        .import_readme(dir, tar_dir, "quarto_website", FALSE)
+    )
+    expect_false(any(grepl("Altdoc does not render README.qmd", messages)))
 })
 
 test_that("freeze skips an unchanged README.md", {
