@@ -88,7 +88,8 @@
             }
 
             if (
-                "menu" %in% nms &&
+                "menu" %in%
+                    nms &&
                     isTRUE(identical(x$menu, "$ALTDOC_VIGNETTE_BLOCK"))
             ) {
                 if (is.null(v_block)) {
@@ -96,7 +97,8 @@
                 }
                 x$menu <- v_block$contents
             } else if (
-                "contents" %in% nms &&
+                "contents" %in%
+                    nms &&
                     isTRUE(
                         identical(x$contents, "$ALTDOC_VIGNETTE_BLOCK")
                     ) &&
@@ -109,7 +111,8 @@
             }
 
             if (
-                "menu" %in% nms &&
+                "menu" %in%
+                    nms &&
                     isTRUE(identical(x$menu, "$ALTDOC_MAN_BLOCK"))
             ) {
                 if (is.null(m_block)) {
@@ -117,7 +120,8 @@
                 }
                 x$menu <- m_block$contents
             } else if (
-                "contents" %in% nms &&
+                "contents" %in%
+                    nms &&
                     isTRUE(identical(x$contents, "$ALTDOC_MAN_BLOCK")) &&
                     "text" %in% nms
             ) {
@@ -132,7 +136,8 @@
                 val <- process_node(x[[nm]])
                 if (!is.null(val)) {
                     if (
-                        nm %in% c("left", "right") &&
+                        nm %in%
+                            c("left", "right") &&
                             is.list(val) &&
                             "section" %in% names(val)
                     ) {
