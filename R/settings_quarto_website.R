@@ -23,7 +23,7 @@
                     text = sub("\\.pdf$", "", basename(x)),
                     file = x
                 )
-            # Quarto retrieves the title from .qmd files automatically, so we only supply the file path
+                # Quarto retrieves the title from .qmd files automatically, so we only supply the file path
             } else {
                 x
             }
@@ -57,19 +57,28 @@
     yml <- yaml::yaml.load(yml, handlers = list(seq = function(x) as.list(x)))
 
     process_node <- function(x) {
-        if (!is.list(x)) return(x)
+        if (!is.list(x)) {
+            return(x)
+        }
 
         nms <- names(x)
 
         if (!is.null(nms)) {
             v_match <- vapply(
                 x,
-                function(val) isTRUE(length(val) > 0 && identical(val[[1]], "$ALTDOC_VIGNETTE_BLOCK")),
+                function(val) {
+                    isTRUE(
+                        length(val) > 0 &&
+                            identical(val[[1]], "$ALTDOC_VIGNETTE_BLOCK")
+                    )
+                },
                 FUN.VALUE = logical(1)
             )
             if (any(v_match)) {
                 match_key <- names(v_match)[which(v_match)[1]]
-                if (is.null(v_block)) return(NULL)
+                if (is.null(v_block)) {
+                    return(NULL)
+                }
                 if (match_key == "section" && !"text" %in% nms) {
                     return(v_block)
                 } else {
@@ -80,12 +89,19 @@
 
             m_match <- vapply(
                 x,
-                function(val) isTRUE(length(val) > 0 && identical(val[[1]], "$ALTDOC_MAN_BLOCK")),
+                function(val) {
+                    isTRUE(
+                        length(val) > 0 &&
+                            identical(val[[1]], "$ALTDOC_MAN_BLOCK")
+                    )
+                },
                 FUN.VALUE = logical(1)
             )
             if (any(m_match)) {
                 match_key <- names(m_match)[which(m_match)[1]]
-                if (is.null(m_block)) return(NULL)
+                if (is.null(m_block)) {
+                    return(NULL)
+                }
                 if (match_key == "section" && !"text" %in% nms) {
                     return(m_block)
                 } else {

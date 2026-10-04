@@ -243,7 +243,10 @@ test_that(".sidebar_vignettes_quarto_website() expands blocks in navbar and side
     fs::dir_create(fs::path_join(c(dir, "_quarto", "vignettes")))
     fs::dir_create(fs::path_join(c(dir, "_quarto", "man")))
 
-    writeLines("vignette", fs::path_join(c(dir, "_quarto", "vignettes", "intro.qmd")))
+    writeLines(
+        "vignette",
+        fs::path_join(c(dir, "_quarto", "vignettes", "intro.qmd"))
+    )
     writeLines("man", fs::path_join(c(dir, "_quarto", "man", "my_func.qmd")))
 
     # create dummy Rd file in man/ so .sidebar_labels works
