@@ -235,3 +235,78 @@ test_that(".front_matter_paths() tolerates malformed front matter", {
     )
     expect_equal(.front_matter_paths(c("no front matter here")), character(0))
 })
+
+test_that(".sidebar_vignettes_quarto_website() expands blocks in navbar and sidebar", {
+    dir <- withr::local_tempdir()
+
+    # create mock files under _quarto/
+    fs::dir_create(fs::path_join(c(dir, "_quarto", "vignettes")))
+    fs::dir_create(fs::path_join(c(dir, "_quarto", "man")))
+
+    writeLines("vignette", fs::path_join(c(dir, "_quarto", "vignettes", "intro.qmd")))
+    writeLines("man", fs::path_join(c(dir, "_quarto", "man", "my_func.qmd")))
+
+    # create dummy Rd file in man/ so .sidebar_labels works
+    fs::dir_create(fs::path_join(c(dir, "man")))
+    writeLines(
+        c("\\name{my_func}", "\\title{My Function}"),
+        fs::path_join(c(dir, "man", "my_func.Rd"))
+    )
+
+    sidebar_yml <- c(
+        "website:",
+        "  navbar:",
+        "    left:",
+        "      - text: 'Articles'",
+        "        menu: $ALTDOC_VIGNETTE_BLOCK",
+        "      - section: $ALTDOC_MAN_BLOCK",
+        "  sidebar:",
+        "    contents:",
+        "      - section: $ALTDOC_VIGNETTE_BLOCK",
+        "      - section: $ALTDOC_MAN_BLOCK"
+    )
+
+    out <- .sidebar_vignettes_quarto_website(sidebar_yml, dir)
+
+    # check navbar left
+    expect_equal(
+        out$website$navbar$left[[1]],
+        list(text = "Articles", menu = list("vignettes/intro.qmd"))
+    )
+    expect_equal(
+        out$website$navbar$left[[2]]$section,
+        "Reference"
+    )
+
+    # check sidebar contents
+    expect_equal(
+        out$website$sidebar$contents[[1]]$section,
+        "Articles"
+    )
+    expect_equal(
+        out$website$sidebar$contents[[2]]$section,
+        "Reference"
+    )
+})
+
+test_that(".sidebar_vignettes_quarto_website() drops empty blocks when no vignettes or man pages exist", {
+    dir <- withr::local_tempdir()
+
+    sidebar_yml <- c(
+        "website:",
+        "  navbar:",
+        "    left:",
+        "      - text: 'Articles'",
+        "        menu: $ALTDOC_VIGNETTE_BLOCK",
+        "      - section: $ALTDOC_MAN_BLOCK",
+        "  sidebar:",
+        "    contents:",
+        "      - section: $ALTDOC_VIGNETTE_BLOCK",
+        "      - section: $ALTDOC_MAN_BLOCK"
+    )
+
+    out <- .sidebar_vignettes_quarto_website(sidebar_yml, dir)
+
+    expect_equal(out$website$navbar$left, list())
+    expect_equal(out$website$sidebar$contents, list())
+})

@@ -15,64 +15,106 @@
     fn_man <- gsub(".*\\b_quarto.", "", fn_man)
     fn_vignettes <- gsub(".*_quarto.", "", fn_vignettes)
 
+    v_block <- if (length(fn_vignettes) > 0) {
+        fn_vignettes_processed <- lapply(fn_vignettes, function(x) {
+            # Quarto cannot retrieve titles from .pdf, so we use the file name
+            if (tools::file_ext(x) == "pdf") {
+                list(
+                    text = sub("\\.pdf$", "", basename(x)),
+                    file = x
+                )
+            # Quarto retrieves the title from .qmd files automatically, so we only supply the file path
+            } else {
+                x
+            }
+        })
+        list(
+            section = "Articles",
+            contents = fn_vignettes_processed
+        )
+    } else {
+        NULL
+    }
+
+    m_block <- if (length(fn_man) > 0) {
+        man_labels <- .sidebar_labels(
+            sub("\\.qmd$", "", basename(fn_man)),
+            src_dir = path
+        )
+        list(
+            section = "Reference",
+            contents = .sidebar_man_contents(
+                fn_man,
+                man_labels,
+                src_dir = path
+            )
+        )
+    } else {
+        NULL
+    }
+
     yml <- paste(sidebar, collapse = "\n")
     yml <- yaml::yaml.load(yml, handlers = list(seq = function(x) as.list(x)))
 
-    # reverse order because we delete elements
-    for (i in rev(seq_along(yml$website$sidebar$contents))) {
-        if (!"section" %in% names(yml$website$sidebar$contents[[i]])) {
-            next
-        }
-        if (
-            isTRUE(
-                yml$website$sidebar$contents[[i]]$section[[1]] ==
-                    "$ALTDOC_VIGNETTE_BLOCK"
+    process_node <- function(x) {
+        if (!is.list(x)) return(x)
+
+        nms <- names(x)
+
+        if (!is.null(nms)) {
+            v_match <- vapply(
+                x,
+                function(val) isTRUE(length(val) > 0 && identical(val[[1]], "$ALTDOC_VIGNETTE_BLOCK")),
+                FUN.VALUE = logical(1)
             )
-        ) {
-            if (length(fn_vignettes) > 0) {
-                fn_vignettes <- lapply(fn_vignettes, function(x) {
-                    # Quarto cannot retrieve titles from .pdf, so we use the file name
-                    if (tools::file_ext(x) == "pdf") {
-                        list(
-                            text = sub("\\.pdf$", "", basename(x)),
-                            file = x
-                        )
-                        # Quarto retrieves the title from .qmd files automatically, so we only supply the file path
-                    } else {
-                        x
-                    }
-                })
-                yml$website$sidebar$contents[[i]] <- list(
-                    section = "Articles",
-                    contents = fn_vignettes
-                )
-            } else {
-                yml$website$sidebar$contents[[i]] <- NULL
+            if (any(v_match)) {
+                match_key <- names(v_match)[which(v_match)[1]]
+                if (is.null(v_block)) return(NULL)
+                if (match_key == "section" && !"text" %in% nms) {
+                    return(v_block)
+                } else {
+                    x[[match_key]] <- v_block$contents
+                    return(x)
+                }
             }
-        } else if (
-            isTRUE(
-                yml$website$sidebar$contents[[i]]$section[[1]] ==
-                    "$ALTDOC_MAN_BLOCK"
+
+            m_match <- vapply(
+                x,
+                function(val) isTRUE(length(val) > 0 && identical(val[[1]], "$ALTDOC_MAN_BLOCK")),
+                FUN.VALUE = logical(1)
             )
-        ) {
-            if (length(fn_man) > 0) {
-                man_labels <- .sidebar_labels(
-                    sub("\\.qmd$", "", basename(fn_man)),
-                    src_dir = path
-                )
-                yml$website$sidebar$contents[[i]] <- list(
-                    section = "Reference",
-                    contents = .sidebar_man_contents(
-                        fn_man,
-                        man_labels,
-                        src_dir = path
-                    )
-                )
-            } else {
-                yml$website$sidebar$contents[[i]] <- NULL
+            if (any(m_match)) {
+                match_key <- names(m_match)[which(m_match)[1]]
+                if (is.null(m_block)) return(NULL)
+                if (match_key == "section" && !"text" %in% nms) {
+                    return(m_block)
+                } else {
+                    x[[match_key]] <- m_block$contents
+                    return(x)
+                }
             }
+
+            res <- list()
+            for (nm in nms) {
+                val <- process_node(x[[nm]])
+                if (!is.null(val)) {
+                    res[[nm]] <- val
+                }
+            }
+            return(res)
+        } else {
+            res <- list()
+            for (i in seq_along(x)) {
+                val <- process_node(x[[i]])
+                if (!is.null(val)) {
+                    res[[length(res) + 1]] <- val
+                }
+            }
+            return(res)
         }
     }
+
+    yml <- process_node(yml)
 
     return(yml)
 }
