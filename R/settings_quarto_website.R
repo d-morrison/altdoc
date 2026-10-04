@@ -57,6 +57,16 @@
     yml <- yaml::yaml.load(yml, handlers = list(seq = function(x) as.list(x)))
 
     process_node <- function(x) {
+        if (is.character(x) && length(x) == 1) {
+            if (identical(x, "$ALTDOC_VIGNETTE_BLOCK")) {
+                return(v_block)
+            }
+            if (identical(x, "$ALTDOC_MAN_BLOCK")) {
+                return(m_block)
+            }
+            return(x)
+        }
+
         if (!is.list(x)) {
             return(x)
         }
@@ -64,57 +74,72 @@
         nms <- names(x)
 
         if (!is.null(nms)) {
-            v_match <- vapply(
-                x,
-                function(val) {
-                    isTRUE(
-                        length(val) > 0 &&
-                            identical(val[[1]], "$ALTDOC_VIGNETTE_BLOCK")
-                    )
-                },
-                FUN.VALUE = logical(1)
-            )
-            if (any(v_match)) {
-                match_key <- names(v_match)[which(v_match)[1]]
+            if (
+                isTRUE(identical(x$section, "$ALTDOC_VIGNETTE_BLOCK")) &&
+                    !"text" %in% nms
+            ) {
+                return(v_block)
+            }
+            if (
+                isTRUE(identical(x$section, "$ALTDOC_MAN_BLOCK")) &&
+                    !"text" %in% nms
+            ) {
+                return(m_block)
+            }
+
+            if (
+                "menu" %in% nms &&
+                    isTRUE(identical(x$menu, "$ALTDOC_VIGNETTE_BLOCK"))
+            ) {
                 if (is.null(v_block)) {
                     return(NULL)
                 }
-                if (match_key == "section" && !"text" %in% nms) {
-                    return(v_block)
-                } else {
-                    x[[match_key]] <- v_block$contents
-                    return(x)
+                x$menu <- v_block$contents
+            } else if (
+                "contents" %in% nms &&
+                    isTRUE(
+                        identical(x$contents, "$ALTDOC_VIGNETTE_BLOCK")
+                    ) &&
+                    "text" %in% nms
+            ) {
+                if (is.null(v_block)) {
+                    return(NULL)
                 }
+                x$contents <- v_block$contents
             }
 
-            m_match <- vapply(
-                x,
-                function(val) {
-                    isTRUE(
-                        length(val) > 0 &&
-                            identical(val[[1]], "$ALTDOC_MAN_BLOCK")
-                    )
-                },
-                FUN.VALUE = logical(1)
-            )
-            if (any(m_match)) {
-                match_key <- names(m_match)[which(m_match)[1]]
+            if (
+                "menu" %in% nms &&
+                    isTRUE(identical(x$menu, "$ALTDOC_MAN_BLOCK"))
+            ) {
                 if (is.null(m_block)) {
                     return(NULL)
                 }
-                if (match_key == "section" && !"text" %in% nms) {
-                    return(m_block)
-                } else {
-                    x[[match_key]] <- m_block$contents
-                    return(x)
+                x$menu <- m_block$contents
+            } else if (
+                "contents" %in% nms &&
+                    isTRUE(identical(x$contents, "$ALTDOC_MAN_BLOCK")) &&
+                    "text" %in% nms
+            ) {
+                if (is.null(m_block)) {
+                    return(NULL)
                 }
+                x$contents <- m_block$contents
             }
 
             res <- list()
-            for (nm in nms) {
+            for (nm in names(x)) {
                 val <- process_node(x[[nm]])
                 if (!is.null(val)) {
-                    res[[nm]] <- val
+                    if (
+                        nm %in% c("left", "right") &&
+                            is.list(val) &&
+                            "section" %in% names(val)
+                    ) {
+                        res[[nm]] <- list(val)
+                    } else {
+                        res[[nm]] <- val
+                    }
                 }
             }
             return(res)

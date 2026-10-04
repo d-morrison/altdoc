@@ -313,3 +313,57 @@ test_that(".sidebar_vignettes_quarto_website() drops empty blocks when no vignet
     expect_equal(out$website$navbar$left, list())
     expect_equal(out$website$sidebar$contents, list())
 })
+
+test_that(".sidebar_vignettes_quarto_website() preserves sequence siblings and navbar fields", {
+    dir <- withr::local_tempdir()
+
+    fs::dir_create(fs::path_join(c(dir, "_quarto", "vignettes")))
+    writeLines(
+        "vignette",
+        fs::path_join(c(dir, "_quarto", "vignettes", "intro.qmd"))
+    )
+
+    sidebar_yml <- c(
+        "sidebar:",
+        "  contents:",
+        "    - $ALTDOC_VIGNETTE_BLOCK",
+        "    - index.qmd",
+        "website:",
+        "  navbar:",
+        "    title: Navigation",
+        "    left:",
+        "      - text: 'Articles'",
+        "        menu: $ALTDOC_VIGNETTE_BLOCK",
+        "      - text: 'Home'",
+        "        file: index.md",
+        "      - section: $ALTDOC_MAN_BLOCK",
+        "    right:",
+        "      - icon: github",
+        "        href: url"
+    )
+
+    out <- .sidebar_vignettes_quarto_website(sidebar_yml, dir)
+
+    # sidebar contents keeps index.qmd sibling
+    expect_equal(length(out$sidebar$contents), 2)
+    expect_equal(out$sidebar$contents[[1]]$section, "Articles")
+    expect_equal(out$sidebar$contents[[2]], "index.qmd")
+
+    # navbar preserves title and right siblings even when man pages don't exist
+    expect_equal(out$website$navbar$title, "Navigation")
+    expect_equal(
+        out$website$navbar$right[[1]],
+        list(icon = "github", href = "url")
+    )
+
+    # navbar left preserves static link Home and menu Articles while dropping empty section for man pages
+    expect_equal(length(out$website$navbar$left), 2)
+    expect_equal(
+        out$website$navbar$left[[1]],
+        list(text = "Articles", menu = list("vignettes/intro.qmd"))
+    )
+    expect_equal(
+        out$website$navbar$left[[2]],
+        list(text = "Home", file = "index.md")
+    )
+})
