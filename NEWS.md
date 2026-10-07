@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Fixed: replace plain `<code>` tags with Markdown backticks in `.rd2qmd()` to
+  prevent Quarto smart typography from converting straight quotes to curly
+  quotes inside code spans (#290).
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
