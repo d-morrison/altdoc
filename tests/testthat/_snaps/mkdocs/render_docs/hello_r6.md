@@ -74,9 +74,8 @@ Arguments
 `session`
 </dt>
 <dd>
-A valid Shiny session. If `NULL` (default), the function
-attempts to get the session with
-`shiny::getDefaultReactiveDomain()`.
+A valid Shiny session. If `NULL` (default), the function attempts to get
+the session with `shiny::getDefaultReactiveDomain()`.
 </dd>
 </dl>
 
