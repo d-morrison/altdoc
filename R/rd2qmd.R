@@ -24,7 +24,14 @@
     # superfluous header and footer
     tmp <- .readlines(tmp_html)
     tmp <- tmp[(grep("</table>$", tmp)[1] + 1):length(tmp)]
-    tmp <- utils::head(tmp, -4)
+    footer_pattern <- paste0(
+        "^$|^\\s*</?main[^>]*>|",
+        "^\\s*</?div[^>]*>|",
+        "^\\s*</body>|^\\s*</html>"
+    )
+    while (length(tmp) > 0 && grepl(footer_pattern, tmp[length(tmp)])) {
+        tmp <- utils::head(tmp, -1)
+    }
 
     # first column (odd entries) of table in Arguments should not be wrapped
     idx <- grep("<td>", tmp, fixed = TRUE)
@@ -98,7 +105,7 @@
     # title
     # TODO: remove this dirty hack, which is necessary when the title tag in the
     # Rd file is split across several lines.
-    title <- tmp[grep("^<h2>", tmp)[1]:grep("</h2>", tmp)[1]]
+    title <- tmp[grep("<h2[^>]*>", tmp)[1]:grep("</h2>", tmp)[1]]
     title <- paste(title, collapse = " ")
     title <- gsub("<h2[^>]*>(.*)</h2>", "## \\1 {.unnumbered}\n", title)
     tmp <- tmp[(grep("</h2>", tmp)[1] + 1):length(tmp)]

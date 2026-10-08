@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Fixed: `.rd2qmd()` title extraction now matches `<h2>` tags with attributes
+  (e.g., `id="..."`), and footer trimming supports `</main>` tags in
+  `tools::Rd2HTML()` output.
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
