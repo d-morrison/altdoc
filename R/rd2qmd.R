@@ -100,7 +100,7 @@
     if (is.na(title_text)) {
         title_text <- ""
     }
-    title <- paste0("## ", title_text, " {.unnumbered}\n")
+    title <- paste0("## ", title_text, " {.unnumbered}")
     h2_start <- grep("^<h2", tmp)[1]
     h2_end <- grep("</h2>", tmp)[1]
     if (!is.na(h2_start) && !is.na(h2_end)) {
