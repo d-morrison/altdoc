@@ -101,7 +101,7 @@
     if (!is.na(h2_start) && !is.na(h2_end)) {
         title <- tmp[h2_start:h2_end]
         title <- paste(title, collapse = " ")
-        title <- gsub("<h2[^>]*>(.*)</h2>", "## \\1 {.unnumbered}", title)
+        title <- gsub("<h2[^>]*>(.*)</h2>", "## \\1 {.unnumbered}\n", title)
         if (h2_end < length(tmp)) {
             tmp <- tmp[(h2_end + 1):length(tmp)]
         } else {
