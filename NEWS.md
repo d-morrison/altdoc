@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Fixed: `.rd2qmd()` now extracts Rd titles using `.rd_title(rd)` directly,
+  removing the line-slicing hack for titles split across multiple lines.
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
