@@ -102,7 +102,6 @@
         tmp <- tmp[(h2_end + 1):length(tmp)]
     }
     if (!is.na(title_str)) {
-        title_str <- gsub('"', '&quot;', title_str, fixed = TRUE)
         title <- paste0("## ", title_str, " {.unnumbered}\n")
         tmp <- c(title, tmp)
     }
