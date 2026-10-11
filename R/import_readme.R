@@ -2,7 +2,8 @@
     readme_files <- list.files(src_dir, pattern = "^README")
 
     # For quarto_website, README.qmd can be used if present. Otherwise README.md is mandatory.
-    use_qmd <- identical(tool, "quarto_website") && "README.qmd" %in% readme_files
+    use_qmd <- identical(tool, "quarto_website") &&
+        "README.qmd" %in% readme_files
 
     if (!use_qmd && !"README.md" %in% readme_files) {
         cli::cli_abort("README.md is mandatory.")
