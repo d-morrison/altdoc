@@ -88,6 +88,15 @@
     # choice because we want to use the built-in freeze functionality of quarto
     # and need to move _quarto/_site to docs/ after rendering.
 
+    # If index.qmd was created for README.qmd, update sidebar references pointing to index.md
+    if (fs::file_exists(fs::path_join(c(path, "_quarto", "index.qmd")))) {
+        settings <- gsub(
+            "(^\\s*-\\s*(text|file):.*)index\\.md\\b",
+            "\\1index.qmd",
+            settings
+        )
+    }
+
     # drop empty lines
     settings <- settings[!grepl("^\\w*$", settings)]
     settings <- yaml::as.yaml(
