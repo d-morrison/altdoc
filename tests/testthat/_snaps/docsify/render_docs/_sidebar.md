@@ -1,9 +1,9 @@
 * [Home](/)
-* Articles: 
+* Articles:
   - [here.pdf](vignettes/here.pdf ':ignore')
   - [test](vignettes/test.md)
 * [Package index](reference.md)
-* Reference: 
+* Reference:
   - [examplesIf_false](man/examplesIf_false)
   - [examplesIf_true](man/examplesIf_true)
   - [hello_base](man/hello_base)

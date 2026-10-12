@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Added: `quarto_website` now supports `$ALTDOC_MAN_BLOCK` and
+  `$ALTDOC_VIGNETTE_BLOCK` in navbar (`left`, `right`), `menu`, `contents`, or
+  `section` blocks recursively across `quarto_website.yml` (#325).
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
