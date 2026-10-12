@@ -24,7 +24,16 @@
     # superfluous header and footer
     tmp <- .readlines(tmp_html)
     tmp <- tmp[(grep("</table>$", tmp)[1] + 1):length(tmp)]
-    tmp <- utils::head(tmp, -4)
+    idx_end <- grep("</div>", tmp, fixed = TRUE)
+    if (length(idx_end) > 0) {
+        tmp <- tmp[1:(idx_end[1] - 1)]
+    } else {
+        tmp <- utils::head(tmp, -4)
+    }
+    while (length(tmp) > 0 && trimws(tmp[length(tmp)]) == "") {
+        tmp <- tmp[-length(tmp)]
+    }
+    tmp <- c(tmp, "")
 
     # first column (odd entries) of table in Arguments should not be wrapped
     idx <- grep("<td>", tmp, fixed = TRUE)
@@ -113,11 +122,6 @@
     # paragraph tags are unnecessary in markdown
     tmp <- gsub("<p>", "", tmp, fixed = TRUE)
     tmp <- gsub("</p>", "", tmp, fixed = TRUE)
-
-    # remove trailing empty lines
-    while (length(tmp) > 0 && trimws(tmp[length(tmp)]) == "") {
-        tmp <- tmp[-length(tmp)]
-    }
 
     # write to file
     fn <- file.path(target_dir, sub("Rd$", "qmd", basename(source_file)))
