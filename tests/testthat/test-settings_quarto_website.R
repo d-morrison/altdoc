@@ -314,7 +314,9 @@ test_that(".sidebar_vignettes_quarto_website() and .sidebar_man_quarto_website()
     out <- .sidebar_vignettes_quarto_website(yml_text, path = dir)
     out <- .sidebar_man_quarto_website(out, path = dir)
 
-    # Empty blocks and unlinked text entries pruned
-    expect_null(out$website$navbar$left)
-    expect_null(out$website$sidebar$contents)
+    # Empty array elements and unlinked text entries pruned, but mapping keys preserved
+    expect_true("navbar" %in% names(out$website))
+    expect_true("sidebar" %in% names(out$website))
+    expect_equal(out$website$navbar$left, list())
+    expect_equal(out$website$sidebar$contents, list())
 })

@@ -264,12 +264,13 @@
         if (!is.list(node)) {
             return(node)
         }
+        is_unnamed_list <- is.null(names(node))
         for (i in rev(seq_along(node))) {
             tmp <- node[[i]]
             if (is.list(tmp)) {
+                non_empty_names <- names(tmp)[sapply(tmp, function(val) !is.null(val))]
                 if (
-                    "text" %in%
-                        names(tmp) &&
+                    "text" %in% non_empty_names &&
                         !any(
                             c(
                                 "file",
@@ -277,14 +278,15 @@
                                 "contents",
                                 "menu",
                                 "section"
-                            ) %in%
-                                names(tmp)
+                            ) %in% non_empty_names
                         )
                 ) {
-                    node[[i]] <- NULL
+                    if (is_unnamed_list) {
+                        node[[i]] <- NULL
+                    }
                 } else {
                     node[[i]] <- .prune_empty_links_quarto(node[[i]])
-                    if (is.list(node[[i]]) && length(node[[i]]) == 0) {
+                    if (is_unnamed_list && is.list(node[[i]]) && length(node[[i]]) == 0) {
                         node[[i]] <- NULL
                     }
                 }
