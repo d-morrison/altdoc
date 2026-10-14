@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Refactored: title extraction in `.rd2qmd()` now uses `.rd_title()` directly from the parsed Rd object and handles HTML heading attributes from `tools::Rd2HTML()` output.
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
