@@ -116,7 +116,7 @@
     tmp <- gsub("<p>", "", tmp, fixed = TRUE)
     tmp <- gsub("</p>", "", tmp, fixed = TRUE)
 
-    if (length(tmp) > 0 && tail(tmp, 1) != "") {
+    if (length(tmp) > 0 && utils::tail(tmp, 1) != "") {
         tmp <- c(tmp, "")
     }
 
