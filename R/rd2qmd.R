@@ -116,6 +116,12 @@
     tmp <- gsub("<p>", "", tmp, fixed = TRUE)
     tmp <- gsub("</p>", "", tmp, fixed = TRUE)
 
+    # normalize trailing blank line so output is deterministic across R versions
+    while (length(tmp) > 0 && !nzchar(trimws(utils::tail(tmp, 1)))) {
+        tmp <- utils::head(tmp, -1)
+    }
+    tmp <- c(tmp, "")
+
     # write to file
     fn <- file.path(target_dir, sub("Rd$", "qmd", basename(source_file)))
     writeLines(tmp, con = fn)
