@@ -96,6 +96,15 @@
         handler = list(logical = yaml::verbatim_logical)
     )
     settings <- strsplit(settings, "\\n")[[1]]
+
+    # If index.qmd was created for README.qmd, update sidebar references pointing to index.md
+    if (fs::file_exists(fs::path_join(c(path, "_quarto", "index.qmd")))) {
+        settings <- gsub(
+            "index\\.md",
+            "index.qmd",
+            settings
+        )
+    }
     writeLines(settings, fs::path_join(c(path, "_quarto", "_quarto.yml")))
 
     # NEWS.qmd breaks rendering, so we delete it if NEWS.md is available.

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Added: `quarto_website` now uses `README.qmd` when present in the package root.
+  It copies `README.qmd` to `_quarto/README.qmd`, creates `_quarto/index.qmd`,
+  and automatically updates sidebar references pointing to `index.md` to `index.qmd` (#368).
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
