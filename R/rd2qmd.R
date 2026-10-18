@@ -96,17 +96,15 @@
     tmp <- gsub("&#8288;", "", tmp, fixed = TRUE)
 
     # title
-    title <- .rd_title(rd)
-    if (!is.na(title)) {
-        title <- paste0("## ", title, " {.unnumbered}\n")
-    } else {
-        title <- NULL
-    }
+    h2_start <- grep("<h2[^>]*>", tmp)[1]
     h2_end <- grep("</h2>", tmp)[1]
-    if (!is.na(h2_end)) {
+    if (!is.na(h2_start) && !is.na(h2_end)) {
+        title <- tmp[h2_start:h2_end]
+        title <- paste(title, collapse = " ")
+        title <- gsub("<h2[^>]*>(.*)</h2>", "## \\1 {.unnumbered}\n", title)
         tmp <- tmp[(h2_end + 1):length(tmp)]
+        tmp <- c(title, tmp)
     }
-    tmp <- c(title, tmp)
 
     tmp <- gsub("<h3>", "### ", tmp, fixed = TRUE)
     tmp <- gsub("</h3>", "", tmp, fixed = TRUE)
