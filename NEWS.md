@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Fixed: `.rd2qmd()` now extracts Rd titles directly from the parsed Rd tree using `.rd_title()` rather than slicing `tools::Rd2HTML()` output, preventing parsing errors when `<h2>` tags carry attributes in newer R versions.
+
 * Fixed: a `quarto_website` man page's "View source" and "Edit this page" links
   now point at the source file the topic was documented in --- usually a file
   under `R/`, and a path elsewhere in the package where `@backref` names one
