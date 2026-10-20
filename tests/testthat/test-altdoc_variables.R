@@ -74,3 +74,47 @@ test_that(".substitute_altdoc_variables does not mangle the GitHub URL variable"
     expect_identical(out, "* [Home](/)")
     expect_false(any(grepl("_GITHUB", out)))
 })
+
+test_that(".substitute_altdoc_variables handles $ALTDOC_LOGO and favicon lines", {
+    dir <- withr::local_tempdir()
+    fs::dir_create(fs::path_join(c(dir, "docs")))
+
+    # Absent logo
+    out_absent <- .substitute_altdoc_variables(
+        c(
+            "<head>",
+            '  <link rel="icon" href="$ALTDOC_LOGO">',
+            "  <title>Test</title>",
+            "</head>"
+        ),
+        path = dir,
+        tool = "docsify"
+    )
+    expect_identical(
+        out_absent,
+        c("<head>", "  <title>Test</title>", "</head>")
+    )
+
+    # Present logo
+    writeLines("logo", fs::path_join(c(dir, "logo.png")))
+    writeLines("logo", fs::path_join(c(dir, "docs", "logo.png")))
+    out_present <- .substitute_altdoc_variables(
+        c(
+            "<head>",
+            '  <link rel="icon" href="$ALTDOC_LOGO">',
+            "  <title>Test</title>",
+            "</head>"
+        ),
+        path = dir,
+        tool = "docsify"
+    )
+    expect_identical(
+        out_present,
+        c(
+            "<head>",
+            '  <link rel="icon" href="logo.png">',
+            "  <title>Test</title>",
+            "</head>"
+        )
+    )
+})
