@@ -1,6 +1,11 @@
 ### Basic information
 site_name: $ALTDOC_PACKAGE_NAME
 
+### Theme configuration
+theme:
+  logo: $ALTDOC_LOGO
+  favicon: $ALTDOC_LOGO
+
 ### Repo information
 repo_url: $ALTDOC_PACKAGE_URL_GITHUB
 repo_name: $ALTDOC_PACKAGE_NAME
