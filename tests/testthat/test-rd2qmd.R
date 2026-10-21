@@ -74,4 +74,8 @@ test_that(".rd2qmd: title across several lines", {
     fs::dir_create("docs")
     .rd2qmd(rd_file, "docs", path = ".")
     expect_snapshot_file("docs/long_title.qmd")
+
+    content <- .readlines("docs/long_title.qmd")
+    h2 <- grep("^## ", content, value = TRUE)
+    expect_identical(h2, "## Title across two lines {.unnumbered}")
 })
