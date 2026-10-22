@@ -35,10 +35,10 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
+      - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-      - uses: r-lib/actions/setup-pandoc@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
+      - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
 
@@ -88,9 +88,9 @@ jobs:
           echo "ALTDOC_VENV=$("${py}" -c 'import pathlib, sys; print(pathlib.Path(sys.argv[1]).resolve())' "${venv}")" >> "${GITHUB_ENV}"
 
       - name: Install R dependencies
-        uses: r-lib/actions/setup-r-dependencies@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
           needs: check
 
-      - uses: r-lib/actions/check-r-package@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
+      - uses: r-lib/actions/check-r-package@v2
