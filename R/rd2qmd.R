@@ -98,6 +98,7 @@
     # title
     title_text <- .rd_title(rd)
     if (!is.na(title_text)) {
+        title_text <- gsub("\"", "&quot;", title_text, fixed = TRUE)
         title <- sprintf("## %s {.unnumbered}\n", title_text)
     } else {
         title <- character(0)
