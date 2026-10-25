@@ -46,6 +46,10 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "Checking documentation against roxygen2 $version"
 
+      - name: Configure env_keep for sudo
+        if: runner.os == 'Linux'
+        run: echo 'Defaults env_keep += "R_LIB_FOR_PAK R_LIBS_SITE R_LIBS_USER PATH"' | sudo tee /etc/sudoers.d/env_keep
+
       # No `needs:` here: it selects `Config/Needs/<name>` DESCRIPTION
       # fields, and this package declares none, so naming one would read as
       # scoping the install while doing nothing.
