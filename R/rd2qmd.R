@@ -98,7 +98,8 @@
     # title
     title <- .rd_title(rd)
     if (!is.na(title)) {
-        title <- paste0("## ", title, " {.unnumbered}\n")
+        title <- gsub('"', "&quot;", title, fixed = TRUE)
+        title <- paste0("## ", title, " {.unnumbered}")
     } else {
         title <- character()
     }
