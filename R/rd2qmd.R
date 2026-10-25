@@ -118,6 +118,11 @@
     tmp <- gsub("<p>", "", tmp, fixed = TRUE)
     tmp <- gsub("</p>", "", tmp, fixed = TRUE)
 
+    # strip trailing empty lines for consistent output across platforms
+    while (length(tmp) > 0 && tmp[length(tmp)] == "") {
+        tmp <- tmp[-length(tmp)]
+    }
+
     # write to file
     fn <- file.path(target_dir, sub("Rd$", "qmd", basename(source_file)))
     writeLines(tmp, con = fn)
