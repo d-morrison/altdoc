@@ -260,6 +260,8 @@
     # of another vignette's name matches it too. Either returns more than one
     # hit, and the old `length(p) == 1` guard then silently fell through to
     # the weaker branches below.
+    out <- character(0)
+
     vig_rel <- fs::path_ext_remove(sub(".*/vignettes/", "", fn))
     candidates <- file.path(
         path,
@@ -269,8 +271,10 @@
     p <- candidates[fs::file_exists(candidates)]
     if (length(p) == 1) {
         z <- .readlines(p)
-        out <- z[grepl("^out:\\w*", z)]
-        out <- trimws(gsub("^out:\\w*", "", out))
+        title <- .llms_txt_yaml_title(.front_matter_lines(z))
+        if (!is.null(title)) {
+            out <- title
+        }
     }
 
     # First h1 header
