@@ -28,6 +28,9 @@ jobs:
         with:
           use-public-rspm: true
 
+      - name: Preserve R_LIB_FOR_PAK in sudo
+        run: echo 'Defaults env_keep += "R_LIB_FOR_PAK R_LIBS_SITE R_LIBS_USER PATH"' | sudo tee /etc/sudoers.d/env_keep
+
       # Pin roxygen2 to the version DESCRIPTION records in
       # `Config/roxygen2/version`, so this job checks the docs against the
       # generator that produced them rather than whatever is newest. A

@@ -244,9 +244,13 @@
         return(invisible())
     }
 
+    if (identical(tolower(fs::path_ext(fn)), "pdf")) {
+        return(basename(fn))
+    }
+
     x <- .readlines(fn)
 
-    out <- gsub("\\.md$", "", basename(fn))
+    out <- character(0)
 
     # title from the vignette's own source
     #
@@ -269,16 +273,25 @@
     p <- candidates[fs::file_exists(candidates)]
     if (length(p) == 1) {
         z <- .readlines(p)
-        out <- z[grepl("^out:\\w*", z)]
-        out <- trimws(gsub("^out:\\w*", "", out))
+        title <- .llms_txt_yaml_title(.front_matter_lines(z))
+        if (!is.null(title)) {
+            out <- title
+        }
+    }
+
+    # Title from front matter of `fn` itself if no source vignette file was found
+    if (length(out) == 0) {
+        title <- .llms_txt_yaml_title(.front_matter_lines(x))
+        if (!is.null(title)) {
+            out <- title
+        }
     }
 
     # First h1 header
     if (length(out) == 0) {
-        idx <- grep("^# \\w+", x)
-        if (length(idx) > 0) {
-            out <- x[idx[1]]
-            out <- gsub("^# ", "", out)
+        heading <- .llms_txt_body_heading(x)
+        if (!is.null(heading)) {
+            out <- heading
         }
     }
 
