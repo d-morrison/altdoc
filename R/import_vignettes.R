@@ -244,9 +244,13 @@
         return(invisible())
     }
 
+    if (identical(tolower(fs::path_ext(fn)), "pdf")) {
+        return(basename(fn))
+    }
+
     x <- .readlines(fn)
 
-    out <- gsub("\\.md$", "", basename(fn))
+    out <- character(0)
 
     # title from the vignette's own source
     #
@@ -260,8 +264,6 @@
     # of another vignette's name matches it too. Either returns more than one
     # hit, and the old `length(p) == 1` guard then silently fell through to
     # the weaker branches below.
-    out <- character(0)
-
     vig_rel <- fs::path_ext_remove(sub(".*/vignettes/", "", fn))
     candidates <- file.path(
         path,
@@ -277,12 +279,19 @@
         }
     }
 
+    # Title from front matter of `fn` itself if no source vignette file was found
+    if (length(out) == 0) {
+        title <- .llms_txt_yaml_title(.front_matter_lines(x))
+        if (!is.null(title)) {
+            out <- title
+        }
+    }
+
     # First h1 header
     if (length(out) == 0) {
-        idx <- grep("^# \\w+", x)
-        if (length(idx) > 0) {
-            out <- x[idx[1]]
-            out <- gsub("^# ", "", out)
+        heading <- .llms_txt_body_heading(x)
+        if (!is.null(heading)) {
+            out <- heading
         }
     }
 
