@@ -73,8 +73,14 @@ test_that(".get_vignettes_titles falls back to H1 header or filename when no YAM
     fs::dir_create(fs::path_join(c(dir, "docs", "vignettes")), recurse = TRUE)
 
     # Vignette with no YAML front matter, but H1 in rendered .md
-    writeLines("no front matter", fs::path_join(c(dir, "vignettes", "no_front.Rmd")))
-    writeLines("# H1 Title Header", fs::path_join(c(dir, "docs", "vignettes", "no_front.md")))
+    writeLines(
+        "no front matter",
+        fs::path_join(c(dir, "vignettes", "no_front.Rmd"))
+    )
+    writeLines(
+        "# H1 Title Header",
+        fs::path_join(c(dir, "docs", "vignettes", "no_front.md"))
+    )
 
     expect_equal(
         .get_vignettes_titles(
@@ -85,8 +91,14 @@ test_that(".get_vignettes_titles falls back to H1 header or filename when no YAM
     )
 
     # Vignette with no YAML and no H1 header -> formatted filename fallback
-    writeLines("no front matter", fs::path_join(c(dir, "vignettes", "my_cool_vignette.Rmd")))
-    writeLines("just text", fs::path_join(c(dir, "docs", "vignettes", "my_cool_vignette.md")))
+    writeLines(
+        "no front matter",
+        fs::path_join(c(dir, "vignettes", "my_cool_vignette.Rmd"))
+    )
+    writeLines(
+        "just text",
+        fs::path_join(c(dir, "docs", "vignettes", "my_cool_vignette.md"))
+    )
 
     expect_equal(
         .get_vignettes_titles(
