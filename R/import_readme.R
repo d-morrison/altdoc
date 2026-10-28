@@ -61,7 +61,7 @@
     cli::cli_alert_success("{.file README} imported.")
     if ("README.qmd" %in% readme_files) {
         cli::cli_alert(
-            "Altdoc does not render README.qmd automatically to markdown. Please ensure that your README.md file is in sync."
+            "Altdoc imports README.md and does not render README.qmd automatically. Please ensure that your README.md file is kept in sync with README.qmd."
         )
     }
 }

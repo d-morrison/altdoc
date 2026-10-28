@@ -32,6 +32,19 @@ test_that(".import_readme copies README.md, whatever variants sit beside it", {
     )
 })
 
+test_that(".import_readme alerts when README.qmd is present", {
+    dir <- local_readme_package(
+        "README.md" = "# from the md",
+        "README.qmd" = "# from the qmd"
+    )
+    withr::local_dir(dir)
+
+    expect_message(
+        .import_readme(dir, fs::path_join(c(dir, "docs")), "docute", FALSE),
+        "kept in sync with README.qmd"
+    )
+})
+
 test_that(".import_readme errors when README.md is absent", {
     dir <- local_readme_package("README.qmd" = "# only a qmd")
     withr::local_dir(dir)
