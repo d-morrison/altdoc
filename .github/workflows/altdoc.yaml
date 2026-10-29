@@ -36,6 +36,9 @@ jobs:
         with:
           use-public-rspm: true
 
+      - name: Preserve R_LIB_FOR_PAK in sudo env
+        run: echo 'Defaults env_keep += "R_LIB_FOR_PAK R_LIBS_SITE R_LIBS_USER PATH"' | sudo tee /etc/sudoers.d/env_keep
+
       - name: Install R dependencies
         uses: r-lib/actions/setup-r-dependencies@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
         with:
